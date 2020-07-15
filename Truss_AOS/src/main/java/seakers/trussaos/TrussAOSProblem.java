@@ -113,7 +113,7 @@ public class TrussAOSProblem extends AbstractProblem {
             }
             C11 = (int)outputs[0];
             C22 = (int)outputs[1];
-            penaltyFactor = 2;
+            penaltyFactor = 1.5;
         }
         else {
             double[][] stiffnessMatrix = new double[3][3];
@@ -175,6 +175,10 @@ public class TrussAOSProblem extends AbstractProblem {
 
     private double getVolumeFraction (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
         return (double)engine.feval("calcVF",NodalPositionArray,designConnectivityArray,radius,sel);
+    }
+
+    public double[][] getNodalConnectivityArray () {
+        return NodalPositionArray;
     }
 
     @Override

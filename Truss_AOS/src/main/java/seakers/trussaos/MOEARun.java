@@ -23,6 +23,8 @@ import com.mathworks.engine.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +36,8 @@ import org.moeaframework.core.operator.TournamentSelection;
 //import org.moeaframework.core.operator.real.PM;
 //import org.moeaframework.core.operator.real.SBX;
 import seakers.aos.operatorselectors.OperatorSelector;
+import seakers.trussaos.operators.AddTruss;
+import seakers.trussaos.operators.RemoveIntersection;
 
 /**
  * Executable class for the eMOEA run with/without AOS for the Truss Optimization problem.
@@ -70,7 +74,7 @@ public class MOEARun {
          * Mode = 1 for conventional e-MOEA run
          *      = 2 for AOS MOEA run
          */
-        int mode = 1;
+        int mode = 2;
 
         int numCPU = 1;
         int numRuns = 1;
@@ -103,7 +107,7 @@ public class MOEARun {
 
             initialization = new RandomInitialization(trussProblem, popSize);
 
-            //initialize population structure for algorithm
+            // Initialize population structure for algorithm
             Population population = new Population();
             //KnowledgeStochasticRanking ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values());
             //DisjunctiveNormalForm dnf = new DisjunctiveNormalForm(constraints);
@@ -111,6 +115,10 @@ public class MOEARun {
             EpsilonBoxDominanceArchive archive = new EpsilonBoxDominanceArchive(epsilonDouble);
             ChainedComparator comp = new ChainedComparator(new ParetoObjectiveComparator());
             TournamentSelection selection = new TournamentSelection(2, comp);
+
+            // For AOS MOEA Run
+            boolean useStability = false;
+            boolean useFeasibility = false;
 
             switch(mode) {
                 case 1: // Conventional Epsilon MOEA Run
@@ -130,16 +138,37 @@ public class MOEARun {
                     properties.setBoolean("saveCredits", true);
                     properties.setBoolean("saveSelection", true);
 
-                    double onePointCrossoverProbability = 1.0;
-                    double twoPointCrossoverProbability = 0.8;
-                    double halfUniformCrossoverProbability = 0.75;
-                    double uniformCrossoverProbability = 0.6;
-                    ArrayList<Variation> operators = new ArrayList<>();
+                    // TESTING
+                    //double onePointCrossoverProbability = 1.0;
+                    //double twoPointCrossoverProbability = 0.8;
+                    //double halfUniformCrossoverProbability = 0.75;
+                    //double uniformCrossoverProbability = 0.6;
+                    //ArrayList<Variation> operators = new ArrayList<>();
                     //add domain-independent heuristics
+                    //operators.add(new CompoundVariation(new OnePointCrossover(onePointCrossoverProbability), new BitFlip(mutationProbability)));
+                    //operators.add(new CompoundVariation(new TwoPointCrossover(twoPointCrossoverProbability), new BitFlip(mutationProbability)));
+                    //operators.add(new CompoundVariation(new HUX(halfUniformCrossoverProbability), new BitFlip(mutationProbability)));
+                    //operators.add(new CompoundVariation(new UniformCrossover(uniformCrossoverProbability), new BitFlip(mutationProbability)));
+
+                    // IMPLEMENTATION WITH ACTUAL REPAIR OPERATORS
+                    double onePointCrossoverProbability = 1.0;
+                    double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
+                    ArrayList<Variation> operators = new ArrayList<>();
+                    Variation addTruss = new AddTruss(useFeasibility, engine, globalNodePositions);
+                    Variation removeIntersection = new RemoveIntersection(useStability, engine, globalNodePositions);
                     operators.add(new CompoundVariation(new OnePointCrossover(onePointCrossoverProbability), new BitFlip(mutationProbability)));
-                    operators.add(new CompoundVariation(new TwoPointCrossover(twoPointCrossoverProbability), new BitFlip(mutationProbability)));
-                    operators.add(new CompoundVariation(new HUX(halfUniformCrossoverProbability), new BitFlip(mutationProbability)));
-                    operators.add(new CompoundVariation(new UniformCrossover(uniformCrossoverProbability), new BitFlip(mutationProbability)));
+                    operators.add(addTruss);
+                    operators.add(removeIntersection);
+
+                    //HashMap<Variation, String> constraintOperatorMap = new HashMap<>();
+                    //constraintOperatorMap.put(addTruss, "stabilityViolationSum");
+                    //constraintOperatorMap.put(removeIntersectipn, "FeasibilityViolationSum");
+
+                    //HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
+
+                    //DisjunctiveNormalForm dnf = new DisjunctiveNormalForm(constraints);
+                    //EpsilonKnoweldgeConstraintComparator epskcc = new EpsilonKnoweldgeConstraintComparator(epsilonDouble, dnf)
+
                     properties.setDouble("pmin", 0.03);
                     //create operator selector
                     OperatorSelector operatorSelector = new AdaptivePursuit(operators, 0.8, 0.8, 0.03);

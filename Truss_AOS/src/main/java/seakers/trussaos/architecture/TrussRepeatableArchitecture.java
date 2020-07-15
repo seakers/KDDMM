@@ -1,6 +1,8 @@
 package seakers.trussaos.architecture;
 
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.Variable;
+import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.core.variable.EncodingUtils;
 
 /**
@@ -29,7 +31,6 @@ public class TrussRepeatableArchitecture extends Solution{
 
     public TrussRepeatableArchitecture(Solution solution) {
         super(solution);
-        // Solution sol = (TrussRepeatableArchitecture) solution;
 
         //// Extract the design as a boolean array
         boolean[] BooleanDesign = getBooleanDesignArray(solution);
@@ -125,5 +126,51 @@ public class TrussRepeatableArchitecture extends Solution{
         return NumberOfTrusses;
     }
 
+    public TrussRepeatableArchitecture getArchitectureFromConnectivityArray (int[][] connArray) {
+        boolean[] designFullBooleanArray = new boolean[FullConnectivityArray.length];
+        boolean contains = false;
+        int[] designFirstNodes = new int[connArray.length];
+        int[] designSecondNodes = new int[connArray.length];
+        for (int i = 0; i < connArray.length; i++) {
+            designFirstNodes[i] = connArray[i][0];
+            designSecondNodes[i] = connArray[i][1];
+        }
+        for (int i = 0; i < FullConnectivityArray.length; i++) {
+            int firstNode = FullConnectivityArray[i][0];
+            int secondNode = FullConnectivityArray[i][1];
+            for (int j = 0; j < connArray.length; j++) {
+                if (designFirstNodes[j] == firstNode) {
+                    if (designSecondNodes[j] == secondNode) {
+                        contains = true;
+                        break;
+                    }
+                }
+            }
+            designFullBooleanArray[i] = contains;
+            contains = false;
+        }
+        boolean[] designRepeatableBooleanArray = getRepeatableBooleanDesign(designFullBooleanArray);
+        Solution architecture = new Solution(32,2);
+        for (int i = 0; i < designRepeatableBooleanArray.length; i++) {
+            BinaryVariable var = new BinaryVariable(1);
+            EncodingUtils.setBoolean(var,designRepeatableBooleanArray[i]);
+            architecture.setVariable(i,var);
+        }
+        return new TrussRepeatableArchitecture(architecture);
+    }
+
+    private boolean[] getRepeatableBooleanDesign (boolean[] completeBooleanDesign) {
+        return new boolean[]{completeBooleanDesign[0], completeBooleanDesign[1], completeBooleanDesign[2],
+                                   completeBooleanDesign[3], completeBooleanDesign[4], completeBooleanDesign[5],
+                                   completeBooleanDesign[6], completeBooleanDesign[7], completeBooleanDesign[8],
+                                   completeBooleanDesign[9], completeBooleanDesign[10], completeBooleanDesign[11],
+                                   completeBooleanDesign[12], completeBooleanDesign[13], completeBooleanDesign[14],
+                                   completeBooleanDesign[15], completeBooleanDesign[16], completeBooleanDesign[18],
+                                   completeBooleanDesign[19], completeBooleanDesign[20], completeBooleanDesign[21],
+                                   completeBooleanDesign[22], completeBooleanDesign[23], completeBooleanDesign[24],
+                                   completeBooleanDesign[25], completeBooleanDesign[26], completeBooleanDesign[27],
+                                   completeBooleanDesign[28], completeBooleanDesign[29], completeBooleanDesign[30],
+                                   completeBooleanDesign[31], completeBooleanDesign[34]};
+    }
 
 }

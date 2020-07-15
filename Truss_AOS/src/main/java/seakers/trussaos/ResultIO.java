@@ -18,6 +18,7 @@ import org.moeaframework.core.PopulationIO;
 import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
 import com.mathworks.engine.*;
+import seakers.aos.history.CreditHistory;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 
 public class ResultIO implements Serializable {
@@ -217,4 +218,11 @@ public class ResultIO implements Serializable {
         }
         return designString.toString();
     }
+
+    //public void saveCreditHistoryCsv(CreditHistory creditHistory, String filename) throws IOException {
+        //System.out.println("Saving credit history to csv file");
+        //File csvFile = new File(filename);
+        //FileWriter csvWrite = new FileWriter(csvFile);
+
+    //}
 }
