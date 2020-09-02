@@ -1,4 +1,4 @@
-function [] = plot_pareto_seak_postproc(f_vals, NC, CA_all, design_array, feas_array, stab_array, n_objs)
+function [] = plot_pareto_seak_postproc(f_vals, NC, CA_all, design_array, feas_array, stab_array, plot_case, n_objs)
 % This function uses paretofront.m, paretofront.c and paretofront.mexw64 to 
 % determine the designs in the pareto front and plots them. (add figure
 % statement in main script)
@@ -15,9 +15,15 @@ if (n_objs == 2)
     % minimized while objective 2 is to be maximized  
 
     plot(f_pareto_true(:,1),f_pareto_true(:,2),'*','ButtonDownFcn',{@plot_pareto_callback,NC,CA_all,design_array,feas_array,stab_array,f_vals})
-    xlabel('$\left|\frac{C_{22}}{C_{11}} - c_{target}\right|$','Interpreter','latex','FontSize',15,'FontWeight','bold')
-    ylabel('$\frac{C_{22}}{v_f}$','Interpreter','latex','FontSize',15,'FontWeight','bold')
-    title('Pareto Front')
+    switch plot_case
+        case 'true_objectives'
+            xlabel('$\left|\frac{C_{22}}{C_{11}} - c_{target}\right|$','Interpreter','latex','FontSize',15,'FontWeight','bold')
+            ylabel('$\frac{C_{22}}{v_f}$','Interpreter','latex','FontSize',15,'FontWeight','bold')
+        case 'pen_objectives'
+            xlabel('$\frac{\left|\frac{C_{22}}{C_{11}} - c_{target}\right|}{15} - k_{pen}\frac{log(g_{feas}) + log(g_{stab})}{2}$','Interpreter','latex','FontSize',12,'FontWeight','bold')
+            ylabel('$\frac{\frac{C_{22}}{v_f}}{8500} + k_{pen}\frac{log(g_{feas}) + log(g_{stab})}{2}$','Interpreter','latex','FontSize',12,'FontWeight','bold')
+    end
+    %title('Pareto Front')
 
 elseif (n_objs == 3)
     %%% For 3 objectives

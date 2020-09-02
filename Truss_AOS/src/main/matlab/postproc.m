@@ -32,38 +32,38 @@ if epsilon_moea
 else 
     switch feas_and_stab
         case 0
-            fileloc = 'AOS MOEA Runs\\';
+            fileloc = 'AOS MOEA Runs\\Feas and Stab False\\';
             if fibre_stiffness
-                filename = 'Fibre Stiffness code run results\\Feas and Stab False\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
-                credit_filename = 'Fibre Stiffness code run results\\Feas and Stab False\\constraint_adaptive0.credit';
-                quality_filename = 'Fibre Stiffness code run results\\Feas and Stab False\\constraint_adaptive0.qual';
+                filename = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
+                credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
+                quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
             else
-                filename = 'Truss code run results\\Feas and Stab False\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
-                credit_filename = 'Truss code run results\\Feas and Stab False\\constraint_adaptive0.credit';
-                quality_filename = 'Truss code run results\\Feas and Stab False\\constraint_adaptive0.qual';
+                filename = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
+                credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
+                quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
             end
         case 1
-            fileloc = 'AOS MOEA Runs\\';
+            fileloc = 'AOS MOEA Runs\\Feas True\\';
             if fibre_stiffness
-                filename = 'Fibre Stiffness code run results\\Feas True\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
-                credit_filename = 'Fibre Stiffness code run results\\Feas True\\constraint_adaptive0.credit';
-                quality_filename = 'Fibre Stiffness code run results\\Feas True\\constraint_adaptive0.qual';
+                filename = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
+                credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
+                quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
                 
             else
-                filename = 'Truss code run results\\Feas True\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
-                credit_filename = 'Truss code run results\\Feas True\\constraint_adaptive0.credit';
-                quality_filename = 'Truss code run results\\Feas True\\constraint_adaptive0.qual';
+                filename = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
+                credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
+                quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
             end
         case 2
-            fileloc = 'AOS MOEA Runs\\';
+            fileloc = 'AOS MOEA Runs\\Feas and Stab True\\';
             if fibre_stiffness
-                filename = 'Fibre Stiffness code run results\\Feas and Stab True\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
-                credit_filename = 'Fibre Stiffness code run results\\Feas and Stab True\\constraint_adaptive0.credit';
-                quality_filename = 'Fibre Stiffness code run results\\Feas and Stab True\\constraint_adaptive0.qual';
+                filename = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
+                credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
+                quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
             else
-                filename = 'Truss code run results\\Feas and Stab True\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
-                credit_filename = 'Truss code run results\\Feas and Stab True\\constraint_adaptive0.credit';
-                quality_filename = 'Truss code run results\\Feas and Stab True\\constraint_adaptive0.qual';
+                filename = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
+                credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
+                quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
             end
     end
 end
@@ -95,7 +95,7 @@ stab_scores = csv_data{:,4};
 f_true = zeros(pop_size, 2);
 pen_fac = 1;
 if fibre_stiffness
-    pen_fac = 1;
+    pen_fac = 1.5;
 end
 for i = 1:pop_size
     penalty = (log10(abs(feas_scores(i))) + log10(abs(stab_scores(i))))/2;
@@ -110,15 +110,30 @@ A = pi*(r^2); % Cross-sectional area of truss member
 NC = sel.*[0,0;0,0.5;0,1;0.5,0;0.5,0.5;0.5,1;1,0;1,0.5;1,1]; 
 CA_all = [1,2; 1,3; 1,4; 1,5; 1,6; 1,7; 1,8; 1,9; 2,3; 2,4; 2,5; 2,6; 2,7; 2,8; 2,9; 3,4; 3,5; 3,6; 3,7; 3,8; 3,9; 4,5; 4,6; 4,7; 4,8; 4,9; 5,6; 5,7; 5,8; 5,9; 6,7; 6,8; 6,9; 7,8; 7,9; 8,9];
 c_ratio = 1;
+sidenum = 3;
 
-%% Plot Pareto Front with callback function
-fully_feas = feas_scores == 1;
-f_true_feas = f_true(fully_feas ~= 0,:);
-design_feas = designs_array(fully_feas ~= 0);
-feas_scores_feas = feas_scores(fully_feas ~= 0);
-stab_scores_feas = stab_scores(fully_feas ~= 0);
+%% Plot pareto front using penalized objectives with callback function
+plot_case = 'pen_objectives';
 figure
-plot_pareto_seak_postproc(f_true_feas,NC,CA_all,design_feas,feas_scores_feas,stab_scores_feas,2);
+plot_pareto_seak_postproc(f_penalized,NC,CA_all,designs_array,feas_scores,stab_scores,plot_case,2);
+
+%% Plot Pareto Front using true objectives with callback function
+% isolate only fully feasible designs
+%fully_feas = feas_scores == 1;
+%f_true_feas = f_true(fully_feas ~= 0,:);
+%design_feas = designs_array(fully_feas ~= 0);
+%feas_scores_feas = feas_scores(fully_feas ~= 0);
+%stab_scores_feas = stab_scores(fully_feas ~= 0);
+
+% use all designs 
+f_true_feas = f_true;
+design_feas = designs_array;
+feas_scores_feas = feas_scores;
+stab_scores_feas = stab_scores;
+plot_case = 'true_objectives';
+
+figure
+plot_pareto_seak_postproc(f_true_feas,NC,CA_all,design_feas,feas_scores_feas,stab_scores_feas,plot_case,2);
 
 %% Compare evaluations of fibre stiffness results with truss code
 if fibre_stiffness

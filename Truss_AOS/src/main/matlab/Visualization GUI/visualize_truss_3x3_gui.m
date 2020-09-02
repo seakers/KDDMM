@@ -1,13 +1,16 @@
-function [] = visualize_truss_3x3(NC,CA)
+function [] = visualize_truss_3x3_gui(NC,CA,axes_handle)
 % This function provides a graphic visualization of the 3x3 truss 
 % represented by CA
-figure
+
+axes(axes_handle)
+
 % Plot node positions
 labels = {'1','2','3','4','5','6','7','8','9'};
+
 for i = 1:size(NC,1)
-    plot(NC(i,1),NC(i,2),'*r')
+    plot(NC(i,1),NC(i,2),'*r');
     hold on
-    text(NC(i,1),NC(i,2),labels{i},'VerticalAlignment','bottom','HorizontalAlignment','right','FontSize',15)
+    text(NC(i,1),NC(i,2),labels{i},'VerticalAlignment','bottom','HorizontalAlignment','right')
     hold on
 end
 % Plot truss elements one-by-one
@@ -20,11 +23,13 @@ for i = 1:size(CA,1)
     % Plotting line between the two end points
     %x_val = linspace(x1,x2);
     %y_val = linspace(y1,y2);
-    plot([x1,x2],[y1,y2],'-b','LineWidth',2)
+    plot([x1,x2],[y1,y2],'-b','LineWidth',2);
     hold on
 end
 hold off
-xlabel('X-position')
-ylabel('Y-position')
+%set(axes_handle,'CurrentAxes',gca);
+set(get(axes_handle, 'xlabel'), 'string', 'X-position')
+set(get(axes_handle, 'ylabel'), 'string', 'Y-position')
+
 end
 

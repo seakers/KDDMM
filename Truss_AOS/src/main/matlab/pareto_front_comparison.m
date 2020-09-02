@@ -22,11 +22,13 @@ epsilon_moea2 = false;
 %       2 - both feasibility and stability are used in both operators
 feas_and_stab = 0;
 
+run_number = 0; % run number from 0 to 29
+
 %%%% read appropriate files 
-full_filepath_eps = extract_filename(fibre_stiffness2, epsilon_moea1, feas_and_stab);
+full_filepath_eps = extract_filename(fibre_stiffness1, epsilon_moea1, feas_and_stab, run_number);
 data_table_eps = readtable(full_filepath_eps,'Format','%s%f%f%f%f','HeaderLines',1);
 
-full_filepath_aos = extract_filename(fibre_stiffness2, epsilon_moea2, feas_and_stab);
+full_filepath_aos = extract_filename(fibre_stiffness1, epsilon_moea2, feas_and_stab, run_number);
 data_table_aos = readtable(full_filepath_aos,'Format','%s%f%f%f%f','HeaderLines',1);
 
 %%%% store retrieved data into different variables
@@ -49,4 +51,4 @@ f_true_eps = compute_true_objectives(csv_data_eps, pop_size_eps, fibre_stiffness
 f_true_aos = compute_true_objectives(csv_data_aos, pop_size_aos, fibre_stiffness2);
 
 %% Plotting
-plot_pareto_seak_compare(f_true_eps,f_true_aos);
+[par_bool_eps, par_bool_aos] = plot_pareto_seak_compare(f_true_eps,f_true_aos);

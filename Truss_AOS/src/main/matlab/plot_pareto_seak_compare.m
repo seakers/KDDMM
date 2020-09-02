@@ -1,4 +1,4 @@
-function [] = plot_pareto_seak_compare(f_vals_eps,f_vals_aos)
+function [pareto_bool_eps,pareto_bool_aos] = plot_pareto_seak_compare(f_vals_eps,f_vals_aos)
 % This function plots the pareto fronts using epsilon MOEA and  AOS in the
 % same plot for comparison 
 
@@ -15,12 +15,15 @@ f_pareto_true_aos = [f_pareto_aos(:,1), -f_pareto_aos(:,2)]; % objective 1 is to
 figure
 plot(f_pareto_true_eps(:,1),f_pareto_true_eps(:,2),'*b')
 hold on
-plot(f_pareto_true_aos(:,1),f_pareto_true_aos(:,2),'*r')
+plot(f_pareto_true_aos(:,1),f_pareto_true_aos(:,2),'ro')
 hold off
 xlabel('$\left|\frac{C_{22}}{C_{11}} - c_{target}\right|$','Interpreter','latex','FontSize',15,'FontWeight','bold')
 ylabel('$\frac{C_{22}}{v_f}$','Interpreter','latex','FontSize',15,'FontWeight','bold')
 legend('e-MOEA','AOS','Location','Best')
 title('Pareto Front Comparison b/w e-MOEA and AOS')
+
+disp(f_pareto_true_eps)
+disp(f_pareto_true_aos)
 
 end
 
