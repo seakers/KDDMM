@@ -1,5 +1,10 @@
 seakers\trussaos\architecture\TrussRepeatableArchitecture.class
-seakers\trussaos\EvolutionarySearch.class
+seakers\trussaos\initialization\BiasedInitialization.class
+seakers\trussaos\operators\AddMember.class
 seakers\trussaos\ResultIO.class
 seakers\trussaos\MOEARun.class
+seakers\trussaos\operators\RemoveIntersection.class
 seakers\trussaos\TrussAOSProblem.class
+seakers\trussaos\EvolutionarySearch.class
+seakers\trussaos\constraints\DisjunctiveNormalForm.class
+seakers\trussaos\constraints\KnowledgeStochasticRanking.class
