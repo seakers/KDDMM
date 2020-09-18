@@ -6,38 +6,32 @@ import org.moeaframework.core.comparator.ParetoObjectiveComparator;
 import org.moeaframework.core.operator.CompoundVariation;
 import org.moeaframework.core.operator.OnePointCrossover;
 import org.moeaframework.core.operator.binary.BitFlip;
-import org.moeaframework.core.operator.TwoPointCrossover;
-import org.moeaframework.core.operator.binary.HUX;
-import org.moeaframework.core.operator.UniformCrossover;
 import org.moeaframework.util.TypedProperties;
-import seakers.aos.creditassignment.setimprovement.SetImprovementDominance;
-import seakers.aos.history.AOSHistoryIO;
 import seakers.aos.aos.AOSMOEA;
 import seakers.aos.creditassignment.offspringparent.OffspringParentDomination;
 import seakers.aos.operator.AOSVariation;
 import seakers.aos.operator.AOSVariationOP;
-import seakers.aos.operator.AOSVariationSI;
-import seakers.aos.operatorselectors.AdaptivePursuit;
-import seakers.aos.operatorselectors.ProbabilityMatching;
 import com.mathworks.engine.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.moeaframework.Instrumenter;
+
 import org.moeaframework.algorithm.EpsilonMOEA;
-import org.moeaframework.analysis.collector.InstrumentedAlgorithm;
 import org.moeaframework.core.operator.RandomInitialization;
 import org.moeaframework.core.operator.TournamentSelection;
 //import org.moeaframework.core.operator.real.PM;
 //import org.moeaframework.core.operator.real.SBX;
 import seakers.aos.operatorselectors.OperatorSelector;
-import seakers.trussaos.operators.AddTruss;
+import seakers.aos.operatorselectors.ProbabilityMatching;
+import seakers.trussaos.initialization.BiasedInitialization;
+import seakers.trussaos.operators.AddMember;
 import seakers.trussaos.operators.RemoveIntersection;
+import seakers.trussaos.constraints.DisjunctiveNormalForm;
+import seakers.trussaos.constraints.KnowledgeStochasticRanking;
 
 /**
  * Executable class for the eMOEA run with/without AOS for the Truss Optimization problem.
@@ -68,13 +62,22 @@ public class MOEARun {
         //String csvPath = "C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\src\\main\\java\\seakers\\trussaos";
         String csvPath = System.getProperty("user.dir");
         double targetStiffnessRatio = 1;
-        boolean useFibreStiffness = true;
+        boolean useFibreStiffness = false;
+
+        boolean biasedInitialization = true;
 
         /**
          * Mode = 1 for conventional e-MOEA run
          *      = 2 for AOS MOEA run
+         *      = 3 for soft constraints
          */
-        int mode = 2;
+        int mode = 1;
+
+        /**
+         * soft_con = 1 for DNF
+         *          = 2 for ACH
+         */
+        int soft_con = 2;
 
         int numCPU = 1;
         int numRuns = 1;
@@ -100,39 +103,44 @@ public class MOEARun {
         Variation bitFlip;
         Initialization initialization;
 
+        double crossoverProbability = 1.0;
+
+        // For AOS MOEA Run
+        boolean useStability = false;
+        boolean useFeasibility = false;
+
         for (int i = 0; i < numRuns; i++) {
 
             // Create a new problem class
             TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath,useFibreStiffness,targetStiffnessRatio,engine);
 
-            initialization = new RandomInitialization(trussProblem, popSize);
+            if (biasedInitialization){
+                initialization = new BiasedInitialization(trussProblem, popSize);
+            }
+            else {
+                initialization = new RandomInitialization(trussProblem, popSize);
+            }
 
             // Initialize population structure for algorithm
             Population population = new Population();
-            //KnowledgeStochasticRanking ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values());
-            //DisjunctiveNormalForm dnf = new DisjunctiveNormalForm(constraints);
-            //EpsilonKnoweldgeConstraintComparator epskcc = new EpsilonKnoweldgeConstraintComparator(epsilonDouble, dnf);
+
             EpsilonBoxDominanceArchive archive = new EpsilonBoxDominanceArchive(epsilonDouble);
             ChainedComparator comp = new ChainedComparator(new ParetoObjectiveComparator());
             TournamentSelection selection = new TournamentSelection(2, comp);
 
-            // For AOS MOEA Run
-            boolean useStability = false;
-            boolean useFeasibility = false;
-
             switch(mode) {
                 case 1: // Conventional Epsilon MOEA Run
-                    double crossoverProbability = 1.0;
                     properties.setDouble("crossoverProbability", crossoverProbability);
                     singlecross = new OnePointCrossover(crossoverProbability);
                     bitFlip = new BitFlip(mutationProbability);
                     CompoundVariation var = new CompoundVariation(singlecross, bitFlip);
 
                     Algorithm eMOEA = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization);
-                    ecs.submit(new EvolutionarySearch(eMOEA, properties, csvPath + File.separator + "result", "emoea" + String.valueOf(i), engine, useFibreStiffness, targetStiffnessRatio));
+                    ecs.submit(new EvolutionarySearch(eMOEA, properties, csvPath + File.separator + "result", "emoea" + String.valueOf(i) + "_biasedinit", engine, useFibreStiffness, targetStiffnessRatio));
                     break;
 
                 case 2: // AOS MOEA Run
+
                     //setup for saving results
                     properties.setBoolean("saveQuality", true);
                     properties.setBoolean("saveCredits", true);
@@ -151,31 +159,31 @@ public class MOEARun {
                     //operators.add(new CompoundVariation(new UniformCrossover(uniformCrossoverProbability), new BitFlip(mutationProbability)));
 
                     // IMPLEMENTATION WITH ACTUAL REPAIR OPERATORS
-                    double onePointCrossoverProbability = 1.0;
                     double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
                     ArrayList<Variation> operators = new ArrayList<>();
-                    Variation addTruss = new AddTruss(useFeasibility, engine, globalNodePositions);
+                    Variation addMember = new AddMember(useFeasibility, engine, globalNodePositions);
                     Variation removeIntersection = new RemoveIntersection(useStability, engine, globalNodePositions);
-                    operators.add(new CompoundVariation(new OnePointCrossover(onePointCrossoverProbability), new BitFlip(mutationProbability)));
-                    operators.add(addTruss);
+                    operators.add(new CompoundVariation(new OnePointCrossover(crossoverProbability), new BitFlip(mutationProbability)));
+                    operators.add(addMember);
                     operators.add(removeIntersection);
 
-                    //HashMap<Variation, String> constraintOperatorMap = new HashMap<>();
-                    //constraintOperatorMap.put(addTruss, "stabilityViolationSum");
-                    //constraintOperatorMap.put(removeIntersectipn, "FeasibilityViolationSum");
+                    // DisjunctiveNormalForm dnf = new DisjunctiveNormalForm(constraints);
+                    // EpsilonKnoweldgeConstraintComparator epskcc = new EpsilonKnoweldgeConstraintComparator(epsilonDouble, dnf)
 
-                    //HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
+                    properties.setDouble("pmin", 0.1);
 
-                    //DisjunctiveNormalForm dnf = new DisjunctiveNormalForm(constraints);
-                    //EpsilonKnoweldgeConstraintComparator epskcc = new EpsilonKnoweldgeConstraintComparator(epsilonDouble, dnf)
-
-                    properties.setDouble("pmin", 0.03);
                     //create operator selector
-                    OperatorSelector operatorSelector = new AdaptivePursuit(operators, 0.8, 0.8, 0.03);
+                    //OperatorSelector operatorSelector = new AdaptivePursuit(operators, 0.8, 0.8, 0.1);
+                    OperatorSelector operatorSelector = new ProbabilityMatching(operators, 0.6, 0.1);
+
                     //create credit assignment
-                    SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
+                    //SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
+                    OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0,0.5,0.0);
+
                     //create AOS
-                    AOSVariation aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
+                    //AOSVariation aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
+                    AOSVariation aosStrategy = new AOSVariationOP(operatorSelector,creditAssignment,popSize);
+
                     EpsilonMOEA emoea = new EpsilonMOEA(trussProblem, population, archive,
                             selection, aosStrategy, initialization, comp);
                     AOSMOEA aos = new AOSMOEA(emoea, aosStrategy, true);
@@ -183,6 +191,62 @@ public class MOEARun {
                     aos.setName("constraint_adaptive");
                     ecs.submit(new EvolutionarySearch(aos, properties, csvPath + File.separator + "result", aos.getName() + String.valueOf(i), engine, useFibreStiffness, targetStiffnessRatio));
                     break;
+
+                case 3: // Soft Constraints
+                    if (soft_con == 1){
+                        globalNodePositions = trussProblem.getNodalConnectivityArray();
+                        //operators = new ArrayList<>();
+                        addMember = new AddMember(useFeasibility, engine, globalNodePositions);
+                        removeIntersection = new RemoveIntersection(useStability, engine, globalNodePositions);
+                        //operators.add(new CompoundVariation(new OnePointCrossover(crossoverProbability), new BitFlip(mutationProbability)));
+                        //operators.add(addMember);
+                        //operators.add(removeIntersection);
+
+                        properties.setDouble("crossoverProbability", crossoverProbability);
+                        singlecross = new OnePointCrossover(crossoverProbability);
+                        bitFlip = new BitFlip(mutationProbability);
+                        var = new CompoundVariation(singlecross, bitFlip);
+
+                        HashMap<Variation, String> constraintOperatorMap = new HashMap<>();
+                        constraintOperatorMap.put(addMember, "StabilityViolation");
+                        constraintOperatorMap.put(removeIntersection, "FeasibilityViolation");
+
+                        HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
+
+                        DisjunctiveNormalForm dnf = new DisjunctiveNormalForm(constraints);
+                        // EpsilonKnoweldgeConstraintComparator epskcc = new EpsilonKnoweldgeConstraintComparator(epsilonDouble, dnf);
+
+                        selection = new TournamentSelection(2, dnf);
+
+                        emoea = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, dnf);
+                        ecs.submit(new EvolutionarySearch(emoea, properties, csvPath + File.separator + "result", "emoea_dnf" + String.valueOf(i), engine, useFibreStiffness, targetStiffnessRatio));
+                        break;
+                    }
+                    else if (soft_con == 2) {
+                        properties.setDouble("crossoverProbability", crossoverProbability);
+                        singlecross = new OnePointCrossover(crossoverProbability);
+                        bitFlip = new BitFlip(mutationProbability);
+                        var = new CompoundVariation(singlecross, bitFlip);
+
+                        globalNodePositions = trussProblem.getNodalConnectivityArray();
+                        addMember = new AddMember(useFeasibility, engine, globalNodePositions);
+                        removeIntersection = new RemoveIntersection(useStability, engine, globalNodePositions);
+
+                        HashMap<Variation, String> constraintOperatorMap = new HashMap<>();
+                        constraintOperatorMap.put(addMember, "StabilityViolation");
+                        constraintOperatorMap.put(removeIntersection, "FeasibilityViolation");
+
+                        HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
+
+                        KnowledgeStochasticRanking ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+
+                        selection = new TournamentSelection(2, ksr);
+
+                        emoea = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, ksr);
+
+                        ecs.submit(new EvolutionarySearch(emoea, properties, csvPath + File.separator + "result", "emoea_ach" + String.valueOf(i), engine, useFibreStiffness, targetStiffnessRatio));
+                        break;
+                    }
 
                 default:
                     throw new IllegalArgumentException(String.format("%d is an invalid option", mode));

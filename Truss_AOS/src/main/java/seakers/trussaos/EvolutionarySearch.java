@@ -103,13 +103,13 @@ public class EvolutionarySearch implements Callable<Algorithm> {
         if (alg instanceof AOS) {
             AOS algAOS = (AOS) alg;
             if (properties.getBoolean("saveQuality", false)) {
-                AOSHistoryIO.saveQualityHistory(algAOS.getQualityHistory(), new File(savePath + File.separator + name + "qual" + ".csv"), ",");
+                AOSHistoryIO.saveQualityHistory(algAOS.getQualityHistory(), new File(savePath + File.separator + name + "_qual" + ".csv"), ",");
             }
             if (properties.getBoolean("saveCredits", false)) {
-                AOSHistoryIO.saveCreditHistory(algAOS.getCreditHistory(), new File(savePath + File.separator + name + "credit" + ".csv"), ",");
+                AOSHistoryIO.saveCreditHistory(algAOS.getCreditHistory(), new File(savePath + File.separator + name + "_credit" + ".csv"), ",");
             }
             if (properties.getBoolean("saveSelection", false)) {
-                AOSHistoryIO.saveSelectionHistory(algAOS.getSelectionHistory(), new File(savePath + File.separator + name + "hist" + ".csv"), ",");
+                AOSHistoryIO.saveSelectionHistory(algAOS.getSelectionHistory(), new File(savePath + File.separator + name + "_hist" + ".csv"), ",");
             }
         }
         return alg;

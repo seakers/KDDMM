@@ -144,8 +144,8 @@ public class ResultIO implements Serializable {
             double[] currentObjectives = currentSltn.getObjectives();
             //System.arraycopy(currentObjectives, 0, objectives[i], 0, 2);
             int[][] currentConnectivityArray = currentArch.getConnectivityArrayFromSolution(currentSltn);
-            double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray,engine);
-            double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray,engine);
+            double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray);
+            double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
             csvWrite.append(convertBooleanArrayToBitstring(currentBooleanDesign));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[0]));
@@ -192,8 +192,8 @@ public class ResultIO implements Serializable {
             double[] currentObjectives = currentSolution.getObjectives();
             //System.arraycopy(currentObjectives, 0, objectives[i], 0, 2);
             int[][] currentConnectivityArray = currentArch.getConnectivityArrayFromSolution(currentSolution);
-            double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray,engine);
-            double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray,engine);
+            double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray);
+            double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
             csvWrite.append(Double.toString(currentObjectives[0]));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[1]));

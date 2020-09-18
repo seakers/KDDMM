@@ -64,7 +64,7 @@ public class RemoveIntersection implements Variation {
             int[] oldNumberOfConnections = getNumberOfConnections(connectivityArray);
             boolean stabilitySameOrBetter = false;
             int numberOfAttempts = 0;
-            while (!stabilitySameOrBetter || numberOfAttempts < 5) {
+            while (!stabilitySameOrBetter && numberOfAttempts < 5) {
                 try {
                     newConnectivityArray = removeIntersection(connectivityArray);
                 } catch (ExecutionException | InterruptedException e) {

@@ -7,6 +7,7 @@ import com.mathworks.engine.*;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.lang.Math.*;
@@ -27,9 +28,9 @@ public class TrussAOSProblem extends AbstractProblem {
 
     private final double sel;
 
-    private final int sidenum;
+    private final double sidenum;
 
-    private final int nucFac;
+    private final double nucFac;
 
     private final double radius;
 
@@ -45,11 +46,11 @@ public class TrussAOSProblem extends AbstractProblem {
 
         this.UseFibreStiffnessModel = FibreStiffness;
 
-        this.radius = 5e-5;
-        this.YoungsModulus = 1e5;
+        this.radius = 0.00005;
+        this.YoungsModulus = 10000.0;
         this.sel = 0.05;
-        this.sidenum = 3;
-        this.nucFac = 1;
+        this.sidenum = 3.0;
+        this.nucFac = 1.0;
         this.targetStiffnessRatio = targetCRatio;
         this.csvSavePath = savePath;
         this.engine = eng;
@@ -71,8 +72,8 @@ public class TrussAOSProblem extends AbstractProblem {
         this.radius = rad;
         this.sel = sideLength;
         this.YoungsModulus = E;
-        this.sidenum = 3;
-        this.nucFac = 1;
+        this.sidenum = 3.0;
+        this.nucFac = 1.0;
         this.targetStiffnessRatio = targetCRatio;
         this.csvSavePath = savePath;
         this.engine = eng;
@@ -96,6 +97,8 @@ public class TrussAOSProblem extends AbstractProblem {
         //MatlabEngine eng = null;
         double C11;
         double C22;
+        // int C11Integer;
+        // int C22Integer;
         double penaltyFactor = 1;
         //try {
             //engine.startMatlab();
@@ -111,8 +114,12 @@ public class TrussAOSProblem extends AbstractProblem {
             } catch (InterruptedException | ExecutionException | NullPointerException e) {
                 e.printStackTrace();
             }
-            C11 = (int)outputs[0];
-            C22 = (int)outputs[1];
+            // C11Integer = (int)outputs[0];
+            // C22Integer = (int)outputs[1];
+            // C11 = (double)C11Integer;
+            // C22 = (double)C22Integer;
+            C11 = (double)outputs[0];
+            C22 = (double)outputs[1];
             penaltyFactor = 1.5;
         }
         else {
@@ -132,16 +139,16 @@ public class TrussAOSProblem extends AbstractProblem {
                 C22 = 1e-3;
             }
         }
-        double designFeasibilityScore = 0;
-        double designStabilityScore = 0;
-        double volFrac = 0;
+        double designFeasibilityScore = 0.0;
+        double designStabilityScore = 0.0;
+        double volFrac = 0.0;
         try {
-            designFeasibilityScore = getFeasibilityScore(designConnArray, engine);
+            designFeasibilityScore = getFeasibilityScore(designConnArray);
         } catch (ExecutionException | InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
         try {
-            designStabilityScore = getStabilityScore(designConnArray, engine);
+            designStabilityScore = getStabilityScore(designConnArray);
         } catch (ExecutionException | InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
@@ -151,26 +158,32 @@ public class TrussAOSProblem extends AbstractProblem {
             e.printStackTrace();
         }
 
-        //try {
-            //eng.close();
-        //} catch (EngineException e) {
-            //e.printStackTrace();
-        //}
-
         double[] objectives = new double[2];
         double penalty = (Math.log10(Math.abs(designFeasibilityScore)) + Math.log10(Math.abs(designStabilityScore)))/2;
         objectives[0] = Math.abs((C11/C22) - targetStiffnessRatio)/15 - penaltyFactor*penalty;
-        objectives[1] = -(C22/volFrac)/85000 - penaltyFactor*penalty;
+        objectives[1] = -(C22/volFrac)/8500 - penaltyFactor*penalty;
 
         sltn.setObjectives(objectives);
+
+        //HashMap<String, Object> constraints = new HashMap<String, Object>();
+        //constraints.put("FeasibilityViolation", 1 - designFeasibilityScore);
+        //constraints.put("StabilityViolation", 1 - designStabilityScore);
+        //sltn.addAttributes(constraints);
+
+        sltn.setAttribute("FeasibilityViolation", 1 - designFeasibilityScore);
+        sltn.setAttribute("StabilityViolation", 1 - designStabilityScore);
     }
 
-    public double getFeasibilityScore (int[][] designConnectivityArray, MatlabEngine eng) throws ExecutionException, InterruptedException, NullPointerException {
-        return (double)eng.feval("feasibility_checker_nonbinary_V2",NodalPositionArray,designConnectivityArray);
+    public double getFeasibilityScore (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
+        return (double)engine.feval("feasibility_checker_nonbinary_V2",NodalPositionArray,designConnectivityArray);
     }
 
-    public double getStabilityScore (int[][] designConnectivityArray, MatlabEngine eng) throws ExecutionException, InterruptedException, NullPointerException {
-        return (double)eng.feval("stabilityTester_2D_updated",sidenum,designConnectivityArray,NodalPositionArray);
+    public double getStabilityScore (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
+        // Object stabilityOutput;
+        // stabilityOutput = eng.feval("stabilityTester_2D_V6_1",sidenum,designConnectivityArray,NodalPositionArray,sel);
+        // return (double)stabilityOutput;
+        return (double)engine.feval("stabilityTester_2D_V7",sidenum,designConnectivityArray,NodalPositionArray,sel);
+        // return (double)eng.feval("stabilityTester_2D_updated",sidenum,designConnectivityArray,NodalPositionArray);
     }
 
     private double getVolumeFraction (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
