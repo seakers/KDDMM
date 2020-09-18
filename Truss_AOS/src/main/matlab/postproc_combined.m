@@ -7,12 +7,14 @@ clc
 %%%% set to: 
 %       true - to read fibre stiffness evaluation run results
 %       false - to read truss stiffness evaluation run results
-fibre_stiffness = false;  
+fibre_stiffness = true;  
 
-%%%% set to: 
-%       true - to read Epsilon MOEA run results
-%       false - to read AOS MOEA run results
-epsilon_moea = false;
+%%%% set algo_choice to: 
+%       eps_moea - to read Epsilon MOEA run results
+%       aos - to read AOS MOEA run results
+%       sc_dnf - to read DNF run results
+%       sc_ach - to read ACH run results
+algo_choice = 'sc_ach';
 
 %%%% set to: 
 %       0 - both feasibility and stability is not used in both operators
@@ -20,13 +22,18 @@ epsilon_moea = false;
 %       2 - both feasibility and stability are used in both operators
 feas_and_stab = 0;
 
+%%%% set to:
+%       true - to read biased initialization results
+%       false - to read random initialization results
+biased_init = true;
+
 num_runs = 30; % change based on run 
 pop_size = 100; % change based on run
 data_array = zeros(pop_size,4,num_runs);
 designs_array = strings(pop_size,num_runs);
 
 for i = 1:num_runs
-    [data_array(:,:,i), designs_array(:,i)] = read_csv_file(fibre_stiffness, epsilon_moea, feas_and_stab, i-1);
+    [data_array(:,:,i), designs_array(:,i)] = read_csv_file(fibre_stiffness, algo_choice, feas_and_stab, biased_init, i-1);
 end
 
 %% Form combined objectives and scores vectors
@@ -87,63 +94,71 @@ for i = 1:num_runs
 end
 
 %% Functions
-function [csv_data_array, designs_array] = read_csv_file(fib_stiff, eps_moea, feas_stab, run_num) 
+function [csv_data_array, designs_array] = read_csv_file(fib_stiff, algo, feas_stab, bias_init, run_num) 
     %%%% read appropriate files 
     filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\';
-    if eps_moea
+    if strcmp(algo,'eps_moea')
         fileloc = 'Epsilon MOEA Runs\\';
         if fib_stiff
-            filename = strcat('Fibre Stiffness code run results\\EpsilonMOEA_emoea',num2str(run_num),'_fibrestiffness.csv');
+            filename_model = 'Fibre Stiffness code run results\\';
+            if bias_init
+                filename = strcat('Biased initialization\\EpsilonMOEA_emoea',num2str(run_num),'_biasedinit_fibrestiffness.csv');
+            else
+                filename = strcat('Random initialization\\EpsilonMOEA_emoea',num2str(run_num),'_fibrestiffness.csv');
+            end
         else
-            filename = strcat('Truss code run results\\EpsilonMOEA_emoea',num2str(run_num),'_trussstiffness.csv');
+            filename_model = 'Truss code run results\\';
+            if bias_init
+                filename = strcat('Biased initialization\\EpsilonMOEA_emoea',num2str(run_num),'_biasedinit_trussstiffness.csv');
+            else
+                filename = strcat('Random initialization\\EpsilonMOEA_emoea',num2str(run_num),'_trussstiffness.csv');
+            end
         end
-    else 
+    elseif strcmp(algo,'aos') 
         switch feas_stab
             case 0
                 fileloc = 'AOS MOEA Runs\\Feas and Stab False\\';
                 if fib_stiff
-                    filename = strcat('Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_fibrestiffness.csv');
-                    %credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
-                    %quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
+                    filename_model = strcat('Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_fibrestiffness.csv');
                 else
-                    filename = strcat('Truss code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_trussstiffness.csv');
-                    %credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
-                    %quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
+                    filename_model = strcat('Truss code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_trussstiffness.csv');
                 end
             case 1
                 fileloc = 'AOS MOEA Runs\\Feas True\\';
                 if fib_stiff
-                    filename = strcat('Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_fibrestiffness.csv');
-                    %credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
-                    %quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
+                    filename_model = strcat('Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_fibrestiffness.csv');
                 else
-                    filename = strcat('Truss code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_trussstiffness.csv');
-                    %credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
-                    %quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
+                    filename_model = strcat('Truss code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_trussstiffness.csv');
                 end
             case 2
                 fileloc = 'AOS MOEA Runs\\Feas and Stab True\\';
                 if fib_stiff
-                    filename = strcat('Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_fibrestiffness.csv');
-                    %credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
-                    %quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
+                    filename_model = strcat('Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_fibrestiffness.csv');
                 else
-                    filename = strcat('Truss code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_trussstiffness.csv');
-                    %credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
-                    %quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
+                    filename_model = strcat('Truss code run results\\AOSMOEA_constraint_adaptive',num2str(run_num),'_trussstiffness.csv');
                 end
         end
+        filename = '';
+    elseif strcmp(algo,'sc_dnf')
+        fileloc = 'Soft Constraint Runs\\Disjunctive Normal Form Runs\\';
+        if fib_stiff
+            filename_model = strcat('Fibre Stiffness code run results\\Random initialization\\EpsilonMOEA_emoea_dnf',num2str(run_num),'_fibrestiffness.csv');
+        else
+            filename_model = strcat('Fibre Stiffness code run results\\Random initialization\\EpsilonMOEA_emoea_dnf',num2str(run_num),'_trussstiffness.csv');
+        end
+        filename = '';
+    elseif strcmp(algo,'sc_ach')
+        fileloc = 'Soft Constraint Runs\\Adaptive Constraint Handling Runs\\';
+        if fib_stiff
+            filename_model = strcat('Fibre Stiffness code run results\\Random initialization\\EpsilonMOEA_emoea_ach',num2str(run_num),'_fibrestiffness.csv');
+        else
+            filename_model = strcat('Fibre Stiffness code run results\\Random initialization\\EpsilonMOEA_emoea_ach',num2str(run_num),'_trussstiffness.csv');
+        end
+        filename = '';
     end
-    full_filepath = strcat(filepath,fileloc,filename);
-    %full_filepath_credit = strcat(filepath,fileloc,credit_filename);
-    %full_filepath_quality = strcat(filepath,fileloc,quality_filename);
+    full_filepath = strcat(filepath,fileloc,filename_model,filename);
 
     data_table = readtable(full_filepath,'Format','%s%f%f%f%f','HeaderLines',1);
-    %credit_fileId = fopen(full_filepath_credit,'r');
-    %quality_fileId = fopen(full_filepath_quality,'r');
-    %array_size = [6 Inf];
-    %credits = fscanf(credit_fileId,'%c',array_size);
-    %quality = fscanf(quality_fileId,'%c',array_size);
 
     %%%% store retrieved data into different variables
     %%%% csv_data includes: [Pen. Obj. 1, Pen.Obj. 2, Feasibility Score,
@@ -158,24 +173,33 @@ function [csv_data_array, designs_array] = read_csv_file(fib_stiff, eps_moea, fe
     designs_array = table2array(designs);
 end
 
-function savename = get_save_name(fib_stiff,eps_moea,run_case,run_num)
+function savename = get_save_name(fib_stiff,algor,run_case,bias_init,run_num)
     filename1 = 'pareto_front_';
     if fib_stiff
         filename2 = 'fibre_stiffness_';
     else
         filename2 = 'truss_stiffness_';
     end
-    if eps_moea
+    if strcmp(algor,'eps_moea')
         filename3 = 'eps_moea_';
-    else
+    elseif strcmp(algor,'aos')
         filename3 = 'aos_';
+    elseif strcmp(algor,'sc_dnf')
+        filename3 = 'dnf_';
+    elseif strcmp(algor,'sc_ach')
+        filename3 = 'ach_';
     end
     if (run_case == 0)
         filename4 = 'combined';
     elseif (run_case == 1)
         filename4 = strcat('run',num2str(run_num));
     end
+    if bias_init
+        filename5 = '_biasedinit';
+    else
+        filename5 = '_randominit';
+    end
     format = '.png';
-    savename = strcat(filename1,filename2,filename3,filename4,format);
+    savename = strcat(filename1,filename2,filename3,filename4,filename5,format);
 end
 

@@ -20,63 +20,60 @@ epsilon_moea = true;
 %       2 - both feasibility and stability are used in both operators
 feas_and_stab = 0;
 
+%%%% set to:
+%       true - to read biased initialization results
+%       false - to read random initialization results
+biased_init = true;
+
 %%%% read appropriate files 
 filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\';
 if epsilon_moea
     fileloc = 'Epsilon MOEA Runs\\';
     if fibre_stiffness
-        filename = 'Fibre Stiffness code run results\\EpsilonMOEA_emoea0_fibrestiffness.csv';
+        filename_model = 'Fibre Stiffness code run results\\';
+        if biased_init
+            filename = 'Biased initialization\\EpsilonMOEA_emoea0_biasedinit_fibrestiffness.csv';
+        else
+            filename = 'Random initialization\\EpsilonMOEA_emoea0_fibrestiffness.csv';
+        end
     else
-        filename = 'Truss code run results\\EpsilonMOEA_emoea0_trussstiffness.csv';
+        filename_model = 'Truss code run results\\';
+        if biased_init
+            filename = 'Biased initialization\\EpsilonMOEA_emoea0_biasedinit_fibrestiffness.csv';
+        else
+            filename = 'Random initialization\\EpsilonMOEA_emoea0_fibrestiffness.csv';
+        end
     end
 else 
     switch feas_and_stab
         case 0
             fileloc = 'AOS MOEA Runs\\Feas and Stab False\\';
             if fibre_stiffness
-                filename = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
-                credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
-                quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
+                filename_model = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
             else
-                filename = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
-                credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
-                quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
+                filename_model = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
             end
         case 1
             fileloc = 'AOS MOEA Runs\\Feas True\\';
             if fibre_stiffness
-                filename = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
-                credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
-                quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
+                filename_model = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
                 
             else
-                filename = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
-                credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
-                quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
+                filename_model = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
             end
         case 2
             fileloc = 'AOS MOEA Runs\\Feas and Stab True\\';
             if fibre_stiffness
-                filename = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
-                credit_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.credit';
-                quality_filename = 'Fibre Stiffness code run results\\constraint_adaptive0.qual';
+                filename_model = 'Fibre Stiffness code run results\\AOSMOEA_constraint_adaptive0_fibrestiffness.csv';
             else
-                filename = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
-                credit_filename = 'Truss code run results\\constraint_adaptive0.credit';
-                quality_filename = 'Truss code run results\\constraint_adaptive0.qual';
+                filename_model = 'Truss code run results\\AOSMOEA_constraint_adaptive0_trussstiffness.csv';
             end
     end
+    filename = '';
 end
-full_filepath = strcat(filepath,fileloc,filename);
-%full_filepath_credit = strcat(filepath,fileloc,credit_filename);
-%full_filepath_quality = strcat(filepath,fileloc,quality_filename);
+full_filepath = strcat(filepath,fileloc,filename_model,filename);
 
 data_table = readtable(full_filepath,'Format','%s%f%f%f%f','HeaderLines',1);
-%credit_fileId = fopen(full_filepath_credit,'r');
-%quality_fileId = fopen(full_filepath_quality,'r');
-%array_size = [6 Inf];
-%credits = fscanf(credit_fileId,'%c',array_size);
-%quality = fscanf(quality_fileId,'%c',array_size);
 
 %%%% store retrieved data into different variables
 %%%% csv_data includes: [Pen. Obj. 1, Pen.Obj. 2, Feasibility Score,

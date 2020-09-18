@@ -1,4 +1,4 @@
-%% Aggregated Feasibility and Stability comparison
+%% Aggregated Volume Fraction Comparison
 clear
 close all
 clc
@@ -28,21 +28,26 @@ biased_init = true;
 num_runs = 30; % change based on run 
 pop_size = 100; % change based on run
 
-% Extract feasibility and stability scores for Epsilon MOEA runs using
+sel = 0.05; % Unit square side length (NOT individual truss length) (example: 5 cm)
+r = 50*(10^-6); % Radius for cross-sectional area of (assumed circular) truss members (example: 50 micrometers)
+NC = sel.*[0,0;0,0.5;0,1;0.5,0;0.5,0.5;0.5,1;1,0;1,0.5;1,1]; 
+CA_all = [1,2; 1,3; 1,4; 1,5; 1,6; 1,7; 1,8; 1,9; 2,3; 2,4; 2,5; 2,6; 2,7; 2,8; 2,9; 3,4; 3,5; 3,6; 3,7; 3,8; 3,9; 4,5; 4,6; 4,7; 4,8; 4,9; 5,6; 5,7; 5,8; 5,9; 6,7; 6,8; 6,9; 7,8; 7,9; 8,9];
+
+% Compute volume fraction values for Epsilon MOEA runs using
 % fibre stiffness model
-[feas_struct_all_eps_fib, stab_struct_all_eps_fib] = get_feas_and_stab_scores(fibre_stiffness, epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size);
+[volfrac_struct_all_eps_fib] = get_vol_frac_vals(fibre_stiffness, epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size, CA_all, NC, r ,sel);
 
-% Extract feasibility and stability scores for Epsilon MOEA runs using
+% Compute volume fraction values for Epsilon MOEA runs using
 % truss stiffness model
-[feas_struct_all_eps_truss, stab_struct_all_eps_truss] = get_feas_and_stab_scores(~fibre_stiffness, epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size);
+[volfrac_struct_all_eps_truss] = get_vol_frac_vals(~fibre_stiffness, epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size, CA_all, NC, r ,sel);
 
-% Extract feasibility and stability scores for AOS MOEA runs using
+% Compute volume fraction values for AOS MOEA runs using
 % fibre stiffness model
-[feas_struct_all_aos_fib, stab_struct_all_aos_fib] = get_feas_and_stab_scores(fibre_stiffness, ~epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size);
+[volfrac_struct_all_aos_fib] = get_vol_frac_vals(fibre_stiffness, ~epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size, CA_all, NC, r ,sel);
 
-% Extract feasibility and stability scores for AOS MOEA runs using
+% Compute volume fraction values for AOS MOEA runs using
 % truss stiffness model
-[feas_struct_all_aos_truss, stab_struct_all_aos_truss] = get_feas_and_stab_scores(~fibre_stiffness, ~epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size);
+[volfrac_struct_all_aos_truss] = get_vol_frac_vals(~fibre_stiffness, ~epsilon_moea, feas_and_stab, biased_init, num_runs, pop_size, CA_all, NC, r ,sel);
 
 %% Create boxplots for individual cases
 labels = cell(num_runs,1);
@@ -50,89 +55,53 @@ for i = 1:num_runs
     labels{i,1} = num2str(i-1);
 end
 
-% feasibility and stability boxplots for Epsilon MOEA runs using fibre stiffness model 
-[feas_array_all_eps_fib, feas_array_mean_eps_fib, feas_eps_fib_groups] = create_boxplot_arrays(feas_struct_all_eps_fib, num_runs);
+% volume fraction boxplots for Epsilon MOEA runs using fibre stiffness model 
+[volfrac_array_all_eps_fib, volfrac_array_mean_eps_fib, volfrac_eps_fib_groups] = create_boxplot_arrays(volfrac_struct_all_eps_fib, num_runs);
 figure
-boxplot(feas_array_all_eps_fib,feas_eps_fib_groups,'Labels',labels)
+boxplot(volfrac_array_all_eps_fib,volfrac_eps_fib_groups,'Labels',labels)
 xlabel('Run Number')
-ylabel('Feasiblity Score')
-title('Feasibliity Score Boxplot for Epsilon MOEA runs using Fibre Stiffness Model')
+ylabel('Volume Fraction')
+title('Volume Fraction Boxplot for Epsilon MOEA runs using Fibre Stiffness Model')
 
-[stab_array_all_eps_fib, stab_array_mean_eps_fib, stab_eps_fib_groups] = create_boxplot_arrays(stab_struct_all_eps_fib, num_runs);
+% volume fraction boxplots for Epsilon MOEA runs using truss stiffness model 
+[volfrac_array_all_eps_truss, volfrac_array_mean_eps_truss, volfrac_eps_truss_groups] = create_boxplot_arrays(volfrac_struct_all_eps_truss, num_runs);
 figure
-boxplot(stab_array_all_eps_fib, stab_eps_fib_groups,'Labels',labels)
+boxplot(volfrac_array_all_eps_truss, volfrac_eps_truss_groups,'Labels',labels)
 xlabel('Run Number')
-ylabel('Stability Score')
-title('Stability Score Boxplot for Epsilon MOEA runs using Fibre Stiffness Model')
+ylabel('Volume Fraction')
+title('Volume Fraction Boxplot for Epsilon MOEA runs using Truss Stiffness Model')
 
-% feasibility and stability boxplots for Epsilon MOEA runs using truss stiffness model 
-[feas_array_all_eps_truss, feas_array_mean_eps_truss, feas_eps_truss_groups] = create_boxplot_arrays(feas_struct_all_eps_truss, num_runs);
+% volume fraction boxplots for AOS MOEA runs using fibre stiffness model 
+[volfrac_array_all_aos_fib, volfrac_array_mean_aos_fib, volfrac_aos_fib_groups] = create_boxplot_arrays(volfrac_struct_all_aos_fib, num_runs);
 figure
-boxplot(feas_array_all_eps_truss, feas_eps_truss_groups,'Labels',labels)
+boxplot(volfrac_array_all_aos_fib, volfrac_aos_fib_groups,'Labels',labels)
 xlabel('Run Number')
-ylabel('Feasiblity Score')
-title('Feasibliity Score Boxplot for Epsilon MOEA runs using Truss Stiffness Model')
+ylabel('Volume Fraction')
+title('Volume Fraction Boxplot for AOS MOEA runs using Fibre Stiffness Model')
 
-[stab_array_all_eps_truss, stab_array_mean_eps_truss, stab_eps_truss_groups] = create_boxplot_arrays(stab_struct_all_eps_truss, num_runs);
+% volume fraction boxplots for AOS MOEA runs using truss stiffness model 
+[volfrac_array_all_aos_truss, volfrac_array_mean_aos_truss, volfrac_aos_truss_groups] = create_boxplot_arrays(volfrac_struct_all_aos_truss, num_runs);
 figure
-boxplot(stab_array_all_eps_truss, stab_eps_truss_groups,'Labels',labels)
+boxplot(volfrac_array_all_aos_truss, volfrac_aos_truss_groups,'Labels',labels)
 xlabel('Run Number')
-ylabel('Stability Score')
-title('Stability Score Boxplot for Epsilon MOEA runs using Truss Stiffness Model')
-
-% feasibility and stability boxplots for AOS MOEA runs using fibre stiffness model 
-[feas_array_all_aos_fib, feas_array_mean_aos_fib, feas_aos_fib_groups] = create_boxplot_arrays(feas_struct_all_aos_fib, num_runs);
-figure
-boxplot(feas_array_all_aos_fib, feas_aos_fib_groups,'Labels',labels)
-xlabel('Run Number')
-ylabel('Feasiblity Score')
-title('Feasibliity Score Boxplot for AOS MOEA runs using Fibre Stiffness Model')
-
-[stab_array_all_aos_fib, stab_array_mean_aos_fib, stab_aos_fib_groups] = create_boxplot_arrays(stab_struct_all_aos_fib, num_runs);
-figure
-boxplot(stab_array_all_aos_fib, stab_aos_fib_groups,'Labels',labels)
-xlabel('Run Number')
-ylabel('Stability Score')
-title('Stability Score Boxplot for AOS MOEA runs using Fibre Stiffness Model')
-
-% feasibility and stability boxplots for AOS MOEA runs using truss stiffness model 
-[feas_array_all_aos_truss, feas_array_mean_aos_truss, feas_aos_truss_groups] = create_boxplot_arrays(feas_struct_all_aos_truss, num_runs);
-figure
-boxplot(feas_array_all_aos_truss, feas_aos_truss_groups,'Labels',labels)
-xlabel('Run Number')
-ylabel('Feasiblity Score')
-title('Feasibliity Score Boxplot for AOS MOEA runs using Truss Stiffness Model')
-
-[stab_array_all_aos_truss, stab_array_mean_aos_truss, stab_aos_truss_groups] = create_boxplot_arrays(stab_struct_all_aos_truss, num_runs);
-figure
-boxplot(stab_array_all_aos_truss, stab_aos_truss_groups,'Labels',labels)
-xlabel('Run Number')
-ylabel('Stability Score')
-title('Stability Score Boxplot for AOS MOEA runs using Truss Stiffness Model')
+ylabel('Volume Fraction')
+title('Volume Fraction Boxplot for AOS MOEA runs using Truss Stiffness Model')
 
 %% Create boxpltos camparing different cases
 case_labels = {'eps_fib','eps_truss','aos_fib','aos_truss'};
 mean_bp_groups = [zeros(1,num_runs),ones(1,num_runs),2.*ones(1,num_runs),3.*ones(1,num_runs)];
 
 % Plotting boxplots
-feas_array = [feas_array_mean_eps_fib',feas_array_mean_eps_truss',feas_array_mean_aos_fib',feas_array_mean_aos_truss'];
+volfrac_array = [volfrac_array_mean_eps_fib',volfrac_array_mean_eps_truss',volfrac_array_mean_aos_fib',volfrac_array_mean_aos_truss'];
 figure 
-boxplot(feas_array,mean_bp_groups,'Labels',case_labels);
-ylabel('Feasiblity Score')
-title('Feasibliity Score Comparison Boxplot')
-
-stab_array = [stab_array_mean_eps_fib',stab_array_mean_eps_truss',stab_array_mean_aos_fib',stab_array_mean_aos_truss'];
-figure 
-boxplot(stab_array,mean_bp_groups,'Labels',case_labels);
-ylabel('Stability Score')
-title('Stability Score Comparison Boxplot')
-
+boxplot(volfrac_array,mean_bp_groups,'Labels',case_labels);
+ylabel('Volume Fraction')
+title('Volume Fraction Comparison Boxplot')
 
 %% Functions
-function [feas_struct_all, stab_struct_all] = get_feas_and_stab_scores(fib_stiff, eps_moea, const_depend, bias_init, n_runs, n_pop)
-    feas_struct_all = struct;
-    stab_struct_all = struct;
-
+function [vol_frac_struct_all] = get_vol_frac_vals(fib_stiff, eps_moea, const_depend, bias_init, n_runs, n_pop, CA_all, NC, r ,sel)
+    vol_frac_struct_all = struct;
+    
     %%%% read appropriate files 
     for i = 1:n_runs
         run_num = i-1;
@@ -197,18 +166,23 @@ function [feas_struct_all, stab_struct_all] = get_feas_and_stab_scores(fib_stiff
         designs_array = table2array(designs);
     
         f_penalized = csv_data_array(:,1:2);
-        feas_array = csv_data_array(:,3);
-        stab_array = csv_data_array(:,4);
-        
         pareto_bool = paretofront(f_penalized);
         designs_pareto = designs_array(pareto_bool==1);
-        feas_pareto = feas_array(pareto_bool==1);
-        stab_pareto = stab_array(pareto_bool==1); 
         
         current_field = strcat('run_',num2str(i));
+        vf_pareto = zeros(size(designs_pareto,1),1);
         
-        feas_struct_all.(current_field) = feas_pareto;
-        stab_struct_all.(current_field) = stab_pareto;
+        for i = 1:size(designs_pareto,1)
+            current_design = designs_pareto{i};
+            design_bool = zeros(size(current_design,2),1);
+            for j = 1:size(design_bool,1)
+                design_bool(j) = str2num(current_design(j));
+            end
+            CA_des = CA_all(design_bool~=0,:);
+            vf_pareto(i,1) = calcVF(NC,CA_des,r,sel);
+        end
+        
+        vol_frac_struct_all.(current_field) = vf_pareto;
         
     end
 end
