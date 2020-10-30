@@ -33,6 +33,10 @@ public class RemoveIntersection implements Variation {
 
     private final double[][] nodalConnectivityArray;
 
+    private final double sidenum = 3.0;
+
+    private final double sel = 0.05;
+
     /**
      * Constructor for RemoveIntersection class
      * @param KeepStable
@@ -61,7 +65,13 @@ public class RemoveIntersection implements Variation {
         TrussRepeatableArchitecture newArchitecture;
         int[][] newConnectivityArray = new int[connectivityArray.length-1][2];
         if(KeepStable) {
-            int[] oldNumberOfConnections = getNumberOfConnections(connectivityArray);
+            //int[] oldNumberOfConnections = getNumberOfConnections(connectivityArray);
+            int[] oldNumberOfConnections = new int[9];
+            try {
+                oldNumberOfConnections = getNumberOfConnectionsRepeatable(connectivityArray);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
             boolean stabilitySameOrBetter = false;
             int numberOfAttempts = 0;
             while (!stabilitySameOrBetter && numberOfAttempts < 5) {
@@ -70,7 +80,13 @@ public class RemoveIntersection implements Variation {
                 } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
-                int[] newNumberOfConnections = getNumberOfConnections(newConnectivityArray);
+                //int[] newNumberOfConnections = getNumberOfConnections(newConnectivityArray);
+                int[] newNumberOfConnections = new int[9];
+                try {
+                    newNumberOfConnections = getNumberOfConnectionsRepeatable(newConnectivityArray);
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
+                }
                 boolean[] connectionsImproved = compareNumberOfConnections(oldNumberOfConnections,newNumberOfConnections);
                 for (boolean b : connectionsImproved) {
                     stabilitySameOrBetter = b;
@@ -124,6 +140,17 @@ public class RemoveIntersection implements Variation {
         return new boolean[] {cornerConnectionsImproved,midPointConnectionsImproved};
     }
 
+    private int[] getNumberOfConnectionsRepeatable (int[][] designConnectivityArray) throws ExecutionException, InterruptedException {
+        Object[] outputs = null;
+        outputs = engine.feval("connectivityCounter",sidenum,designConnectivityArray,nodalConnectivityArray,sel);
+        return (int[])outputs[0];
+    }
+
+    /**
+     * Compute number of connections in each node for a particular design
+     * @param designConnectivityArray
+     * @return numberOfConnections
+     */
     private int[] getNumberOfConnections (int[][] designConnectivityArray) {
         int[] numberOfMidPointConnections = new int[4]; // Nodes = [2, 4, 6, 8]
         int[] numberOfCornerConnections = new int[4]; // Nodes = [1, 3, 7, 9]

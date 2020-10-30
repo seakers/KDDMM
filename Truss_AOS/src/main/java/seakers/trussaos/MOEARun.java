@@ -63,24 +63,32 @@ public class MOEARun {
         String csvPath = System.getProperty("user.dir");
         double targetStiffnessRatio = 1;
         boolean useFibreStiffness = false;
-
         boolean biasedInitialization = true;
+        boolean useInteriorPenalty = true;
+
+        // Constraint parameters
+        /**
+         * feasibilityConstrained = whether feasibility constraint is considered in the algorithm
+         * stabilityConstrained = whether stability constraint is considered in the algorithm
+         */
+        boolean feasibilityConstrained = true;
+        boolean stabilityConstrained = true;
 
         /**
          * Mode = 1 for conventional e-MOEA run
          *      = 2 for AOS MOEA run
          *      = 3 for soft constraints
          */
-        int mode = 1;
+        int mode = 3;
 
         /**
          * soft_con = 1 for DNF
          *          = 2 for ACH
          */
-        int soft_con = 2;
+        int soft_con = 1;
 
-        int numCPU = 1;
-        int numRuns = 1;
+        int numCPU = 4;
+        int numRuns = 30;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
         engine = MatlabEngine.startMatlab();
@@ -106,20 +114,51 @@ public class MOEARun {
         double crossoverProbability = 1.0;
 
         // For AOS MOEA Run
-        boolean useStability = false;
-        boolean useFeasibility = false;
+        boolean maintainStability = false;
+        boolean maintainFeasibility = false;
 
         for (int i = 0; i < numRuns; i++) {
 
             // Create a new problem class
-            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath,useFibreStiffness,targetStiffnessRatio,engine);
+            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath,useFibreStiffness,targetStiffnessRatio,engine,feasibilityConstrained,stabilityConstrained);
 
+            String fileSaveNameModel;
+            if (useFibreStiffness){
+                fileSaveNameModel = "_fibre_";
+            }
+            else {
+                fileSaveNameModel = "_truss_";
+            }
+
+            String fileSaveNameInit;
             if (biasedInitialization){
-                initialization = new BiasedInitialization(trussProblem, popSize);
+                initialization = new BiasedInitialization(trussProblem, popSize, feasibilityConstrained, stabilityConstrained);
+                fileSaveNameInit = "biased_";
             }
             else {
                 initialization = new RandomInitialization(trussProblem, popSize);
+                fileSaveNameInit = "";
             }
+
+            String fileSaveNamePenalty;
+            if (useInteriorPenalty) {
+                fileSaveNamePenalty = "penalized";
+            }
+            else {
+                fileSaveNamePenalty = "true";
+            }
+
+            String fileSaveNameConstraint = "";
+            if (feasibilityConstrained && !stabilityConstrained) {
+                fileSaveNameConstraint = "feas_";
+            }
+            else if (stabilityConstrained && !feasibilityConstrained) {
+                fileSaveNameConstraint = "stab_";
+            }
+            else if (feasibilityConstrained && stabilityConstrained) {
+                fileSaveNameConstraint = "feasstab_";
+            }
+
 
             // Initialize population structure for algorithm
             Population population = new Population();
@@ -136,7 +175,7 @@ public class MOEARun {
                     CompoundVariation var = new CompoundVariation(singlecross, bitFlip);
 
                     Algorithm eMOEA = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization);
-                    ecs.submit(new EvolutionarySearch(eMOEA, properties, csvPath + File.separator + "result", "emoea" + String.valueOf(i) + "_biasedinit", engine, useFibreStiffness, targetStiffnessRatio));
+                    ecs.submit(new EvolutionarySearch(eMOEA, properties, csvPath + File.separator + "result", "emoea" + String.valueOf(i) + fileSaveNameModel + fileSaveNameInit + fileSaveNameConstraint +fileSaveNamePenalty , engine, useFibreStiffness, targetStiffnessRatio));
                     break;
 
                 case 2: // AOS MOEA Run
@@ -161,8 +200,8 @@ public class MOEARun {
                     // IMPLEMENTATION WITH ACTUAL REPAIR OPERATORS
                     double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
                     ArrayList<Variation> operators = new ArrayList<>();
-                    Variation addMember = new AddMember(useFeasibility, engine, globalNodePositions);
-                    Variation removeIntersection = new RemoveIntersection(useStability, engine, globalNodePositions);
+                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
+                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
                     operators.add(new CompoundVariation(new OnePointCrossover(crossoverProbability), new BitFlip(mutationProbability)));
                     operators.add(addMember);
                     operators.add(removeIntersection);
@@ -189,15 +228,15 @@ public class MOEARun {
                     AOSMOEA aos = new AOSMOEA(emoea, aosStrategy, true);
 
                     aos.setName("constraint_adaptive");
-                    ecs.submit(new EvolutionarySearch(aos, properties, csvPath + File.separator + "result", aos.getName() + String.valueOf(i), engine, useFibreStiffness, targetStiffnessRatio));
+                    ecs.submit(new EvolutionarySearch(aos, properties, csvPath + File.separator + "result", aos.getName() + String.valueOf(i) + fileSaveNameModel + fileSaveNameInit + fileSaveNameConstraint +fileSaveNamePenalty, engine, useFibreStiffness, targetStiffnessRatio));
                     break;
 
                 case 3: // Soft Constraints
                     if (soft_con == 1){
                         globalNodePositions = trussProblem.getNodalConnectivityArray();
                         //operators = new ArrayList<>();
-                        addMember = new AddMember(useFeasibility, engine, globalNodePositions);
-                        removeIntersection = new RemoveIntersection(useStability, engine, globalNodePositions);
+                        addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
+                        removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
                         //operators.add(new CompoundVariation(new OnePointCrossover(crossoverProbability), new BitFlip(mutationProbability)));
                         //operators.add(addMember);
                         //operators.add(removeIntersection);
@@ -215,11 +254,12 @@ public class MOEARun {
 
                         DisjunctiveNormalForm dnf = new DisjunctiveNormalForm(constraints);
                         // EpsilonKnoweldgeConstraintComparator epskcc = new EpsilonKnoweldgeConstraintComparator(epsilonDouble, dnf);
+                        comp = new ChainedComparator(dnf, new ParetoObjectiveComparator());
 
-                        selection = new TournamentSelection(2, dnf);
+                        selection = new TournamentSelection(2, comp);
 
-                        emoea = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, dnf);
-                        ecs.submit(new EvolutionarySearch(emoea, properties, csvPath + File.separator + "result", "emoea_dnf" + String.valueOf(i), engine, useFibreStiffness, targetStiffnessRatio));
+                        emoea = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, comp);
+                        ecs.submit(new EvolutionarySearch(emoea, properties, csvPath + File.separator + "result", "emoea_dnf" + String.valueOf(i) + fileSaveNameModel + fileSaveNameInit + fileSaveNameConstraint +fileSaveNamePenalty, engine, useFibreStiffness, targetStiffnessRatio));
                         break;
                     }
                     else if (soft_con == 2) {
@@ -229,8 +269,8 @@ public class MOEARun {
                         var = new CompoundVariation(singlecross, bitFlip);
 
                         globalNodePositions = trussProblem.getNodalConnectivityArray();
-                        addMember = new AddMember(useFeasibility, engine, globalNodePositions);
-                        removeIntersection = new RemoveIntersection(useStability, engine, globalNodePositions);
+                        addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
+                        removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
 
                         HashMap<Variation, String> constraintOperatorMap = new HashMap<>();
                         constraintOperatorMap.put(addMember, "StabilityViolation");
@@ -239,12 +279,13 @@ public class MOEARun {
                         HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
 
                         KnowledgeStochasticRanking ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                        comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
 
-                        selection = new TournamentSelection(2, ksr);
+                        selection = new TournamentSelection(2, comp);
 
-                        emoea = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, ksr);
+                        emoea = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, comp);
 
-                        ecs.submit(new EvolutionarySearch(emoea, properties, csvPath + File.separator + "result", "emoea_ach" + String.valueOf(i), engine, useFibreStiffness, targetStiffnessRatio));
+                        ecs.submit(new EvolutionarySearch(emoea, properties, csvPath + File.separator + "result", "emoea_ach" + String.valueOf(i) + fileSaveNameModel + fileSaveNameInit + fileSaveNameConstraint +fileSaveNamePenalty, engine, useFibreStiffness, targetStiffnessRatio));
                         break;
                     }
 

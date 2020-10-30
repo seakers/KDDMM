@@ -17,6 +17,10 @@ public class AddMember implements Variation {
 
     private final double[][] nodalConnectivityArray;
 
+    private final double sidenum = 3.0;
+
+    private final double sel = 0.05;
+
     public AddMember(boolean keepFeasible, MatlabEngine eng, double[][] nodalConnArray) {
         this.keepFeasible = keepFeasible;
         engine = eng;
@@ -257,38 +261,55 @@ public class AddMember implements Variation {
         return new boolean[] {cornerConnectionsImproved,midPointConnectionsImproved};
     }
 
+    private double[] getNumberOfConnectionsRepeatable (int[][] designConnectivityArray) throws ExecutionException, InterruptedException {
+        double[] numberOfConnections;
+
+        //Object[] outputs;
+        //outputs = engine.feval("connectivityCounter",sidenum,designConnectivityArray,nodalConnectivityArray,sel);
+        //numberOfConnections = (double[])outputs[0];
+
+        numberOfConnections = engine.feval("connectivityCounter",sidenum,designConnectivityArray,nodalConnectivityArray,sel);
+        return numberOfConnections;
+    }
+
     private int[] checkNumberOfConnections (int[][] designConnectivityArray) {
-        int[] numberOfConnections = new int[9];
-        for (int i = 0; i < designConnectivityArray.length; i++) {
-            for (int j = 0; j < 2; j++) {
-                if (designConnectivityArray[i][j] == 1) {
-                    numberOfConnections[0] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 2) {
-                    numberOfConnections[1] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 3) {
-                    numberOfConnections[2] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 4) {
-                    numberOfConnections[3] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 5) {
-                    numberOfConnections[4] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 6) {
-                    numberOfConnections[5] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 7) {
-                    numberOfConnections[6] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 8) {
-                    numberOfConnections[7] += 1;
-                }
-                else if (designConnectivityArray[i][j] == 9) {
-                    numberOfConnections[8] += 1;
-                }
-            }
+        double[] numberOfConnections = new double[9];
+        //for (int i = 0; i < designConnectivityArray.length; i++) {
+            //for (int j = 0; j < 2; j++) {
+                //if (designConnectivityArray[i][j] == 1) {
+                    //numberOfConnections[0] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 2) {
+                    //numberOfConnections[1] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 3) {
+                    //numberOfConnections[2] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 4) {
+                    //numberOfConnections[3] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 5) {
+                    //numberOfConnections[4] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 6) {
+                    //numberOfConnections[5] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 7) {
+                    //numberOfConnections[6] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 8) {
+                    //numberOfConnections[7] += 1;
+                //}
+                //else if (designConnectivityArray[i][j] == 9) {
+                    //numberOfConnections[8] += 1;
+                //}
+            //}
+        //}
+
+        try {
+            numberOfConnections = getNumberOfConnectionsRepeatable(designConnectivityArray);
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
         }
         int[] cornerNodes = {1,3,7,9};
         int[] midpointNodes = {2,4,6,8};
@@ -297,7 +318,7 @@ public class AddMember implements Variation {
         for (int i = 0; i < numberOfConnections.length; i++) {
             int cornerSearchKey = Arrays.binarySearch(cornerNodes, i+1);
             if (cornerSearchKey > 0) {
-                if (numberOfConnections[i] < 2) {
+                if (numberOfConnections[i] < 3) {
                     lowConnectionNodes[numberOfLowConnectionNodes] = i+1;
                     numberOfLowConnectionNodes += 1;
                 }

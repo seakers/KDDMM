@@ -1,5 +1,6 @@
 package seakers.trussaos;
 
+import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.problem.AbstractProblem;
@@ -38,13 +39,19 @@ public class TrussAOSProblem extends AbstractProblem {
 
     private final double targetStiffnessRatio;
 
+    private final boolean constrainFeasibility;
+
+    private final boolean constrainStability;
+
     private final double[][] NodalPositionArray = new double[9][2];
 
-    public TrussAOSProblem (String savePath, boolean FibreStiffness, double targetCRatio, MatlabEngine eng) {
+    public TrussAOSProblem (String savePath, boolean FibreStiffness, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability) {
 
         super(32,2);
 
         this.UseFibreStiffnessModel = FibreStiffness;
+        this.constrainFeasibility = constrainFeasibility;
+        this.constrainStability = constrainStability;
 
         this.radius = 0.00005;
         this.YoungsModulus = 10000.0;
@@ -63,11 +70,13 @@ public class TrussAOSProblem extends AbstractProblem {
         }
     }
 
-    public TrussAOSProblem (String savePath, boolean FibreStiffness, int numVariables, double rad, double sideLength, double E, double targetCRatio, MatlabEngine eng) {
+    public TrussAOSProblem (String savePath, boolean FibreStiffness, int numVariables, double rad, double sideLength, double E, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability) {
 
         super(numVariables,2);
 
         this.UseFibreStiffnessModel = FibreStiffness;
+        this.constrainFeasibility = constrainFeasibility;
+        this.constrainStability = constrainStability;
 
         this.radius = rad;
         this.sel = sideLength;
@@ -140,18 +149,27 @@ public class TrussAOSProblem extends AbstractProblem {
             }
         }
         double designFeasibilityScore = 0.0;
-        double designStabilityScore = 0.0;
-        double volFrac = 0.0;
         try {
             designFeasibilityScore = getFeasibilityScore(designConnArray);
         } catch (ExecutionException | InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
+        double designStabilityScore = 0.0;
         try {
             designStabilityScore = getStabilityScore(designConnArray);
         } catch (ExecutionException | InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
+        double volFrac = 0.0;
+        double penaltyFeasibility = 0.0;
+        if (constrainFeasibility) {
+            penaltyFeasibility = Math.log10(Math.abs(designFeasibilityScore));
+        }
+        double penaltyStability = 0.0;
+        if (constrainStability) {
+            penaltyStability = Math.log10(Math.abs(designStabilityScore));
+        }
+
         try {
             volFrac = getVolumeFraction(designConnArray);
         } catch (ExecutionException | InterruptedException | NullPointerException e) {
@@ -159,9 +177,17 @@ public class TrussAOSProblem extends AbstractProblem {
         }
 
         double[] objectives = new double[2];
-        double penalty = (Math.log10(Math.abs(designFeasibilityScore)) + Math.log10(Math.abs(designStabilityScore)))/2;
-        objectives[0] = Math.abs((C11/C22) - targetStiffnessRatio)/15 - penaltyFactor*penalty;
-        objectives[1] = -(C22/volFrac)/8500 - penaltyFactor*penalty;
+        double penalty = penaltyFeasibility + penaltyStability;
+        if (constrainFeasibility && constrainStability) {
+            penalty = penalty/2;
+        }
+
+        double[] trueObjectives = new double[2];
+        trueObjectives[0] = Math.abs((C11/C22) - targetStiffnessRatio);
+        trueObjectives[1] = C22/volFrac;
+
+        objectives[0] = trueObjectives[0]/5 - penaltyFactor*penalty;
+        objectives[1] = -trueObjectives[1]/8500 - penaltyFactor*penalty;
 
         sltn.setObjectives(objectives);
 
@@ -170,8 +196,10 @@ public class TrussAOSProblem extends AbstractProblem {
         //constraints.put("StabilityViolation", 1 - designStabilityScore);
         //sltn.addAttributes(constraints);
 
-        sltn.setAttribute("FeasibilityViolation", 1 - designFeasibilityScore);
-        sltn.setAttribute("StabilityViolation", 1 - designStabilityScore);
+        sltn.setAttribute("FeasibilityViolation", 1.0 - designFeasibilityScore);
+        sltn.setAttribute("StabilityViolation", 1.0 - designStabilityScore);
+        sltn.setAttribute("TrueObjective1", trueObjectives[0]);
+        sltn.setAttribute("TrueObjective2", trueObjectives[1]);
     }
 
     public double getFeasibilityScore (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
@@ -196,13 +224,15 @@ public class TrussAOSProblem extends AbstractProblem {
 
     @Override
     public Solution newSolution() {
-        Solution newSol = new Solution(this.numberOfVariables,2);
-        Random rnd = new Random();
-        for (int i = 0; i < this.numberOfVariables; i++){
-            BinaryVariable newVar = new BinaryVariable(1);
-            newVar.set(0,rnd.nextBoolean());
-            newSol.setVariable(i,newVar);
+        synchronized (PRNG.getRandom()) {
+            Solution newSol = new Solution(this.numberOfVariables, 2);
+            Random rnd = new Random();
+            for (int i = 0; i < this.numberOfVariables; i++) {
+                BinaryVariable newVar = new BinaryVariable(1);
+                newVar.set(0, rnd.nextBoolean());
+                newSol.setVariable(i, newVar);
+            }
+            return newSol;
         }
-        return newSol;
     }
 }

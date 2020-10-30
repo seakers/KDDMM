@@ -127,6 +127,10 @@ public class ResultIO implements Serializable {
         csvWrite.append(",");
         csvWrite.append("Penalized Stiffness Objective");
         csvWrite.append(",");
+        csvWrite.append("True Target Ratio Objective");
+        csvWrite.append(",");
+        csvWrite.append("True Stiffness Objective");
+        csvWrite.append(",");
         csvWrite.append("Feasibility Score");
         csvWrite.append(",");
         csvWrite.append("Stability Score");
@@ -138,19 +142,30 @@ public class ResultIO implements Serializable {
 
         for (int i = 0; i < pop.size(); i++) {
             Solution currentSltn = pop.get(i);
+
             TrussRepeatableArchitecture currentArch = new TrussRepeatableArchitecture(currentSltn);
             boolean[] currentBooleanDesign = currentArch.getBooleanDesignFromSolution(currentSltn);
             //designPopulation[i] = Arrays.toString(currentBooleanDesign);
             double[] currentObjectives = currentSltn.getObjectives();
+
             //System.arraycopy(currentObjectives, 0, objectives[i], 0, 2);
-            int[][] currentConnectivityArray = currentArch.getConnectivityArrayFromSolution(currentSltn);
-            double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray);
-            double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
+            //int[][] currentConnectivityArray = currentArch.getConnectivityArrayFromSolution(currentSltn);
+            //double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray);
+            //double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
+
+            double currentFeasibilityScore = 1.0d - (double)currentSltn.getAttribute("FeasibilityViolation");
+            double currentStabilityScore = 1.0d - (double)currentSltn.getAttribute("StabilityViolation");
+            double currentTrueRatioObjective = (double)currentSltn.getAttribute("TrueObjective1");
+            double currentTrueStiffnessOjective = (double)currentSltn.getAttribute("TrueObjective2");
             csvWrite.append(convertBooleanArrayToBitstring(currentBooleanDesign));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[0]));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[1]));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentTrueRatioObjective));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentTrueStiffnessOjective));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentFeasibilityScore));
             csvWrite.append(",");
@@ -173,6 +188,10 @@ public class ResultIO implements Serializable {
         csvWrite.append(",");
         csvWrite.append("Penalized Stiffness Objective");
         csvWrite.append(",");
+        csvWrite.append("True Target Ratio Objective");
+        csvWrite.append(",");
+        csvWrite.append("True Stiffness Objective");
+        csvWrite.append(",");
         csvWrite.append("Feasibility Score");
         csvWrite.append(",");
         csvWrite.append("Stability Score");
@@ -190,13 +209,23 @@ public class ResultIO implements Serializable {
             csvWrite.append(Integer.toString(numFunctionEvals));
             csvWrite.append(",");
             double[] currentObjectives = currentSolution.getObjectives();
+
             //System.arraycopy(currentObjectives, 0, objectives[i], 0, 2);
-            int[][] currentConnectivityArray = currentArch.getConnectivityArrayFromSolution(currentSolution);
-            double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray);
-            double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
+            //int[][] currentConnectivityArray = currentArch.getConnectivityArrayFromSolution(currentSolution);
+            //double currentFeasibilityScore = problem.getFeasibilityScore(currentConnectivityArray);
+            //double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
+
+            double currentFeasibilityScore = 1.0d - (double)currentSolution.getAttribute("FeasibilityViolation");
+            double currentStabilityScore = 1.0d - (double)currentSolution.getAttribute("StabilityViolation");
+            double currentTrueRatioObjective = (double)currentSolution.getAttribute("TrueObjective1");
+            double currentTrueStiffnessOjective = (double)currentSolution.getAttribute("TrueObjective2");
             csvWrite.append(Double.toString(currentObjectives[0]));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[1]));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentTrueRatioObjective));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentTrueStiffnessOjective));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentFeasibilityScore));
             csvWrite.append(",");

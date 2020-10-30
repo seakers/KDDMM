@@ -23,10 +23,14 @@ import java.util.Random;
 public class BiasedInitialization implements Initialization {
     private final Problem problem;
     private final int populationSize;
+    private final boolean feasibilityConstrained;
+    private final boolean stabilityConstrained;
 
-    public BiasedInitialization(Problem problem, int populationSize) {
+    public BiasedInitialization(Problem problem, int populationSize, boolean feasibilityConstrained, boolean stabilityConstrained) {
         this.problem = problem;
         this.populationSize = populationSize;
+        this.feasibilityConstrained = feasibilityConstrained;
+        this.stabilityConstrained = stabilityConstrained;
     }
 
     @Override
@@ -38,7 +42,17 @@ public class BiasedInitialization implements Initialization {
 
         // ArrayList<Solution> initialPopulation = new ArrayList<Solution>();
 
-        double[] numberOfMembers = {6,9,12,15};
+        double[] numberOfMembers = new double[4];
+        if (feasibilityConstrained && !stabilityConstrained) {
+            numberOfMembers = new double[]{6, 9, 12, 15};
+        }
+        else if (stabilityConstrained && !feasibilityConstrained) {
+            numberOfMembers = new double[]{18, 21, 24, 27};
+        }
+        else if (feasibilityConstrained && stabilityConstrained) {
+            numberOfMembers = new double[]{6, 12, 18, 24};
+        }
+
         Random rand = new Random();
         boolean val;
 

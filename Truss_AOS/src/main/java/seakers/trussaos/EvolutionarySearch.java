@@ -40,7 +40,7 @@ public class EvolutionarySearch implements Callable<Algorithm> {
     @Override
     public Algorithm call() throws IOException, ExecutionException, InterruptedException {
 
-        int populationSize = (int) properties.getDouble("populationSize", 600);
+        int populationSize = (int) properties.getDouble("populationSize", 100);
         int maxEvaluations = (int) properties.getDouble("maxEvaluations", 10000);
 
         // run the executor using the listener to collect results
@@ -82,22 +82,11 @@ public class EvolutionarySearch implements Callable<Algorithm> {
         //ResultIO.saveObjectives(alg.getResult(), filename);
 
         String popCsvFilename;
-        if (useFibreStiffness) {
-            popCsvFilename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name + "_fibrestiffness_" + "fullpop" + ".csv";
-        }
-        else {
-            popCsvFilename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name + "_trussstiffness_" + "fullpop" +  ".csv";
-        }
+        popCsvFilename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name + "_fullpop" + ".csv";
         resultIO.savePopulationHistoryToCsv(allSolutions, popCsvFilename);
 
         String csvFilename;
-        if (useFibreStiffness) {
-            csvFilename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name + "_fibrestiffness" + ".csv";
-        }
-        else {
-            csvFilename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name + "_trussstiffness" + ".csv";
-        }
-
+        csvFilename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name + ".csv";
         resultIO.saveFinalResultToCsv(((AbstractEvolutionaryAlgorithm) alg).getPopulation(), csvFilename);
 
         if (alg instanceof AOS) {
