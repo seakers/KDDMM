@@ -29,8 +29,9 @@ import seakers.aos.operatorselectors.OperatorSelector;
 import seakers.aos.operatorselectors.ProbabilityMatching;
 import seakers.trussaos.initialization.BiasedInitialization;
 import seakers.trussaos.operators.AddMember;
+import seakers.trussaos.operators.ImproveOrientation;
 import seakers.trussaos.operators.RemoveIntersection;
-import seakers.trussaos.constraints.DisjunctiveNormalForm;
+//import seakers.trussaos.constraints.DisjunctiveNormalForm;
 import seakers.trussaos.constraints.KnowledgeStochasticRanking;
 
 /**
@@ -68,9 +69,11 @@ public class OrthogonalArrayMOEARun {
         /**
          * feasibilityConstrained = [interior_penalty, AOS, biased_init, ACH]
          * stabilityConstrained = [interior_penalty, AOS, biased_init, ACH]
+         * orientationConstrained = [interior_penalty, AOS, biased_init, ACH]
          */
-        boolean[] feasibilityConstrained = {false, false, true, false};
+        boolean[] feasibilityConstrained = {false, true, true, false};
         boolean[] stabilityConstrained = {false, false, false, false};
+        boolean[] orientationConstrained = {false, false, false, false};
 
         int numCPU = 1;
         int numRuns = 1;
@@ -118,29 +121,40 @@ public class OrthogonalArrayMOEARun {
 
         StringBuilder fileSaveNameConstraint = new StringBuilder();
         for (int i = 0; i < 4; i++) {
-            if (feasibilityConstrained[i] && !stabilityConstrained[i]) {
+            if (feasibilityConstrained[i] && !stabilityConstrained[i] && !orientationConstrained[i]) {
                 fileSaveNameConstraint.append("fcon" + Integer.toString(i) + "_");
-            } else if (stabilityConstrained[i] && !feasibilityConstrained[i]) {
+            } else if (feasibilityConstrained[i] && !stabilityConstrained[i] && orientationConstrained[i]) {
+                fileSaveNameConstraint.append("focon" + Integer.toString(i) + "_");
+            } else if (stabilityConstrained[i] && !feasibilityConstrained[i] && !orientationConstrained[i]) {
                 fileSaveNameConstraint.append("scon" + Integer.toString(i) + "_");
-            } else if (feasibilityConstrained[i] && stabilityConstrained[i]) {
+            } else if (stabilityConstrained[i] && !feasibilityConstrained[i] && orientationConstrained[i]) {
+                fileSaveNameConstraint.append("socon" + Integer.toString(i) + "_");
+            } else if (feasibilityConstrained[i] && stabilityConstrained[i] && !orientationConstrained[i]) {
                 fileSaveNameConstraint.append("fscon" + Integer.toString(i) + "_");
+            } else if (feasibilityConstrained[i] && stabilityConstrained[i] && orientationConstrained[i]) {
+                fileSaveNameConstraint.append("fsocon" + Integer.toString(i) + "_");
+            } else if (!feasibilityConstrained[i] && !stabilityConstrained[i] && orientationConstrained[i]) {
+                fileSaveNameConstraint.append("ocon" + Integer.toString(i) + "_");
             }
         }
 
         // New dimensions for printable solutions
-        double printableRadius = 0.00025; // in m
-        double printableSideLength = 0.01; // in m
-        double printableModulus = 1000000; // in Pa
+        double printableRadius = 250e-6; // in m
+        double printableSideLength = 10e-3; // in m
+        double printableModulus = 1.8162e6; // in Pa
+        int sideNodeNumber = 3;
+        int nucFactor = 1;
 
         for (int i = 0; i < numRuns; i++) {
             // Create a new problem class
             //TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath, useFibreStiffness, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0]);
             // Problem class for printable solutions
-            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath, useFibreStiffness, 32, printableRadius, printableSideLength, printableModulus, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0]);
+            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath, useFibreStiffness, 32, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0], orientationConstrained[0]);
+            double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
 
             //String fileSaveNameInit;
             if (feasibilityConstrained[2] || stabilityConstrained[2]) { // Initialization object
-                initialization = new BiasedInitialization(trussProblem, popSize, feasibilityConstrained[2], stabilityConstrained[2]);
+                initialization = new BiasedInitialization(trussProblem, popSize, feasibilityConstrained[2], stabilityConstrained[2], orientationConstrained[2], globalNodePositions, targetStiffnessRatio, sideNodeNumber);
                 //fileSaveNameInit = "biased_";
             } else {
                 initialization = new RandomInitialization(trussProblem, popSize);
@@ -160,36 +174,72 @@ public class OrthogonalArrayMOEARun {
 
             //moeaObj = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization);
 
-            if (feasibilityConstrained[3] || stabilityConstrained[3]) { // Adaptive Constraint Handling objects
+            if (feasibilityConstrained[3] || stabilityConstrained[3] || orientationConstrained[3]) { // Adaptive Constraint Handling objects
                 RemoveIntersection removeIntersection;
                 AddMember addMember;
+                ImproveOrientation improveOrientation;
 
-                double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
-                addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
-                removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
+                addMember = new AddMember(maintainFeasibility, engine, globalNodePositions, sideNodeNumber, printableSideLength);
+                removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions, sideNodeNumber, printableSideLength);
+                improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, sideNodeNumber);
+
+                //HashSet<String> constraints;
+                KnowledgeStochasticRanking ksr;
 
                 HashMap<Variation, String> constraintOperatorMap = new HashMap<>();
-                if (feasibilityConstrained[3] && !stabilityConstrained[3]) {
+                if (feasibilityConstrained[3] && !stabilityConstrained[3] && !orientationConstrained[3]) {
                     constraintOperatorMap.put(removeIntersection, "FeasibilityViolation");
 
-                    HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
+                    //constraints = new HashSet<>(constraintOperatorMap.values());
 
-                    KnowledgeStochasticRanking ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                    ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
                     comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
-                } else if (stabilityConstrained[3] && !feasibilityConstrained[3]) {
+                } else if (feasibilityConstrained[3] && !stabilityConstrained[3] && orientationConstrained[3]) {
+                    constraintOperatorMap.put(removeIntersection, "FeasibilityViolation");
+                    constraintOperatorMap.put(improveOrientation, "OrientationViolation");
+
+                   //constraints = new HashSet<>(constraintOperatorMap.values());
+
+                    ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                    comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
+                } else if (stabilityConstrained[3] && !feasibilityConstrained[3] && !orientationConstrained[3]) {
                     constraintOperatorMap.put(addMember, "StabilityViolation");
 
-                    HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
+                    //constraints = new HashSet<>(constraintOperatorMap.values());
 
-                    KnowledgeStochasticRanking ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                    ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
                     comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
-                } else if (feasibilityConstrained[3] && stabilityConstrained[3]) {
+                } else if (stabilityConstrained[3] && !feasibilityConstrained[3] && orientationConstrained[3]) {
+                    constraintOperatorMap.put(addMember, "StabilityViolation");
+                    constraintOperatorMap.put(improveOrientation, "OrientationViolation");
+
+                    //constraints = new HashSet<>(constraintOperatorMap.values());
+
+                    ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                    comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
+                } else if (feasibilityConstrained[3] && stabilityConstrained[3] && !orientationConstrained[3]) {
                     constraintOperatorMap.put(removeIntersection, "FeasibilityViolation");
                     constraintOperatorMap.put(addMember, "StabilityViolation");
 
-                    HashSet<String> constraints = new HashSet<>(constraintOperatorMap.values());
+                    //constraints = new HashSet<>(constraintOperatorMap.values());
 
-                    KnowledgeStochasticRanking ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                    ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                    comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
+                } else if (feasibilityConstrained[3] && stabilityConstrained[3] && orientationConstrained[3]) {
+                    constraintOperatorMap.put(removeIntersection, "FeasibilityViolation");
+                    constraintOperatorMap.put(addMember, "StabilityViolation");
+                    constraintOperatorMap.put(improveOrientation, "OrientationViolation");
+
+                    //constraints = new HashSet<>(constraintOperatorMap.values());
+
+                    ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
+                    comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
+                } else if (!feasibilityConstrained[3] && !stabilityConstrained[3] && orientationConstrained[3]) {
+                    constraintOperatorMap.put(improveOrientation, "OrientationViolation");
+
+                    //constraints = new HashSet<>(constraintOperatorMap.values());
+
+                    ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
                     comp = new ChainedComparator(ksr, new ParetoObjectiveComparator());
                 }
 
@@ -202,7 +252,7 @@ public class OrthogonalArrayMOEARun {
                 selection = new TournamentSelection(2, comp);
             }
 
-            if (feasibilityConstrained[1] || stabilityConstrained[1]) { // AOS objects
+            if (feasibilityConstrained[1] || stabilityConstrained[1] || orientationConstrained[1]) { // AOS objects
                 //comp = new ChainedComparator(new ParetoObjectiveComparator());
                 //selection = new TournamentSelection(2, comp);
 
@@ -212,20 +262,39 @@ public class OrthogonalArrayMOEARun {
                 properties.setBoolean("saveSelection", true);
 
                 // IMPLEMENTATION WITH ACTUAL REPAIR OPERATORS
-                double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
                 ArrayList<Variation> operators = new ArrayList<>();
 
-                if (feasibilityConstrained[1] && !stabilityConstrained[1]) {
-                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
+                if (feasibilityConstrained[1] && !stabilityConstrained[1] && !orientationConstrained[1]) {
+                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions, sideNodeNumber, printableSideLength);
                     operators.add(removeIntersection);
-                } else if (stabilityConstrained[1] && !feasibilityConstrained[1]) {
-                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
+                } else if (feasibilityConstrained[1] && !stabilityConstrained[1] && orientationConstrained[1]) {
+                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions, sideNodeNumber, printableSideLength);
+                    Variation improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, sideNodeNumber);
+                    operators.add(removeIntersection);
+                    operators.add(improveOrientation);
+                } else if (stabilityConstrained[1] && !feasibilityConstrained[1] && !orientationConstrained[1]) {
+                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions, sideNodeNumber, printableSideLength);
                     operators.add(addMember);
-                } else if (feasibilityConstrained[1] && stabilityConstrained[1]) {
-                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
-                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
+                } else if (stabilityConstrained[1] && !feasibilityConstrained[1] && orientationConstrained[1]) {
+                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions, sideNodeNumber, printableSideLength);
+                    Variation improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, sideNodeNumber);
+                    operators.add(addMember);
+                    operators.add(improveOrientation);
+                } else if (feasibilityConstrained[1] && stabilityConstrained[1] && !orientationConstrained[1]) {
+                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions, sideNodeNumber, printableSideLength);
+                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions, sideNodeNumber, printableSideLength);
                     operators.add(addMember);
                     operators.add(removeIntersection);
+                } else if (feasibilityConstrained[1] && stabilityConstrained[1] && orientationConstrained[1]) {
+                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions, sideNodeNumber, printableSideLength);
+                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions, sideNodeNumber, printableSideLength);
+                    Variation improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, sideNodeNumber);
+                    operators.add(addMember);
+                    operators.add(removeIntersection);
+                    operators.add(improveOrientation);
+                } else if (!feasibilityConstrained[1] && !stabilityConstrained[1] && orientationConstrained[1]) {
+                    Variation improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, sideNodeNumber);
+                    operators.add(improveOrientation);
                 }
 
                 operators.add(new CompoundVariation(new OnePointCrossover(crossoverProbability), new BitFlip(mutationProbability)));
@@ -252,8 +321,8 @@ public class OrthogonalArrayMOEARun {
                 var = new CompoundVariation(singlecross, bitFlip);
             }
 
-            // Creating Epsilon MOEA object
-            if (feasibilityConstrained[1] || stabilityConstrained[1]) {
+            // Creating AOS MOEA object if needed
+            if (feasibilityConstrained[1] || stabilityConstrained[1] || orientationConstrained[1]) {
                 EpsilonMOEA emoea = new EpsilonMOEA(trussProblem, population, archive, selection, aosStrategy, initialization, comp);
                 moeaObj = new AOSMOEA(emoea, aosStrategy, true);
             }

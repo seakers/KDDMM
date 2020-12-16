@@ -70,7 +70,7 @@ end
 app.TrussCMat.Data = C_design_rounded;
 
 penalty = (log10(abs(feas_design)) + log10(abs(stab_design)))/2;
-f_true = [15*(f_pen_design(1) + pen_fac*penalty), -8500*(f_pen_design(2) + pen_fac*penalty)];
+f_true = [5*(f_pen_design(1) + pen_fac*penalty), -8500*(f_pen_design(2) + pen_fac*penalty)];
 f_true_rounded = [round(f_true(1),3), round(f_true(2),3)];
 
 %set(apphandles.true_objs,'string',mat2str(f_true));

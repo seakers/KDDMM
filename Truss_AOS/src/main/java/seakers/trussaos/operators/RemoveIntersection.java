@@ -33,9 +33,9 @@ public class RemoveIntersection implements Variation {
 
     private final double[][] nodalConnectivityArray;
 
-    private final double sidenum = 3.0;
+    private final double sidenum;
 
-    private final double sel = 0.05;
+    private final double sel;
 
     /**
      * Constructor for RemoveIntersection class
@@ -43,10 +43,12 @@ public class RemoveIntersection implements Variation {
      * @param nodalConnArray
      * @param eng
      */
-    public RemoveIntersection(boolean KeepStable, MatlabEngine eng, double[][] nodalConnArray){
+    public RemoveIntersection(boolean KeepStable, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel){
         this.KeepStable = KeepStable;
         engine = eng;
         this.nodalConnectivityArray = nodalConnArray;
+        this.sidenum = sidenum;
+        this.sel = sel;
     }
 
     @Override

@@ -7,11 +7,19 @@
 % Each node has two degrees of freedom (DOF), x and y.  The (node number*2) 
 %    gives the number for that node's yDOF, and (yDOF - 1) is the xDOF
 function [C11,C22] = fiberStiffnessModel(sel,r,E,CA,sidenum,nucFac)
+    %disp(strcat('sel = ',num2str(sel)))
+    %disp(strcat('r = ',num2str(r)))
+    %disp(strcat('E = ',num2str(E)))
+    %disp(strcat('sidenum = ',num2str(sidenum)))
+    %disp(strcat('nucFac = ',num2str(nucFac)))
+    %disp(CA)
     % Generate nodal grid
     NC = generateNC(sel,sidenum);
+    %disp(NC)
     
     % Find volume fraction
     volFrac = calcVF(NC,CA,r,sel);
+    %disp(volFrac)
     
     % Calculating C-matrix values
     C11 = fiberCalc(volFrac,NC,CA,E,1)/nucFac;
@@ -51,6 +59,7 @@ end
 function Cval = fiberCalc(volFrac,NC,CA,E,dir)
     % Find effective structural stiffness
     K = E*volFrac;
+    %disp(K)
     
     % Find length-corrected sum of cosines for all fibers 
     cLsum = 0;

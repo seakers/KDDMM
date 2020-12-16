@@ -17,14 +17,16 @@ public class AddMember implements Variation {
 
     private final double[][] nodalConnectivityArray;
 
-    private final double sidenum = 3.0;
+    private final double sidenum;
 
-    private final double sel = 0.05;
+    private final double sel;
 
-    public AddMember(boolean keepFeasible, MatlabEngine eng, double[][] nodalConnArray) {
+    public AddMember(boolean keepFeasible, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel) {
         this.keepFeasible = keepFeasible;
         engine = eng;
         this.nodalConnectivityArray = nodalConnArray;
+        this.sidenum = sidenum;
+        this.sel = sel;
     }
 
     @Override

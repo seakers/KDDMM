@@ -43,15 +43,18 @@ public class TrussAOSProblem extends AbstractProblem {
 
     private final boolean constrainStability;
 
+    private final boolean constrainOrientation;
+
     private final double[][] NodalPositionArray = new double[9][2];
 
-    public TrussAOSProblem (String savePath, boolean FibreStiffness, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability) {
+    public TrussAOSProblem (String savePath, boolean FibreStiffness, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation) {
 
         super(32,2);
 
         this.UseFibreStiffnessModel = FibreStiffness;
         this.constrainFeasibility = constrainFeasibility;
         this.constrainStability = constrainStability;
+        this.constrainOrientation = constrainOrientation;
 
         this.radius = 0.00005;
         this.YoungsModulus = 10000.0;
@@ -70,19 +73,20 @@ public class TrussAOSProblem extends AbstractProblem {
         }
     }
 
-    public TrussAOSProblem (String savePath, boolean FibreStiffness, int numVariables, double rad, double sideLength, double E, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability) {
+    public TrussAOSProblem (String savePath, boolean FibreStiffness, int numVariables, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation) {
 
         super(numVariables,2);
 
         this.UseFibreStiffnessModel = FibreStiffness;
         this.constrainFeasibility = constrainFeasibility;
         this.constrainStability = constrainStability;
+        this.constrainOrientation = constrainOrientation;
 
         this.radius = rad;
         this.sel = sideLength;
         this.YoungsModulus = E;
-        this.sidenum = 3.0;
-        this.nucFac = 1.0;
+        this.sidenum = sideNodeNum;
+        this.nucFac = nucFac;
         this.targetStiffnessRatio = targetCRatio;
         this.csvSavePath = savePath;
         this.engine = eng;
@@ -160,6 +164,14 @@ public class TrussAOSProblem extends AbstractProblem {
         } catch (ExecutionException | InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
+
+        double designOrientationScore = 0.0;
+        try {
+            designOrientationScore = getOrientationScore(designConnArray);
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
         double volFrac = 0.0;
         double penaltyFeasibility = 0.0;
         if (constrainFeasibility) {
@@ -170,6 +182,11 @@ public class TrussAOSProblem extends AbstractProblem {
             penaltyStability = Math.log10(Math.abs(designStabilityScore));
         }
 
+        double penaltyOrientation = 0.0;
+        if (constrainOrientation) {
+            penaltyOrientation = Math.log10(Math.abs(designOrientationScore));
+        }
+
         try {
             volFrac = getVolumeFraction(designConnArray);
         } catch (ExecutionException | InterruptedException | NullPointerException e) {
@@ -178,8 +195,11 @@ public class TrussAOSProblem extends AbstractProblem {
 
         double[] objectives = new double[2];
         double penalty = penaltyFeasibility + penaltyStability;
-        if (constrainFeasibility && constrainStability) {
+        if ((constrainFeasibility && constrainStability && !constrainOrientation) || (constrainFeasibility && constrainOrientation && !constrainStability) || (constrainOrientation && constrainStability && !constrainFeasibility)) {
             penalty = penalty/2;
+        }
+        if (constrainFeasibility && constrainStability && constrainOrientation) {
+            penalty = penalty/3;
         }
 
         double[] trueObjectives = new double[2];
@@ -198,6 +218,7 @@ public class TrussAOSProblem extends AbstractProblem {
 
         sltn.setAttribute("FeasibilityViolation", 1.0 - designFeasibilityScore);
         sltn.setAttribute("StabilityViolation", 1.0 - designStabilityScore);
+        sltn.setAttribute("OrientationViolation", 1.0 - designOrientationScore);
         sltn.setAttribute("TrueObjective1", trueObjectives[0]);
         sltn.setAttribute("TrueObjective2", trueObjectives[1]);
     }
@@ -212,6 +233,12 @@ public class TrussAOSProblem extends AbstractProblem {
         // return (double)stabilityOutput;
         return (double)engine.feval("stabilityTester_2D_V7",sidenum,designConnectivityArray,NodalPositionArray,sel);
         // return (double)eng.feval("stabilityTester_2D_updated",sidenum,designConnectivityArray,NodalPositionArray);
+    }
+
+    public double getOrientationScore (int[][] designConnectivityArray) throws ExecutionException, InterruptedException {
+        //Object orientationOutput;
+        //orientationOutput = engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
+        return (double) engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
     }
 
     private double getVolumeFraction (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {

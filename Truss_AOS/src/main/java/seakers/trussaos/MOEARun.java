@@ -35,6 +35,7 @@ import seakers.trussaos.constraints.KnowledgeStochasticRanking;
 
 /**
  * Executable class for the eMOEA run with/without AOS for the Truss Optimization problem.
+ * NOTE: Use of Orientation Operator not added to this class
  *
  * @author roshan94
  */
@@ -65,6 +66,8 @@ public class MOEARun {
         boolean useFibreStiffness = false;
         boolean biasedInitialization = true;
         boolean useInteriorPenalty = true;
+        int sideNodeNumber = 3;
+        double sideLength = 10e-3; // in m
 
         // Constraint parameters
         /**
@@ -73,6 +76,7 @@ public class MOEARun {
          */
         boolean feasibilityConstrained = true;
         boolean stabilityConstrained = true;
+        boolean orientationConstrained = false;
 
         /**
          * Mode = 1 for conventional e-MOEA run
@@ -120,8 +124,9 @@ public class MOEARun {
         for (int i = 0; i < numRuns; i++) {
 
             // Create a new problem class
-            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath,useFibreStiffness,targetStiffnessRatio,engine,feasibilityConstrained,stabilityConstrained);
+            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath,useFibreStiffness,targetStiffnessRatio,engine,feasibilityConstrained,stabilityConstrained,orientationConstrained);
 
+            double[][] globalNodePositions;
             String fileSaveNameModel;
             if (useFibreStiffness){
                 fileSaveNameModel = "_fibre_";
@@ -132,7 +137,8 @@ public class MOEARun {
 
             String fileSaveNameInit;
             if (biasedInitialization){
-                initialization = new BiasedInitialization(trussProblem, popSize, feasibilityConstrained, stabilityConstrained);
+                globalNodePositions = trussProblem.getNodalConnectivityArray();
+                initialization = new BiasedInitialization(trussProblem, popSize, feasibilityConstrained, stabilityConstrained,orientationConstrained,globalNodePositions,targetStiffnessRatio,sideNodeNumber);
                 fileSaveNameInit = "biased_";
             }
             else {
@@ -198,10 +204,10 @@ public class MOEARun {
                     //operators.add(new CompoundVariation(new UniformCrossover(uniformCrossoverProbability), new BitFlip(mutationProbability)));
 
                     // IMPLEMENTATION WITH ACTUAL REPAIR OPERATORS
-                    double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
+                    globalNodePositions = trussProblem.getNodalConnectivityArray();
                     ArrayList<Variation> operators = new ArrayList<>();
-                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
-                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
+                    Variation addMember = new AddMember(maintainFeasibility, engine, globalNodePositions,sideNodeNumber,sideLength);
+                    Variation removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions,sideNodeNumber,sideLength);
                     operators.add(new CompoundVariation(new OnePointCrossover(crossoverProbability), new BitFlip(mutationProbability)));
                     operators.add(addMember);
                     operators.add(removeIntersection);
@@ -235,8 +241,8 @@ public class MOEARun {
                     if (soft_con == 1){
                         globalNodePositions = trussProblem.getNodalConnectivityArray();
                         //operators = new ArrayList<>();
-                        addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
-                        removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
+                        addMember = new AddMember(maintainFeasibility, engine, globalNodePositions,sideNodeNumber,sideLength);
+                        removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions,sideNodeNumber,sideLength);
                         //operators.add(new CompoundVariation(new OnePointCrossover(crossoverProbability), new BitFlip(mutationProbability)));
                         //operators.add(addMember);
                         //operators.add(removeIntersection);
@@ -269,8 +275,8 @@ public class MOEARun {
                         var = new CompoundVariation(singlecross, bitFlip);
 
                         globalNodePositions = trussProblem.getNodalConnectivityArray();
-                        addMember = new AddMember(maintainFeasibility, engine, globalNodePositions);
-                        removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions);
+                        addMember = new AddMember(maintainFeasibility, engine, globalNodePositions,sideNodeNumber,sideLength);
+                        removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions,sideNodeNumber,sideLength);
 
                         HashMap<Variation, String> constraintOperatorMap = new HashMap<>();
                         constraintOperatorMap.put(addMember, "StabilityViolation");

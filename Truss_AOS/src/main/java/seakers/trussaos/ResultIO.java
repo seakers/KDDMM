@@ -134,6 +134,8 @@ public class ResultIO implements Serializable {
         csvWrite.append("Feasibility Score");
         csvWrite.append(",");
         csvWrite.append("Stability Score");
+        csvWrite.append(",");
+        csvWrite.append("Orientation Score");
         csvWrite.append("\n");
         //String[] designPopulation = new String[pop.size()];
         double[][] objectives = new double[1][2];
@@ -155,6 +157,7 @@ public class ResultIO implements Serializable {
 
             double currentFeasibilityScore = 1.0d - (double)currentSltn.getAttribute("FeasibilityViolation");
             double currentStabilityScore = 1.0d - (double)currentSltn.getAttribute("StabilityViolation");
+            double currentOrientationScore = 1.0d - (double)currentSltn.getAttribute("OrientationViolation");
             double currentTrueRatioObjective = (double)currentSltn.getAttribute("TrueObjective1");
             double currentTrueStiffnessOjective = (double)currentSltn.getAttribute("TrueObjective2");
             csvWrite.append(convertBooleanArrayToBitstring(currentBooleanDesign));
@@ -170,6 +173,8 @@ public class ResultIO implements Serializable {
             csvWrite.append(Double.toString(currentFeasibilityScore));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentStabilityScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentOrientationScore));
             csvWrite.append("\n");
         }
         csvWrite.flush();
@@ -195,6 +200,8 @@ public class ResultIO implements Serializable {
         csvWrite.append("Feasibility Score");
         csvWrite.append(",");
         csvWrite.append("Stability Score");
+        csvWrite.append(",");
+        csvWrite.append("Orientation Score");
         csvWrite.append("\n");
 
         Iterator iter = solutionSet.iterator();
@@ -217,6 +224,7 @@ public class ResultIO implements Serializable {
 
             double currentFeasibilityScore = 1.0d - (double)currentSolution.getAttribute("FeasibilityViolation");
             double currentStabilityScore = 1.0d - (double)currentSolution.getAttribute("StabilityViolation");
+            double currentOrientationScore = 1.0d - (double)currentSolution.getAttribute("OrientationViolation");
             double currentTrueRatioObjective = (double)currentSolution.getAttribute("TrueObjective1");
             double currentTrueStiffnessOjective = (double)currentSolution.getAttribute("TrueObjective2");
             csvWrite.append(Double.toString(currentObjectives[0]));
@@ -230,6 +238,8 @@ public class ResultIO implements Serializable {
             csvWrite.append(Double.toString(currentFeasibilityScore));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentStabilityScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentOrientationScore));
             csvWrite.append("\n");
         }
         csvWrite.flush();
