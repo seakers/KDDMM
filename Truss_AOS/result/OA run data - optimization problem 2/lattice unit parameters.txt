@@ -1,0 +1,3 @@
+element radius r = 250e-6 m
+side element length sel = 10e-3 m
+young's modulus E = 1.8162e6 Pa

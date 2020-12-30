@@ -6,6 +6,7 @@ import org.moeaframework.core.comparator.ParetoObjectiveComparator;
 import org.moeaframework.core.operator.CompoundVariation;
 import org.moeaframework.core.operator.OnePointCrossover;
 import org.moeaframework.core.operator.binary.BitFlip;
+import org.moeaframework.problem.AbstractProblem;
 import org.moeaframework.util.TypedProperties;
 import seakers.aos.aos.AOSMOEA;
 import seakers.aos.creditassignment.offspringparent.OffspringParentDomination;
@@ -15,7 +16,6 @@ import com.mathworks.engine.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +33,8 @@ import seakers.trussaos.operators.ImproveOrientation;
 import seakers.trussaos.operators.RemoveIntersection;
 //import seakers.trussaos.constraints.DisjunctiveNormalForm;
 import seakers.trussaos.constraints.KnowledgeStochasticRanking;
+import seakers.trussaos.problems.ConstantRadiusTrussProblem;
+import seakers.trussaos.problems.ConstantRadiusTrussProblem2;
 
 /**
  * Executable class for different eMOEA run experiments in Orthogonal Arrays for the Truss Optimization problem.
@@ -64,6 +66,7 @@ public class OrthogonalArrayMOEARun {
         String csvPath = System.getProperty("user.dir");
         double targetStiffnessRatio = 1;
         boolean useFibreStiffness = false;
+        boolean useOptimizationProblem2 = false; // Use ConstantRadiusTrussProblem2 as problem class (instead of ConstantRadiusTrussProblem)
 
         // Constraint parameters
         /**
@@ -71,12 +74,12 @@ public class OrthogonalArrayMOEARun {
          * stabilityConstrained = [interior_penalty, AOS, biased_init, ACH]
          * orientationConstrained = [interior_penalty, AOS, biased_init, ACH]
          */
-        boolean[] feasibilityConstrained = {false, true, true, false};
+        boolean[] feasibilityConstrained = {true, false, false, false};
         boolean[] stabilityConstrained = {false, false, false, false};
-        boolean[] orientationConstrained = {false, false, false, false};
+        boolean[] orientationConstrained = {false, false, true, false};
 
-        int numCPU = 1;
-        int numRuns = 1;
+        int numCPU = 4;
+        int numRuns = 30;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
         engine = MatlabEngine.startMatlab();
@@ -84,11 +87,10 @@ public class OrthogonalArrayMOEARun {
         //String userPathOutput = "";
         //userPathOutput = engine.feval("userpath",csvPath);
 
-        //create the desired algorithm
-        //parameters and operators for search
+        // Create the desired algorithm parameters and operators for search
         double[] epsilonDouble = new double[]{0.01, 0.01};
         TypedProperties properties = new TypedProperties();
-        //search paramaters set here
+        // Search paramaters set here
         int popSize = 100;
         int maxEvals = 10000;
         properties.setInt("maxEvaluations", maxEvals);
@@ -110,6 +112,11 @@ public class OrthogonalArrayMOEARun {
             fileSaveNameModel = "_fibre";
         } else {
             fileSaveNameModel = "_truss";
+        }
+
+        String fileSaveNameProblem  = "";
+        if (useOptimizationProblem2) {
+            fileSaveNameProblem = "_prob2";
         }
 
         //String fileSaveNamePenalty;
@@ -147,10 +154,18 @@ public class OrthogonalArrayMOEARun {
 
         for (int i = 0; i < numRuns; i++) {
             // Create a new problem class
-            //TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath, useFibreStiffness, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0]);
+            //ConstantRadiusTrussProblem trussProblem = new ConstantRadiusTrussProblem(csvPath, useFibreStiffness, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0]);
+
             // Problem class for printable solutions
-            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath, useFibreStiffness, 32, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0], orientationConstrained[0]);
-            double[][] globalNodePositions = trussProblem.getNodalConnectivityArray();
+            AbstractProblem trussProblem;
+            double[][] globalNodePositions;
+            if (useOptimizationProblem2) {
+                trussProblem = new ConstantRadiusTrussProblem2(csvPath, useFibreStiffness, 32, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0], orientationConstrained[0]);
+                globalNodePositions = ((ConstantRadiusTrussProblem2) trussProblem).getNodalConnectivityArray();
+            } else {
+                trussProblem = new ConstantRadiusTrussProblem(csvPath, useFibreStiffness, 32, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, feasibilityConstrained[0], stabilityConstrained[0], orientationConstrained[0]);
+                globalNodePositions = ((ConstantRadiusTrussProblem) trussProblem).getNodalConnectivityArray();
+            }
 
             //String fileSaveNameInit;
             if (feasibilityConstrained[2] || stabilityConstrained[2]) { // Initialization object
@@ -256,7 +271,7 @@ public class OrthogonalArrayMOEARun {
                 //comp = new ChainedComparator(new ParetoObjectiveComparator());
                 //selection = new TournamentSelection(2, comp);
 
-                //setup for saving results
+                // Setup for saving results
                 properties.setBoolean("saveQuality", true);
                 properties.setBoolean("saveCredits", true);
                 properties.setBoolean("saveSelection", true);
@@ -301,15 +316,15 @@ public class OrthogonalArrayMOEARun {
 
                 properties.setDouble("pmin", 0.1);
 
-                //create operator selector
+                // Create operator selector
                 //OperatorSelector operatorSelector = new AdaptivePursuit(operators, 0.8, 0.8, 0.1);
                 OperatorSelector operatorSelector = new ProbabilityMatching(operators, 0.6, 0.1);
 
-                //create credit assignment
+                // Create credit assignment
                 //SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
                 OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0);
 
-                //create AOS
+                // Create AOS
                 //aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
                 aosStrategy = new AOSVariationOP(operatorSelector, creditAssignment, popSize);
 
@@ -330,7 +345,7 @@ public class OrthogonalArrayMOEARun {
                 moeaObj = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, comp);
             }
 
-            ecs.submit(new EvolutionarySearch(moeaObj, properties, csvPath + File.separator + "result", "emoea_" + String.valueOf(i) + fileSaveNameConstraint.toString() + fileSaveNameModel , engine, useFibreStiffness, targetStiffnessRatio));
+            ecs.submit(new EvolutionarySearch(moeaObj, properties, csvPath + File.separator + "result", "emoea_" + String.valueOf(i) + fileSaveNameConstraint.toString() + fileSaveNameProblem + fileSaveNameModel , engine, useFibreStiffness, targetStiffnessRatio));
         }
 
         for (int i = 0; i < numRuns; i++) {

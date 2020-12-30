@@ -47,7 +47,7 @@
       <module name="Truss_AOS" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="seakers.trussaos.*" />
+          <option name="PATTERN" value="seakers.trussaos.problems.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -60,7 +60,7 @@
       <module name="Truss_AOS" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="seakers.trussaos.*" />
+          <option name="PATTERN" value="seakers.trussaos.problems.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>

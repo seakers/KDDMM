@@ -32,6 +32,7 @@ import seakers.trussaos.operators.AddMember;
 import seakers.trussaos.operators.RemoveIntersection;
 import seakers.trussaos.constraints.DisjunctiveNormalForm;
 import seakers.trussaos.constraints.KnowledgeStochasticRanking;
+import seakers.trussaos.problems.ConstantRadiusTrussProblem;
 
 /**
  * Executable class for the eMOEA run with/without AOS for the Truss Optimization problem.
@@ -124,7 +125,7 @@ public class MOEARun {
         for (int i = 0; i < numRuns; i++) {
 
             // Create a new problem class
-            TrussAOSProblem trussProblem = new TrussAOSProblem(csvPath,useFibreStiffness,targetStiffnessRatio,engine,feasibilityConstrained,stabilityConstrained,orientationConstrained);
+            ConstantRadiusTrussProblem trussProblem = new ConstantRadiusTrussProblem(csvPath,useFibreStiffness,targetStiffnessRatio,engine,feasibilityConstrained,stabilityConstrained,orientationConstrained);
 
             double[][] globalNodePositions;
             String fileSaveNameModel;

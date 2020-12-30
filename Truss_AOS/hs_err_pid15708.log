@@ -96,7 +96,7 @@ j  java.lang.RuntimeException.<init>(Ljava/lang/String;)V+2
 v  ~StubRoutines::call_stub
 J 635  com.mathworks.mvm.exec.NativeFutureResult.nativeGet(J)Ljava/lang/Object; (0 bytes) @ 0x000001cc002a0a7b [0x000001cc002a0a40+0x3b]
 J 1436 C2 com.mathworks.engine.MatlabEngine.feval(ILjava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object; (21 bytes) @ 0x000001cc0025d328 [0x000001cc0025d180+0x1a8]
-J 2482 C2 seakers.trussaos.TrussAOSProblem.evaluate(Lorg/moeaframework/core/Solution;)V (523 bytes) @ 0x000001cc00582390 [0x000001cc005817a0+0xbf0]
+J 2482 C2 seakers.trussaos.problems.ConstantRadiusTrussProblem.evaluate(Lorg/moeaframework/core/Solution;)V (523 bytes) @ 0x000001cc00582390 [0x000001cc005817a0+0xbf0]
 J 1886 C2 seakers.aos.aos.AOSMOEA.iterate()V (69 bytes) @ 0x000001cc00508e98 [0x000001cc00507b80+0x1318]
 J 1585 C1 org.moeaframework.algorithm.AbstractAlgorithm.step()V (37 bytes) @ 0x000001cc00453ecc [0x000001cc00453b40+0x38c]
 j  seakers.trussaos.EvolutionarySearch.call()Lorg/moeaframework/core/Algorithm;+328

@@ -2,7 +2,6 @@ package seakers.trussaos;
 
 import seakers.aos.aos.AOS;
 import seakers.aos.history.AOSHistoryIO;
-import seakers.trussaos.ResultIO;
 import com.mathworks.engine.*;
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +14,8 @@ import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.Solution;
 import org.moeaframework.util.TypedProperties;
+import seakers.trussaos.problems.ConstantRadiusTrussProblem;
+import seakers.trussaos.problems.ConstantRadiusTrussProblem2;
 
 
 public class EvolutionarySearch implements Callable<Algorithm> {
@@ -74,7 +75,7 @@ public class EvolutionarySearch implements Callable<Algorithm> {
         long finishTime = System.currentTimeMillis();
         System.out.println("Done with optimization. Execution time: " + ((finishTime - startTime) / 1000) + "s");
 
-        ResultIO resultIO = new ResultIO((TrussAOSProblem) alg.getProblem(),engine,useFibreStiffness,targetStiffnessRatio);
+        ResultIO resultIO = new ResultIO(engine,useFibreStiffness,targetStiffnessRatio);;
 
         //String filename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name;
         //ResultIO.savePopulation(((AbstractEvolutionaryAlgorithm) alg).getPopulation(), filename);

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -15,11 +14,12 @@ import org.moeaframework.analysis.collector.Accumulator;
 import org.moeaframework.analysis.collector.InstrumentedAlgorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.PopulationIO;
-import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
 import com.mathworks.engine.*;
-import seakers.aos.history.CreditHistory;
+import org.moeaframework.problem.AbstractProblem;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
+import seakers.trussaos.problems.ConstantRadiusTrussProblem;
+import seakers.trussaos.problems.ConstantRadiusTrussProblem2;
 
 public class ResultIO implements Serializable {
     private static final long serialVersionUID = -2048768998854760056L;
@@ -30,13 +30,12 @@ public class ResultIO implements Serializable {
 
     private static double targetStiffnessRatio;
 
-    private static TrussAOSProblem problem;
+    //private static AbstractProblem problem;
 
-    public ResultIO(TrussAOSProblem runProblem, MatlabEngine eng, boolean fibreStiffness, double targetRatio) {
+    public ResultIO(MatlabEngine eng, boolean fibreStiffness, double targetRatio) {
         engine = eng;
         useFibreStiffness = fibreStiffness;
         targetStiffnessRatio = targetRatio;
-        problem = runProblem;
     }
 
     public static void saveSearchMetrics(InstrumentedAlgorithm instAlgorithm, String filename) {
@@ -119,7 +118,7 @@ public class ResultIO implements Serializable {
     public void saveFinalResultToCsv(Population pop, String filename) throws IOException, ExecutionException, InterruptedException {
         System.out.println("Saving results to csv file");
         File csvFile = new File(filename);
-        //TrussAOSProblem aosProblem = new TrussAOSProblem(filename,useFibreStiffness,targetStiffnessRatio,engine);
+        //ConstantRadiusTrussProblem aosProblem = new ConstantRadiusTrussProblem(filename,useFibreStiffness,targetStiffnessRatio,engine);
         FileWriter csvWrite = new FileWriter(csvFile);
         csvWrite.append("Full Design");
         csvWrite.append(",");
