@@ -81,8 +81,8 @@ function pcScore = partCollapseHeuristic_2D(sidenum,CA,NC,sel,biasFac)
         % Identify nodes on the surface of the current slice
         lowerbound = (iy-1)*(1/(sidenum-1));
         upperbound = (iy)*(1/(sidenum-1));
-        nodeslower = find(ND(:,1) == lowerbound); 
-        nodesupper = find(ND(:,1) == upperbound); 
+        nodeslower = find(ND(:,2) == lowerbound); 
+        nodesupper = find(ND(:,2) == upperbound); 
         allnodes = [nodeslower;nodesupper];
 
         % Isolate all elements connecting to/from all these nodes
