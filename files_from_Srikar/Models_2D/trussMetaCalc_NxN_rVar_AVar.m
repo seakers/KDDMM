@@ -364,6 +364,15 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
                 for k = 1:1:(L/singl)
                     horizrads = [horizrads,rvar(i)];
                 end
+            elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
+                    (NC(CA(i,1),2) == sel)
+                singl = sel/(sidenum-1);
+                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
+                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
+                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
+                for k = 1:1:(L/singl)
+                    horizrads = [horizrads,rvar(i)];
+                end
             end
         end
     end
@@ -378,6 +387,14 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
                 for k = 1:1:(L/singl)
                     vertrads = [vertrads,rvar(i)];
                 end
+            elseif ((CA(i,1) + j) == CA(i,2)) && (NC(CA(i,1),1) == sel)
+                singl = sel/(sidenum-1);
+                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
+                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
+                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
+                for k = 1:1:(L/singl)
+                    vertrads = [vertrads,rvar(i)];
+                end    
             end
         end
     end
