@@ -16,7 +16,7 @@ ISSUES:
 (1) vF values for all 4 sections are unequal, likely due to different area
 vectors
 %}
-function [dbScore,tvF,bvF,lvF,rvF] = densityBiasHeuristic_2D_3x3(CA,rvar,sel,scaleFac)
+function dbScore = densityBiasHeuristic_2D_3x3(CA,rvar,sel,scaleFac)
     % Inputs
     Avar = pi.*(rvar.^2); % Cross-sectional areas of truss members
     sidenum = 3; smalldim = 2;
@@ -48,8 +48,7 @@ function [dbScore,tvF,bvF,lvF,rvF] = densityBiasHeuristic_2D_3x3(CA,rvar,sel,sca
     
     % Find differences between left & right and top & bottom VFs, and then
     % find average difference
-    lrdiff = abs(lvF-rvF); %tbdiff = abs(tvF-bvF); 
-    tbdiff = lrdiff;
+    lrdiff = abs(lvF-rvF); tbdiff = abs(tvF-bvF); 
     avgdiff = (lrdiff+tbdiff)./2;
     
     % Score the average difference on e^-x
