@@ -98,14 +98,18 @@ function Avar = modifyAreas(Avar,CA,NC,sidenum)
         end
     end
     if isempty(CAedgy)
-        CAedgy = [100,100];
+        CAedgy = [100*sidenum,100*sidenum];
     end
     edgemembers = ismember(CA,CAedgy,'rows');
     
     % Find and modify areas belonging to edge members
-    selectAreas = Avar'.*edgemembers;
-    k = find(selectAreas);
-    Avar(k) = Avar(k)./2;
+    if isempty(edgemembers)
+        % Do nothing
+    else
+        selectAreas = Avar'.*edgemembers;
+        k = find(selectAreas);
+        Avar(k) = Avar(k)./2;
+    end
 end
 
 % FUNCTION TO SPLIT DESIGN IN HALF, VERTICALLY
