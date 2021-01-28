@@ -97,6 +97,9 @@ function Avar = modifyAreas(Avar,CA,NC,sidenum)
             CAedgy = [CAedgy;CAedgenodes(i,:)];
         end
     end
+    if isempty(CAedgy)
+        CAedgy = [100,100];
+    end
     edgemembers = ismember(CA,CAedgy,'rows');
     
     % Find and modify areas belonging to edge members
