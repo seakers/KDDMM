@@ -9,7 +9,7 @@
 % applied to scores when used with such designs.  The scoring variable, 
 % conConstScore, is on [0,1] in increments of 0.1
 % -------------------------------------------------------------------------
-function conConstScore = connectivityConstraint_NPBC_2D(sidenum,NC,CA,sel)
+function conConstScore = connectivityConstraint_NPBC_2D(sidenum,NC,CA,sel,biasFac)
     % Initialize variables
     conConstScore = 1; 
     ND = NC./sel;
