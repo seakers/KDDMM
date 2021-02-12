@@ -15,14 +15,14 @@ clc;
 close all; 
 clear;
 nucFac = 1; 
-sel = 0.05; 
+sel = 0.01; 
 sidenum = 3;
-E = 10000;
+E = 1816200;
 % Case 1, 1 unit cell (3x3 grid)
 CA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];
-rvar = (50*(10^-6)).*ones(1,size(CA,1));
+rvar = (250*(10^-6)).*ones(1,size(CA,1));
 %}
-function [C,volFrac] = ...
+function [C,volFrac,thick,Avar] = ...
                 trussMetaCalc_NxN_rVar_AVar(nucFac,sidenum,sel,rvar,E,CA)
     
     % Calculated Inputs
@@ -43,7 +43,7 @@ function [C,volFrac] = ...
     %disp('The C-matrix is: '); disp(C);
     
     % Calculate and print volume fraction (function below)
-    volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum);
+    [volFrac,thick] = calcVF(NC,CA,rvar,Avar,sel,sidenum);
     %disp('The volume fraction is: '); disp(volFrac);
 end
 
@@ -75,7 +75,7 @@ function Avar = modifyAreas(Avar,CA,NC,sidenum)
     
     % Isolate edge members based on angle
     edgelogical = [edgeconnectors,edgeconnectors];
-    CAedgenodes = CA.*edgelogical;
+    CAedgenodes = CA.*(edgelogical);
     CAedgenodes = CAedgenodes(any(CAedgenodes,2),:);
     x1 = NC(CAedgenodes(:,1),1); x2 = NC(CAedgenodes(:,2),1);
     y1 = NC(CAedgenodes(:,1),2); y2 = NC(CAedgenodes(:,2),2);
@@ -344,7 +344,7 @@ function K = formK(NC,CA,Avar,E)
 end
 
 % FUNCTION TO CALCULATE VOLUME FRACTION 
-function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
+function [volFrac,thick] = calcVF(NC,CA,rvar,Avar,sel,sidenum)
     totalTrussVol = 0;
     for i = 1:size(CA,1)
         % Finding element length from nodal coordinates
@@ -360,7 +360,7 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
             if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
-                    (NC(CA(i,1),2) == sel)
+                    ((NC(CA(i,1),2) == sel) || (NC(CA(i,1),2) == 0))
                 singl = sel/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
@@ -369,7 +369,7 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
                     horizrads = [horizrads,rvar(i)];
                 end
             elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
-                    (NC(CA(i,1),2) == sel)
+                    ((NC(CA(i,1),2) == sel) || (NC(CA(i,1),2) == 0))
                 singl = sel/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
@@ -383,7 +383,8 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
     vertrads = [];
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
-            if ((CA(i,1) + j) == CA(i,2)) && (NC(CA(i,1),1) == sel)
+            if ((CA(i,1) + j) == CA(i,2)) && ...
+                    ((NC(CA(i,1),1) == sel) || (NC(CA(i,1),1) == 0))
                 singl = sel/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
@@ -391,7 +392,8 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
                 for k = 1:1:(L/singl)
                     vertrads = [vertrads,rvar(i)];
                 end
-            elseif ((CA(i,1) + j) == CA(i,2)) && (NC(CA(i,1),1) == sel)
+            elseif ((CA(i,1) - j) == CA(i,2)) && ...
+                    ((NC(CA(i,1),1) == sel) || (NC(CA(i,1),1) == 0))
                 singl = sel/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
