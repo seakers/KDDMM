@@ -14,9 +14,8 @@
 clc;    
 close all; 
 clear;
-nucFac = 1; 
+nucFac = 3; 
 sel = 0.01; 
-sidenum = 3;
 E = 1816200;
 % Case 1, 1 unit cell (3x3 grid)
 tinyCA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];
@@ -28,7 +27,7 @@ function [C,volFrac] = ...
     
     % Generate vector with nodal coordinates
     sidenum = (2*nucFac) + 1; % Number of nodes on each size of square grid
-    NC = generateNC(sel,sidenum);
+    NC = generateNC(sel,nucFac,sidenum);
     
     % Generate Connectivity Array for given # of UC's
     [CA,rvar] = generateCA(sidenum,tinyCA,tinyrvar);
@@ -46,14 +45,17 @@ function [C,volFrac] = ...
     %disp('The C-matrix is: '); disp(C);
     
     % Calculate and print volume fraction (function below)
-    volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum);
+    volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum,nucFac);
     %disp('The volume fraction is: '); disp(volFrac);
+    
+    % Plot design
+    plotDesign(NC,CA);
 end
 
 %----------%
 % FUNCTION TO GENERATE NODAL COORDINATES BASED ON GRID SIZE
-function NC = generateNC(sel,sidenum)
-    notchvec = linspace(0,1,sidenum);
+function NC = generateNC(sel,nucFac,sidenum)
+    notchvec = linspace(0,nucFac,sidenum);
     NC = [];
     for i = 1:1:sidenum
         for j = 1:1:sidenum
@@ -397,8 +399,9 @@ function K = formK(NC,CA,Avar,E)
 end
 
 % FUNCTION TO CALCULATE VOLUME FRACTION 
-function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
+function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum,nucFac)
     totalTrussVol = 0;
+    totl = sel*nucFac;
     for i = 1:size(CA,1)
         % Finding element length from nodal coordinates
         x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
@@ -413,8 +416,8 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
             if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
-                    ((NC(CA(i,1),2) == sel) || (NC(CA(i,1),2) == 0))
-                singl = sel/(sidenum-1);
+                    ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
+                singl = totl/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
                 L = sqrt(((x2-x1)^2)+((y2-y1)^2));
@@ -422,8 +425,8 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
                     horizrads = [horizrads,rvar(i)];
                 end
             elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
-                    ((NC(CA(i,1),2) == sel) || (NC(CA(i,1),2) == 0))
-                singl = sel/(sidenum-1);
+                    ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
+                singl = totl/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
                 L = sqrt(((x2-x1)^2)+((y2-y1)^2));
@@ -437,8 +440,8 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
             if ((CA(i,1) + j) == CA(i,2)) && ...
-                    ((NC(CA(i,1),1) == sel) || (NC(CA(i,1),1) == 0))
-                singl = sel/(sidenum-1);
+                    ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
+                singl = totl/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
                 L = sqrt(((x2-x1)^2)+((y2-y1)^2));
@@ -446,8 +449,8 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
                     vertrads = [vertrads,rvar(i)];
                 end
             elseif ((CA(i,1) - j) == CA(i,2)) && ...
-                    ((NC(CA(i,1),1) == sel) || (NC(CA(i,1),1) == 0))
-                singl = sel/(sidenum-1);
+                    ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
+                singl = totl/(sidenum-1);
                 x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
                 y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
                 L = sqrt(((x2-x1)^2)+((y2-y1)^2));
@@ -461,6 +464,14 @@ function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
     
     % Calculating volume fraction (using a solid square with 2*(avg 
     %   thickness) as a baseline)
-    volFrac = totalTrussVol/(2*thick*(sel^2)); 
+    volFrac = totalTrussVol/(2*thick*(totl^2)); 
 end
 
+% FUNCTION TO PLOT DESIGN
+function plotDesign(NC,CA)
+    for i = 1:1:size(CA,1)
+        figure(1)
+        plot([NC(CA(i,1),1),NC(CA(i,2),1)],[NC(CA(i,1),2),NC(CA(i,2),2)],'b-');
+        hold on;
+    end
+end
