@@ -19,19 +19,22 @@ sel = 0.01;
 sidenum = 3;
 E = 1816200;
 % Case 1, 1 unit cell (3x3 grid)
-CA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];
-rvar = (250*(10^-6)).*ones(1,size(CA,1));
+tinyCA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];
+tinyrvar = (250*(10^-6)).*ones(1,size(tinyCA,1));
 %}
-function [C,volFrac,thick,Avar] = ...
-                trussMetaCalc_NxN_rVar_AVar(nucFac,sidenum,sel,rvar,E,CA)
+function [C,volFrac] = ...
+                trussMetaCalc_NxN_rVar_AVar(nucFac,sel,tinyrvar,E,tinyCA)
     
-    % Calculated Inputs
-    Avar = pi.*(rvar.^2); % Cross-sectional areas of truss members
     
     % Generate vector with nodal coordinates
+    sidenum = (2*nucFac) + 1; % Number of nodes on each size of square grid
     NC = generateNC(sel,sidenum);
     
-    % Modify Avar for edge members
+    % Generate Connectivity Array for given # of UC's
+    [CA,rvar] = generateCA(sidenum,tinyCA,tinyrvar);
+    
+    % Calculate Avar & modify for edge members
+    Avar = pi.*(rvar.^2); % Cross-sectional areas of truss members
     Avar = modifyAreas(Avar,CA,NC,sidenum);
     
     % Develop C-matrix from K-matrix (functions below)
@@ -43,7 +46,7 @@ function [C,volFrac,thick,Avar] = ...
     %disp('The C-matrix is: '); disp(C);
     
     % Calculate and print volume fraction (function below)
-    [volFrac,thick] = calcVF(NC,CA,rvar,Avar,sel,sidenum);
+    volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum);
     %disp('The volume fraction is: '); disp(volFrac);
 end
 
@@ -58,6 +61,56 @@ function NC = generateNC(sel,sidenum)
         end
     end
     NC = sel.*NC;
+end
+
+% FUNCTION TO GENERATE CONNECTIVITY ARRAY FOR 3x3 UC'S, nucFac x nucFac 
+function [CA,rvar] = generateCA(sidenum,tinyCA,tinyrvar)
+    CA = [];
+    trvar = [];
+
+    % Identify central node for all unit cells
+    cnvec = [];
+    for j = (sidenum+2):(2*sidenum):((sidenum^2)-(2*sidenum)+2)
+        cnvec = [cnvec;j];
+        for i = 2:2:(sidenum-2)
+            cnvec = [cnvec;(j+i)];
+        end
+    end
+    
+    % Populate CA using template of tinyCA and locations of cn's
+    for w = 1:1:size(cnvec,1)
+        cn = cnvec(w);
+        for q = 1:1:size(tinyCA,1)
+            row = [];
+            for r = 1:1:2
+                if tinyCA(q,r) == 1
+                    row = [row,(cn-sidenum-1)];
+                elseif tinyCA(q,r) == 2
+                    row = [row,(cn-sidenum)];
+                elseif tinyCA(q,r) == 3
+                    row = [row,(cn-sidenum+1)];
+                elseif tinyCA(q,r) == 4
+                    row = [row,(cn-1)];
+                elseif tinyCA(q,r) == 5
+                    row = [row,cn];
+                elseif tinyCA(q,r) == 6
+                    row = [row,(cn+1)];
+                elseif tinyCA(q,r) == 7
+                    row = [row,(cn+sidenum-1)];
+                elseif tinyCA(q,r) == 8
+                    row = [row,(cn+sidenum)];
+                elseif tinyCA(q,r) == 9
+                    row = [row,(cn+sidenum+1)];
+                end
+            end
+            CA = [CA;row];
+            trvar = [trvar,tinyrvar(q)];
+        end
+    end
+    
+    % Eliminate duplicate members & areas
+    [CA,ia,~] = unique(CA,'rows');
+    rvar = trvar(ia);
 end
 
 % FUNCTION TO MODIFY AREAS FOR EDGE MEMBERS
@@ -344,7 +397,7 @@ function K = formK(NC,CA,Avar,E)
 end
 
 % FUNCTION TO CALCULATE VOLUME FRACTION 
-function [volFrac,thick] = calcVF(NC,CA,rvar,Avar,sel,sidenum)
+function volFrac = calcVF(NC,CA,rvar,Avar,sel,sidenum)
     totalTrussVol = 0;
     for i = 1:size(CA,1)
         % Finding element length from nodal coordinates
