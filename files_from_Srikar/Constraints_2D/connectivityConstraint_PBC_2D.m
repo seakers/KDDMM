@@ -293,35 +293,13 @@ function conConstScore = connectivityConstraint_PBC_2D(sidenum,NC,CA,sel,biasFac
         
         % Determine whether node has sufficient connectivity components, 
         % and that the presence of holes does not cause instability
-        if (xsum == 0) && (ysum == 0) % Node is a hole
-            % Determine if hole node is on edge-- causing constraint
-            % equation failure for PBCs
-            isEdgeNode = ismember(i,edgenodes);
-            if isEdgeNode == true
-                conConstScore = conConstScore - 0.1;
-                if conConstScore < 0.1
-                    return
-                end
+        if (N(i) < 2)
+            % Node is an unstable connection point
+            conConstScore = conConstScore - 0.1;
+            if conConstScore < 0.1
+                return
             end
-            
-            % Determine if number of holes exceeds threshold
-            holecounter = holecounter + 1;
-            if holecounter > (sidenum-2)
-                conConstScore = conConstScore - 0.1;
-                if conConstScore < 0.1
-                    return
-                end
-            end
-        else % Node has sufficient connectivity components; must now check 
-             % for sufficient number of members
-            if (N(i) < 2)
-                % Node is an unstable connection point
-                conConstScore = conConstScore - 0.1;
-                if conConstScore < 0.1
-                    return
-                end
-            end 
-        end
+        end 
     end
     
     % Account for bias factor
