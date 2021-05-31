@@ -13,7 +13,6 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
     % Initialize variables
     conHeurScore = 1; 
     ND = NC./sel;
-    holecounter = 0;
     
     % Determine number of holes limit
     if sidenum == 3
@@ -24,6 +23,27 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
         disp('Nodal grid size not supported yet');
         return
     end    
+    
+    % Determine number of holes, accounting for repeatability
+    leftedgenodes = 2:1:(sidenum-1); 
+    bottomedgenodes = (sidenum+1):sidenum:((sidenum^2)-(2*sidenum)+1);
+    edgenodes = [leftedgenodes,bottomedgenodes];
+    numHoles = nnz(~N);
+    if N(1) == 0
+        numHoles = numHoles - 3;
+    end
+    for j = 1:1:length(edgenodes)
+        if N(edgenodes(j)) == 0
+            numHoles = numHoles - 1;
+        end
+    end
+    holeoverflow = numHoles - holelimit;
+    if holeoverflow > 0
+        conHeurScore = conHeurScore - (holeoverflow*0.1);
+        if conHeurScore < 0.1
+            return
+        end
+    end
     
     % Add up counters based on nodal connectivities
     [N,~] = histcounts(CA,size(NC,1));
@@ -307,14 +327,6 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
             conHeurScore = conHeurScore - 0.1;
             if conHeurScore < 0.1
                 return
-            end
-        elseif (xsum == 0) && (ysum == 0) % Node is a hole
-            holecounter = holecounter + 1;
-            if holecounter > holelimit
-                conHeurScore = conHeurScore - 0.1;
-                if conHeurScore < 0.1
-                    return
-                end
             end
         else % Node has sufficient connectivity components; must now check 
              % for sufficient number of members
