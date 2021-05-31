@@ -15,6 +15,16 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
     ND = NC./sel;
     holecounter = 0;
     
+    % Determine number of holes limit
+    if sidenum == 3
+        holelimit = 1;
+    elseif sidenum == 5
+        holelimit = 5;
+    else
+        disp('Nodal grid size not supported yet');
+        return
+    end    
+    
     % Add up counters based on nodal connectivities
     [N,~] = histcounts(CA,size(NC,1));
     
@@ -293,16 +303,14 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
         
         % Determine whether node has sufficient connectivity components, 
         % and that the presence of holes is below threshold
-        if (xsum == 0) || (ysum == 0) 
-            % Node is an unstable connection point
+        if (xsum == 0) || (ysum == 0) % Node is unstable connection point
             conHeurScore = conHeurScore - 0.1;
             if conHeurScore < 0.1
                 return
             end
-        elseif (xsum == 0) && (ysum == 0)
-            % Node is a hole
+        elseif (xsum == 0) && (ysum == 0) % Node is a hole
             holecounter = holecounter + 1;
-            if holecounter > (sidenum-2)
+            if holecounter > holelimit
                 conHeurScore = conHeurScore - 0.1;
                 if conHeurScore < 0.1
                     return
