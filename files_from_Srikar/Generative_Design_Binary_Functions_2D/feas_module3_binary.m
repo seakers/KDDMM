@@ -1,4 +1,5 @@
-% THIRD MODULE: The entire design must be interconnected
+% THIRD MODULE: The entire design must be connected within itself
+% (intracell connecvitiy)
 % flowbool = true for a unit cell that's fully connected within itself, and
 % false for a unit cell that is not
 function flowbool = feas_module3_binary(CA)
