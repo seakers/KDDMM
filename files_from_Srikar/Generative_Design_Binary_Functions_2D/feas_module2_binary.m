@@ -11,37 +11,43 @@ function nooverlapbool = feas_module2_binary(CA,NC)
         % Loop through each element again, to consider each possible pair 
         %   of elements
         for q = 1:1:size(SortedCA,1)
-            % Check if both elements share a common startpoint
-            if (NC(SortedCA(k,1),1) == NC(SortedCA(q,1),1)) && ...
-                (NC(SortedCA(k,1),2) == NC(SortedCA(q,1),2))
-                % Check if both elements have the same slope (and reject 
-                %    the design if so)
-                mk = (NC(SortedCA(k,2),2)-NC(SortedCA(k,1),2))/...
-                     (NC(SortedCA(k,2),1)-NC(SortedCA(k,1),1));
-                mq = (NC(SortedCA(q,2),2)-NC(SortedCA(q,1),2))/...
-                     (NC(SortedCA(q,2),1)-NC(SortedCA(q,1),1));
-                % If the same element is being compared twice, move on
-                if k == q
-                    continue
-                elseif mk == mq
-                   nooverlapbool = 0;
-                   return
-                end
-            % Check if both elements share a common endpoint    
-            elseif (NC(SortedCA(k,2),1) == NC(SortedCA(q,2),1)) && ...
-                   (NC(SortedCA(k,2),2) == NC(SortedCA(q,2),2))    
-                % Check if both elements have the same slope (and reject 
-                %    the design if so)
-                mk = (NC(SortedCA(k,2),2)-NC(SortedCA(k,1),2))/...
-                     (NC(SortedCA(k,2),1)-NC(SortedCA(k,1),1));
-                mq = (NC(SortedCA(q,2),2)-NC(SortedCA(q,1),2))/...
-                     (NC(SortedCA(q,2),1)-NC(SortedCA(q,1),1));
-                % If the same element is being compared twice, move on
-                if k == q
-                    continue
-                elseif mk == mq
-                   nooverlapbool = 0;
-                   return
+            % Isolate startpoint/endpoint coordinates of both members,
+            % calculate their slopes
+            A = NC(SortedCA(k,1),:); B = NC(SortedCA(k,2),:);
+            C = NC(SortedCA(q,1),:); D = NC(SortedCA(q,2),:);
+            mk = (B(2)-A(2))/(B(1)-A(1));
+            mq = (D(2)-C(2))/(D(1)-C(1));
+            
+            % Check if the same element is being compared twice
+            if k == q
+                continue
+            % Check if the elements' slopes are the same (i.e. they are
+            % parallel)
+            elseif mk == mq
+                % Check if the elements are horizontal and their
+                % coordinates overlap
+                if (mk == 0) && ((C(1) >= A(1)) && (C(1) < B(1)))
+                    nooverlapbool = 0;
+                    return
+                % Check if the elements are vertical and their coordinates
+                % overlap
+                elseif isinf(mk) && ((C(2) >= A(2)) && (C(2) < B(2)))
+                    nooverlapbool = 0;
+                    return
+                else
+                    t1 = (C(1)-A(1))/(B(1)-A(1));
+                    t2 = (C(2)-A(2))/(B(2)-A(2));
+                    t3 = (D(1)-A(1))/(B(1)-A(1));
+                    % Check if the diagonal elements overlap
+                    if (t1 == t2)
+                        if (t1 >= 0) && (t1 < 1)
+                            nooverlapbool = 0;
+                            return
+                        elseif (t3 >= 0) && (t3 < 1)
+                            nooverlapbool = 0;
+                            return
+                        end
+                    end
                 end
             end
         end
