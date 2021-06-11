@@ -79,7 +79,7 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V4(NC,CA_des)
         end
     end
     
-    % THIRD CONSTRAINT: The entire design must be interconnected
+    % THIRD CONSTRAINT: The design must have intracell connectivity
     % Find unique startpoints and endpoints
     startpoints = unique(SortedCA(:,1)); endpoints = unique(SortedCA(:,2));
     startunique = setdiff(startpoints,endpoints);
@@ -122,9 +122,9 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V4(NC,CA_des)
         end
     end
     
-    % FOURTH CONSTRAINT: The design must contact surrounding unit cells
+    % FOURTH CONSTRAINT: The design must have intercell connectivity
     % Initialize node category vectors
-    contactbool = 0;
+    contactboolx = 0; contactbooly = 0;
     usedpoints = unique(SortedCA);
     lenodes = 2:1:(sidenum-1); 
     renodes = ((sidenum^2)-sidenum+2):1:((sidenum^2)-1);
@@ -141,31 +141,38 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V4(NC,CA_des)
             cnodes = cornernodes(cornernodes~=usedpoints(y));
             cornercontact = ismember(cnodes,otherpoints);
             if any(cornercontact)
-                contactbool = 1;
+                contactboolx = 1; contactbooly = 1;
             end
         elseif ismember(usedpoints(y),lrnodepairs)
             [i,j] = find(lrnodepairs == usedpoints(y));
             if j == 1
                 if ismember(lrnodepairs(i,2),otherpoints)
-                    contactbool = 1;
+                    contactboolx = 1;
                 end
             elseif j == 2
                 if ismember(lrnodepairs(i,1),otherpoints)
-                    contactbool = 1;
+                    contactboolx = 1;
                 end
             end
         elseif ismember(usedpoints(y),tbnodepairs)
             [i,j] = find(tbnodepairs == usedpoints(y));
             if j == 1
                 if ismember(tbnodepairs(i,2),otherpoints)
-                    contactbool = 1;
+                    contactbooly = 1;
                 end
             elseif j == 2
                 if ismember(tbnodepairs(i,1),otherpoints)
-                    contactbool = 1;
+                    contactbooly = 1;
                 end
             end    
         end
+    end
+    
+    % Determine if intercell connectivity exists in both x and y
+    if (contactboolx == 1) && (contactbooly == 1)
+        contactbool = 1;
+    else
+        contactbool = 0;
     end
     
     % Score design unilaterally based on absence of contact points
