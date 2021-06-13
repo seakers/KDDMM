@@ -16,7 +16,8 @@ function conConstScore = connectivityConstraint_PBC_2D(sidenum,NC,CA,sel,biasFac
     holecounter = 0;
     
     % Add up counters based on nodal connectivities
-    [N,~] = histcounts(CA,size(NC,1));
+    binedges = (1:1:(size(NC,1)+1)) - 0.5;
+    [N,~] = histcounts(CA,binedges);
     
     % Loop through each node
     for i = 1:1:size(NC,1)
