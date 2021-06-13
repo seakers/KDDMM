@@ -7,7 +7,8 @@ function [N,numHoles] = connectivityCounter(sidenum,CA,NC,sel)
     ND = NC./sel;
     
     % Add up counters based on nodal connectivities (sans repeatability)
-    [N,~] = histcounts(CA,size(NC,1));
+    binedges = (1:1:(size(NC,1)+1)) - 0.5;
+    [N,~] = histcounts(CA,binedges);
     
     % Determine number of holes, accounting for repeatability
     leftedgenodes = 2:1:(sidenum-1); 

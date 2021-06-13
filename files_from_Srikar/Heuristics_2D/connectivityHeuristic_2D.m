@@ -16,9 +16,9 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
     
     % Determine number of holes limit
     if sidenum == 3
-        holelimit = 1;
+        holelimit = 2;
     elseif sidenum == 5
-        holelimit = 5;
+        holelimit = 7;
     else
         disp('Nodal grid size not supported yet');
         return
