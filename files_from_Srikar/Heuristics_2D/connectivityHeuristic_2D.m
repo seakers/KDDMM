@@ -14,6 +14,10 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
     conHeurScore = 1; 
     ND = NC./sel;
     
+    % Add up counters based on nodal connectivities (sans repeatability)
+    binedges = (1:1:(size(NC,1)+1)) - 0.5;
+    [N,~] = histcounts(CA,binedges);
+    
     % Determine number of holes limit
     if sidenum == 3
         holelimit = 2;
@@ -44,9 +48,6 @@ function conHeurScore = connectivityHeuristic_2D(sidenum,NC,CA,sel,biasFac)
             return
         end
     end
-    
-    % Add up counters based on nodal connectivities
-    [N,~] = histcounts(CA,size(NC,1));
     
     % Loop through each node
     for i = 1:1:size(NC,1)
