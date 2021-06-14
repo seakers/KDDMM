@@ -18,6 +18,7 @@ function nooverlapbool = feas_module2_binary(CA,NC)
             C = NC(SortedCA(q,1),:); D = NC(SortedCA(q,2),:);
             mk = (B(2)-A(2))/(B(1)-A(1));
             mq = (D(2)-C(2))/(D(1)-C(1));
+            mk = round(mk,4); mq = round(mq,4);
             
             % Check if the same element is being compared twice
             if k == q
