@@ -54,18 +54,24 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V4(NC,CA_des)
             % parallel)
             elseif mk == mq
                 % Check if the elements are horizontal and their
-                % coordinates overlap
+                % x-coordinates overlap
                 if (mk == 0) && ((C(1) >= A(1)) && (C(1) < B(1)))
-                    feasibilityScore = feasibilityScore - 0.1;
-                    if feasibilityScore < 0.1
-                        return
+                    % Check if the elements' y-coordinates overlap
+                    if C(2) == A(2)
+                        feasibilityScore = feasibilityScore - 0.1;
+                        if feasibilityScore < 0.1
+                            return
+                        end
                     end
                 % Check if the elements are vertical and their coordinates
                 % overlap
                 elseif isinf(mk) && ((C(2) >= A(2)) && (C(2) < B(2)))
-                    feasibilityScore = feasibilityScore - 0.1;
-                    if feasibilityScore < 0.1
-                        return
+                    % Check if the elements' x-coordinates overlap
+                    if C(1) == A(1)
+                        feasibilityScore = feasibilityScore - 0.1;
+                        if feasibilityScore < 0.1
+                            return
+                        end
                     end
                 else
                     t1 = (C(1)-A(1))/(B(1)-A(1));
