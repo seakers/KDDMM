@@ -46,6 +46,7 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V4(NC,CA_des)
             C = NC(SortedCA(q,1),:); D = NC(SortedCA(q,2),:);
             mk = (B(2)-A(2))/(B(1)-A(1));
             mq = (D(2)-C(2))/(D(1)-C(1));
+            mk = round(mk,4); mq = round(mq,4);
             
             % Check if the same element is being compared twice
             if k == q
@@ -104,9 +105,36 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V4(NC,CA_des)
     startunique = setdiff(startpoints,endpoints);
     endunique = setdiff(endpoints,startpoints);
     
+    % Check if there are any unique start- or endpoints at all
     if isempty(startunique) || isempty(endunique)
         flowbool = 1;
+        return
     else
+        % Determine whether there are startpoints or endpoints that are
+        % only used once in the CA
+        usednodes = unique(SortedCA);
+        freqvec = [usednodes,histc(SortedCA(:),usednodes)];
+        singlestarts = []; singleends = [];
+        for i = 1:1:length(startunique)
+            if freqvec((freqvec(:,1) == startunique(i)),2) == 1
+                singlestarts = [singlestarts,startunique(i)];
+            end
+        end
+        for j = 1:1:length(endunique)
+            if freqvec((freqvec(:,1) == endunique(j)),2) == 1
+                singleends = [singleends,endunique(j)];
+            end
+        end
+        for k = 1:1:length(singlestarts)
+            for m = 1:1:length(singleends)
+                member = [singlestarts(k),singleends(m)];
+                if ismember(member,SortedCA)
+                    flowbool = 0;
+                    return
+                end
+            end
+        end
+        
         % For each unique startpoint, determine if connectivity exists to
         % at least one unique endpoint
         for v = 1:1:length(startunique)
