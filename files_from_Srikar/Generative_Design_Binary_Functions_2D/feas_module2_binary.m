@@ -5,6 +5,7 @@ function nooverlapbool = feas_module2_binary(CA,NC)
     % Initialize values
     SortedCA = sortrows(CA);
     nooverlapbool = 1;
+    disp(SortedCA);
 
     % Loop through each element
     for k = 1:1:size(SortedCA,1)
@@ -23,17 +24,23 @@ function nooverlapbool = feas_module2_binary(CA,NC)
                 continue
             % Check if the elements' slopes are the same (i.e. they are
             % parallel)
-            elseif mk == mq
+            elseif (mk == mq)
                 % Check if the elements are horizontal and their
-                % coordinates overlap
+                % x-coordinates overlap
                 if (mk == 0) && ((C(1) >= A(1)) && (C(1) < B(1)))
-                    nooverlapbool = 0;
-                    return
+                    % Check if the elements' y-coordinates overlap
+                    if C(2) == A(2)
+                        nooverlapbool = 0;
+                        return
+                    end
                 % Check if the elements are vertical and their coordinates
                 % overlap
                 elseif isinf(mk) && ((C(2) >= A(2)) && (C(2) < B(2)))
-                    nooverlapbool = 0;
-                    return
+                    % Check if the elements' x-coordinates overlap
+                    if C(1) == A(1)
+                        nooverlapbool = 0;
+                        return
+                    end
                 else
                     t1 = (C(1)-A(1))/(B(1)-A(1));
                     t2 = (C(2)-A(2))/(B(2)-A(2));
@@ -53,3 +60,4 @@ function nooverlapbool = feas_module2_binary(CA,NC)
         end
     end
 end
+
