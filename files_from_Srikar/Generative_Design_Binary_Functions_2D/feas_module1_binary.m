@@ -49,9 +49,9 @@ end
 % FUNCTION TO CALCULATE ORIENTATION FROM 3 POINTS
 function orientation = findOrientation(p,q,r)
     val = ((q(2)-p(2))*(r(1)-q(1)))-((q(1)-p(1))*(r(2)-q(2)));
-    if val == 0
+    if (abs(val) < (10^-5)) && (val > 0)
         orientation = 0;
-    elseif val > 0
+    elseif val > (10^-5)
         orientation = 1;
     else
         orientation = 2;
