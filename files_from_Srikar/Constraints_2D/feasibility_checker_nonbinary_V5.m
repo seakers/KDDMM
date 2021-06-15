@@ -125,12 +125,14 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA_des)
                 singleends = [singleends,endunique(j)];
             end
         end
-        for k = 1:1:length(singlestarts)
-            for m = 1:1:length(singleends)
-                member = [singlestarts(k),singleends(m)];
-                if ismember(member,SortedCA)
-                    flowbool = 0;
-                    return
+        if ~isempty(singlestarts) && ~isempty(singleends)
+            for k = 1:1:length(singlestarts)
+                for m = 1:1:length(singleends)
+                    member = [singlestarts(k),singleends(m)];
+                    if ismember(member,SortedCA)
+                        flowbool = 0;
+                        return
+                    end
                 end
             end
         end
@@ -145,15 +147,11 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA_des)
                     tCA = SortedCA(SortedCA(:,1)== (mCA(z,2)),:);
                     nmCA = [nmCA;tCA];
                 end
-                for x = 1:1:size(nmCA,1)
-                    flowdet = ismember(endunique,nmCA(:,2));
-                    if any(flowdet)
-                        flowbool = 1;
-                        break
-                    end
-                end
-                if flowbool == 1
-                    break
+                nmCA = unique(nmCA,'rows');
+                flowdet = ismember(endunique,nmCA(:,2));
+                if any(flowdet)
+                    flowbool = 1;
+                    %break
                 end
                 mCA = nmCA;
             end
