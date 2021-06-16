@@ -152,7 +152,7 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
                 flowdet = ismember(endunique,nmCA(:,2));
                 if any(flowdet)
                     flowbool = 1;
-                    %break
+                    break
                 end
                 mCA = nmCA;
             end
