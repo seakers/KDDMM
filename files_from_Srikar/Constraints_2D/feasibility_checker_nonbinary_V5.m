@@ -1,12 +1,12 @@
-function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA_des)
+function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
 % This function computes the feasibility score for a design 
 % Inputs: nodal position matrix NC 
-%         Design Connectivity Array CA_des         
+%         Design Connectivity Array CA         
     feasibilityScore = 1;
 
     % FIRST CONSTRAINT: members only intersect at nodes (no crossing)
     % Sort points from left to right by x-position
-    SortedCA = sortrows(CA_des);
+    SortedCA = sortrows(CA);
     ND = NC./sel;
     
     % Develop 4xM matrix of line segment endpoint coordinates, where M is 
