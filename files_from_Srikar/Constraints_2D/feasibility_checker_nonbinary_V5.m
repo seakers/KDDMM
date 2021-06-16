@@ -7,12 +7,13 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA_des)
     % FIRST CONSTRAINT: members only intersect at nodes (no crossing)
     % Sort points from left to right by x-position
     SortedCA = sortrows(CA_des);
+    ND = NC./sel;
     
     % Develop 4xM matrix of line segment endpoint coordinates, where M is 
     %   the number of truss members.  Each row of format (x1,y1,x2,y2),
     %   where point 1 is leftmost, point 2 is rightmost
-    PosA = [NC(SortedCA(:,1),1),NC(SortedCA(:,1),2),...
-            NC(SortedCA(:,2),1),NC(SortedCA(:,2),2)];
+    PosA = [ND(SortedCA(:,1),1),ND(SortedCA(:,1),2),...
+            ND(SortedCA(:,2),1),ND(SortedCA(:,2),2)];
     
     % Loop through each pair of elements
     for i = 1:1:size(PosA,1)
@@ -42,8 +43,8 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA_des)
         for q = 1:1:size(SortedCA,1)
             % Isolate startpoint/endpoint coordinates of both members,
             % calculate their slopes
-            A = NC(SortedCA(k,1),:); B = NC(SortedCA(k,2),:);
-            C = NC(SortedCA(q,1),:); D = NC(SortedCA(q,2),:);
+            A = ND(SortedCA(k,1),:); B = ND(SortedCA(k,2),:);
+            C = ND(SortedCA(q,1),:); D = ND(SortedCA(q,2),:);
             mk = (B(2)-A(2))/(B(1)-A(1));
             mq = (D(2)-C(2))/(D(1)-C(1));
             mk = round(mk,4); mq = round(mq,4);
