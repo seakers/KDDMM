@@ -1,9 +1,10 @@
 % SECOND CONSTRAINT: Elements (of either the same or different lengths)
 % nooverlapbool = true for a design with no overlapping members and false
 % for a design that contains at least one instance of overlapping members
-function nooverlapbool = feas_module2_binary(CA,NC)
+function nooverlapbool = feas_module2_binary(CA,NC,sel)
     % Initialize values
     SortedCA = sortrows(CA);
+    ND = NC./sel;
     nooverlapbool = 1;
     disp(SortedCA);
 
@@ -14,8 +15,8 @@ function nooverlapbool = feas_module2_binary(CA,NC)
         for q = 1:1:size(SortedCA,1)
             % Isolate startpoint/endpoint coordinates of both members,
             % calculate their slopes
-            A = NC(SortedCA(k,1),:); B = NC(SortedCA(k,2),:);
-            C = NC(SortedCA(q,1),:); D = NC(SortedCA(q,2),:);
+            A = ND(SortedCA(k,1),:); B = ND(SortedCA(k,2),:);
+            C = ND(SortedCA(q,1),:); D = ND(SortedCA(q,2),:);
             mk = (B(2)-A(2))/(B(1)-A(1));
             mq = (D(2)-C(2))/(D(1)-C(1));
             mk = round(mk,4); mq = round(mq,4);
