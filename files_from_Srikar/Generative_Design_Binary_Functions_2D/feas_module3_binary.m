@@ -37,7 +37,6 @@ function flowbool = feas_module3_binary(CA)
                 for m = 1:1:length(singleends)
                     member = [singlestarts(k),singleends(m)];
                     if ismember(member,SortedCA,'rows')
-                        disp('hello');disp(member);
                         flowbool = 0;
                         return
                     end
