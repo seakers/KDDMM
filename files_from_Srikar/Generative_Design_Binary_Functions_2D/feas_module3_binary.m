@@ -36,7 +36,7 @@ function flowbool = feas_module3_binary(CA)
             for k = 1:1:length(singlestarts)
                 for m = 1:1:length(singleends)
                     member = [singlestarts(k),singleends(m)];
-                    if ismember(member,SortedCA,'rows')
+                    if ~ismember(member,SortedCA,'rows')
                         flowbool = 0;
                         return
                     end
@@ -56,14 +56,14 @@ function flowbool = feas_module3_binary(CA)
                 end
                 nmCA = unique(nmCA,'rows');
                 flowdet = ismember(endunique,nmCA(:,2));
-                if any(flowdet) == true
+                if all(flowdet) == true
                     flowbool = 1;
-                    break
+                    return
+                elseif isempty(tCA)
+                    flowbool = 0;
+                    return
                 end
                 mCA = nmCA;
-            end
-            if flowbool == 1
-                break
             end
         end
     end

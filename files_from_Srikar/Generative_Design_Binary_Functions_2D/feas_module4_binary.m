@@ -21,10 +21,28 @@ function contactbool = feas_module4_binary(CA,sidenum)
     for y = 1:1:length(usedpoints)
         otherpoints = usedpoints([1:(y-1),(y+1):end]);
         if ismember(usedpoints(y),cornernodes)
-            cnodes = cornernodes(cornernodes~=usedpoints(y));
-            cornercontact = ismember(cnodes,otherpoints);
-            if any(cornercontact)
+            ocnode = usedpoints(y);
+            if ocnode == 1
+                lrcnodes = [((sidenum^2)-sidenum+1),(sidenum^2)];
+                tbcnodes = [sidenum,(sidenum^2)];
+            elseif ocnode == sidenum
+                lrcnodes = [((sidenum^2)-sidenum+1),(sidenum^2)];
+                tbcnodes = [1,((sidenum^2)-sidenum+1)];
+            elseif ocnode == ((sidenum^2)-sidenum+1)
+                lrcnodes = [1,sidenum];
+                tbcnodes = [sidenum,(sidenum^2)];
+            elseif ocnode == (sidenum^2)
+                lrcnodes = [1,sidenum];
+                tbcnodes = [1,((sidenum^2)-sidenum+1)];
+            end
+            lrcornercontact = ismember(lrcnodes,otherpoints);
+            tbcornercontact = ismember(tbcnodes,otherpoints);
+            if any(lrcornercontact) && any(tbcornercontact)
                 contactboolx = 1; contactbooly = 1;
+            elseif any(lrcornercontact)
+                contactboolx = 1;
+            elseif any(tbcornercontact)
+                contactbooly = 1;
             end
         elseif ismember(usedpoints(y),lrnodepairs)
             [i,j] = find(lrnodepairs == usedpoints(y));
