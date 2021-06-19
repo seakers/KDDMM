@@ -99,7 +99,7 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
     end
     
     % THIRD CONSTRAINT: The design must have intracell connectivity
-    flowbool = 0;    
+    flowboolassn = 0; flowbool = 0;   
     
     % Find unique startpoints and endpoints
     startpoints = unique(SortedCA(:,1)); endpoints = unique(SortedCA(:,2));
@@ -108,8 +108,7 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
     
     % Check if there are any unique start- or endpoints at all
     if isempty(startunique) || isempty(endunique)
-        flowbool = 1;
-        return
+        flowbool = 1; flowboolassn = 1;
     else
         % Determine whether there are startpoints or endpoints that are
         % only used once in the CA
@@ -130,9 +129,9 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
             for k = 1:1:length(singlestarts)
                 for m = 1:1:length(singleends)
                     member = [singlestarts(k),singleends(m)];
-                    if ismember(member,SortedCA)
+                    if ~ismember(member,SortedCA)
                         flowbool = 0;
-                        return
+                        flowboolassn = 1;
                     end
                 end
             end
@@ -151,12 +150,13 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
                 nmCA = unique(nmCA,'rows');
                 flowdet = ismember(endunique,nmCA(:,2));
                 if any(flowdet)
-                    flowbool = 1;
-                    break
+                    flowbool = 1; flowboolassn = 1;
+                elseif isempty(tCA)
+                    flowbool = 0; flowboolassn = 1;
                 end
                 mCA = nmCA;
             end
-            if flowbool == 1
+            if flowboolassn == 1
                 break
             end
         end
@@ -187,10 +187,28 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
     for y = 1:1:length(usedpoints)
         otherpoints = usedpoints([1:(y-1),(y+1):end]);
         if ismember(usedpoints(y),cornernodes)
-            cnodes = cornernodes(cornernodes~=usedpoints(y));
-            cornercontact = ismember(cnodes,otherpoints);
-            if any(cornercontact)
+            ocnode = usedpoints(y);
+            if ocnode == 1
+                lrcnodes = [((sidenum^2)-sidenum+1),(sidenum^2)];
+                tbcnodes = [sidenum,(sidenum^2)];
+            elseif ocnode == sidenum
+                lrcnodes = [((sidenum^2)-sidenum+1),(sidenum^2)];
+                tbcnodes = [1,((sidenum^2)-sidenum+1)];
+            elseif ocnode == ((sidenum^2)-sidenum+1)
+                lrcnodes = [1,sidenum];
+                tbcnodes = [sidenum,(sidenum^2)];
+            elseif ocnode == (sidenum^2)
+                lrcnodes = [1,sidenum];
+                tbcnodes = [1,((sidenum^2)-sidenum+1)];
+            end
+            lrcornercontact = ismember(lrcnodes,otherpoints);
+            tbcornercontact = ismember(tbcnodes,otherpoints);
+            if any(lrcornercontact) && any(tbcornercontact)
                 contactboolx = 1; contactbooly = 1;
+            elseif any(lrcornercontact)
+                contactboolx = 1;
+            elseif any(tbcornercontact)
+                contactbooly = 1;
             end
         elseif ismember(usedpoints(y),lrnodepairs)
             [i,j] = find(lrnodepairs == usedpoints(y));
