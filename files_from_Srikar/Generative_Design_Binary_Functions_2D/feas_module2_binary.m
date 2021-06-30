@@ -6,7 +6,6 @@ function nooverlapbool = feas_module2_binary(CA,NC,sel)
     SortedCA = sortrows(CA);
     ND = NC./sel;
     nooverlapbool = 1;
-    disp(SortedCA);
 
     % Loop through each element
     for k = 1:1:size(SortedCA,1)
@@ -44,9 +43,15 @@ function nooverlapbool = feas_module2_binary(CA,NC,sel)
                         return
                     end
                 else
-                    t1 = (C(1)-A(1))/(B(1)-A(1));
-                    t2 = (C(2)-A(2))/(B(2)-A(2));
-                    t3 = (D(1)-A(1))/(B(1)-A(1));
+                    if k < q
+                        t1 = (C(1)-A(1))/(B(1)-A(1));
+                        t2 = (C(2)-A(2))/(B(2)-A(2));
+                        t3 = (D(1)-A(1))/(B(1)-A(1));
+                    elseif k > q
+                        t1 = (A(1)-C(1))/(D(1)-C(1));
+                        t2 = (A(2)-C(2))/(D(2)-C(2));
+                        t3 = (B(1)-C(1))/(D(1)-C(1));
+                    end
                     % Check if the diagonal elements overlap
                     if (t1 == t2)
                         if (t1 >= 0) && (t1 < 1)
