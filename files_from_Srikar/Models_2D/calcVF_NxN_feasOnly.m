@@ -1,7 +1,5 @@
 % FUNCTION TO CALCULATE VOLUME FRACTION 
-function volFrac = calcVF_NxN_feasOnly(CA,r,sel,sidenum)
-    rvar = r.*ones(1,size(CA,1));
-
+function volFrac = calcVF_NxN_feasOnly(CA,rvar,sel,sidenum)
     % Generate vector with nodal coordinates
     NC = generateNC(sel,sidenum);
     
@@ -22,7 +20,7 @@ function volFrac = calcVF_NxN_feasOnly(CA,r,sel,sidenum)
     end
     
     % Modify total member volume based on overlaps at nodes
-    totalTrussVol = subNodOLVol(NC,CA,totalTrussVol,r);
+    totalTrussVol = subNodOLVol(NC,CA,totalTrussVol,rvar);
     
     % Finding average side "thickness" due to differing element radii
     horizrads = [];
@@ -134,7 +132,7 @@ function Avar = modifyAreas(Avar,CA,NC,sidenum)
 end
 
 % FUNCTION TO SUBTRACT VOLUME OVERLAP AT NODES
-function tTV = subNodOLVol(NC,CA,tTV,r)
+function tTV = subNodOLVol(NC,CA,tTV,rvar)
     for z = 1:1:size(NC,1)
         % Isolate members originating/ending at the current node
         indione = CA(:,1) == z; inditwo = CA(:,2) == z;
@@ -164,7 +162,11 @@ function tTV = subNodOLVol(NC,CA,tTV,r)
                         % Find the volume of each overlap sphere sector,
                         % subtract from the total truss volume
                         frac = theta/(2*pi);
-                        VOL = ((4*pi)/3)*(r^3)*frac;
+                        [~,idx1] = ismember(mCA(i,:),CA,'rows');
+                        [~,idx2] = ismember(mCA(j,:),CA,'rows');
+                        r1 = rvar(idx1); r2 = rvar(idx2);
+                        avgrad = mean(r1,r2);
+                        VOL = ((4*pi)/3)*(avgrad^3)*frac;
                         tTV = tTV - VOL;
                         %disp(tTV);
                     end
