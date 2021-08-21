@@ -1,4 +1,4 @@
-function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
+function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel,sidenum)
 % This function computes the feasibility score for a design 
 % Inputs: nodal position matrix NC 
 %         Design Connectivity Array CA         
@@ -76,9 +76,15 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel)
                         end
                     end
                 else
-                    t1 = (C(1)-A(1))/(B(1)-A(1));
-                    t2 = (C(2)-A(2))/(B(2)-A(2));
-                    t3 = (D(1)-A(1))/(B(1)-A(1));
+                    if k < q
+                        t1 = (C(1)-A(1))/(B(1)-A(1));
+                        t2 = (C(2)-A(2))/(B(2)-A(2));
+                        t3 = (D(1)-A(1))/(B(1)-A(1));
+                    elseif k > q
+                        t1 = (A(1)-C(1))/(D(1)-C(1));
+                        t2 = (A(2)-C(2))/(D(2)-C(2));
+                        t3 = (B(1)-C(1))/(D(1)-C(1));
+                    end
                     % Check if the diagonal elements overlap
                     if (t1 == t2)
                         if (t1 >= 0) && (t1 < 1)
