@@ -24,28 +24,33 @@ function volFrac = calcVF_NxN(CA,r,sel,sidenum)
     % Modify total member volume based on intersecting and overlapping
     % members
     totalTrussVol = modVol(NC,CA,totalTrussVol,r);
+    %disp(totalTrussVol);
     
+    % Modify total member volume based on overlaps at nodes
+    totalTrussVol = subNodOLVol(NC,CA,totalTrussVol,r);
+    
+    % Finding average side "thickness" due to differing element radii
     % Finding average side "thickness" due to differing element radii
     horizrads = [];
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
-            if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
-                    ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    horizrads = [horizrads,rvar(i)];
-                end
-            elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
-                    ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    horizrads = [horizrads,rvar(i)];
+            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
+            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
+            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
+            angle = acos((x2-x1)./L);
+            if angle == 0
+                if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
+                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        horizrads = [horizrads,rvar(i)];
+                    end
+                elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
+                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        horizrads = [horizrads,rvar(i)];
+                    end
                 end
             end
         end
@@ -53,32 +58,34 @@ function volFrac = calcVF_NxN(CA,r,sel,sidenum)
     vertrads = [];
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
-            if ((CA(i,1) + j) == CA(i,2)) && ...
-                    ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    vertrads = [vertrads,rvar(i)];
+            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
+            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
+            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
+            angle = acos((x2-x1)./L);
+            if angle == (pi/2)
+                if ((CA(i,1) + j) == CA(i,2)) && ...
+                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        vertrads = [vertrads,rvar(i)];
+                    end
+                elseif ((CA(i,1) - j) == CA(i,2)) && ...
+                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        vertrads = [vertrads,rvar(i)];
+                    end    
                 end
-            elseif ((CA(i,1) - j) == CA(i,2)) && ...
-                    ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    vertrads = [vertrads,rvar(i)];
-                end    
             end
         end
     end
     thick = mean([mean(horizrads),mean(vertrads)]);
+    %disp(thick);
     
     % Calculating volume fraction (using a solid square with 2*(avg 
     %   thickness) as a baseline)
     volFrac = totalTrussVol/(2*thick*(totl^2)); 
+    %disp((2*thick*(totl^2)));
 end
 
 % FUNCTION TO GENERATE NODAL COORDINATES BASED ON GRID SIZE
@@ -134,6 +141,7 @@ end
 
 % FUNCTION TO MODIFY TOTAL TRUSS VOLUME BASED ON INTERSECTIONS
 function tTV = modVol(NC,CA,tTV,r)
+    %disp(tTV);
     % NOTE: Both the crossing and overlap modules are not capable of
     % explicitly ignoring an instance after it has been identified the 
     % first time. The overlap volumes subtracted herein are half of the 
@@ -148,7 +156,7 @@ function tTV = modVol(NC,CA,tTV,r)
     %   where point 1 is leftmost, point 2 is rightmost
     PosA = [NC(SortedCA(:,1),1),NC(SortedCA(:,1),2),...
             NC(SortedCA(:,2),1),NC(SortedCA(:,2),2)];
-    
+    %{
     % Loop through each pair of elements
     for i = 1:1:size(PosA,1)
         for j = 1:1:size(PosA,1)
@@ -158,11 +166,15 @@ function tTV = modVol(NC,CA,tTV,r)
                         PosA(j,2)],[PosA(j,3),PosA(j,4)]);
             
             % Subtract overlap volume, given an intersection
-            if intersect == true
-                tTV = tTV-((8*(r^3))/(3*abs(sin(alpha))));
+            if (intersect == true) && (alpha ~= 0)
+                %tTV = tTV-((8*(r^3))/(3*abs(sin(alpha))));
+                tTV = tTV - ((2*pi*(r^3))/3);
+                disp(tTV);
+                fprintf('[i,j] = [%.5f, %.5f]\n',[i,j])
             end
         end
     end
+    %}
     
     % Subtract duplicate volumes of overlapping elements
     for k = 1:1:size(SortedCA,1)
@@ -191,8 +203,10 @@ function tTV = modVol(NC,CA,tTV,r)
                     Lq = sqrt(((xq2-xq1)^2)+((yq2-yq1)^2));
                     if Lk >= Lq
                         tTV = tTV-(0.5*pi*(r^2)*Lq);
+                        disp(tTV);
                     elseif Lk < Lq
                         tTV = tTV-(0.5*pi*(r^2)*Lk);
+                        disp(tTV);
                     end
                 end
             % Check if both elements share a common endpoint    
@@ -217,13 +231,16 @@ function tTV = modVol(NC,CA,tTV,r)
                     Lq = sqrt(((xq2-xq1)^2)+((yq2-yq1)^2));
                     if Lk >= Lq
                         tTV = tTV-(0.5*pi*(r^2)*Lq);
+                        disp(tTV);
                     elseif Lk < Lq
                         tTV = tTV-(0.5*pi*(r^2)*Lk);
+                        disp(tTV);
                     end
                 end
             end
         end
     end
+    %}
 end
 
 % FUNCTION TO DETERMINE PRESENCE OF INTERSECTION (FOR CONSTRAINT #1)
@@ -253,5 +270,50 @@ function orientation = findOrientation(p,q,r)
         orientation = 1;
     else
         orientation = 2;
+    end
+end
+
+% FUNCTION TO SUBTRACT VOLUME OVERLAP AT NODES
+function tTV = subNodOLVol(NC,CA,tTV,r)
+    for z = 1:1:size(NC,1)
+        % Isolate members originating/ending at the current node
+        indione = CA(:,1) == z; inditwo = CA(:,2) == z;
+        mCAone = CA(indione,:); mCAtwo = CA(inditwo,:);
+        mCA = ...
+            [setdiff(mCAone,mCAtwo,'rows');setdiff(mCAtwo,mCAone,'rows')];
+        
+        % Loop through each pair of connecting members at the current node
+        for i = 1:1:size(mCA,1)
+            for j = 1:1:size(mCA,1)
+                if i ~= j
+                    % Find the sweep angle between the connecting members
+                    p1 = [NC(mCA(i,1),1),NC(mCA(i,1),2)];
+                    q1 = [NC(mCA(i,2),1),NC(mCA(i,2),2)];
+                    p2 = [NC(mCA(j,1),1),NC(mCA(j,1),2)];
+                    q2 = [NC(mCA(j,2),1),NC(mCA(j,2),2)];
+                    v1 = [q1(1),q1(2),0] - [p1(1),p1(2),0];
+                    v2 = [q2(1),q2(2),0] - [p2(1),p2(2),0];
+                    alpha = ...
+                       acos(max(min(dot(v1,v2)/(norm(v1)*norm(v2)),1),-1));
+                    theta = pi - alpha;
+                    
+                    % Check if members overlap
+                    if (abs(theta-pi) < (10^-5)) || (abs(theta) < (10^-5))
+                        continue
+                    else
+                        % Find the volume of each overlap sphere sector,
+                        % subtract from the total truss volume
+                        frac = theta/(2*pi);
+                        [~,idx1] = ismember(mCA(i,:),CA,'rows');
+                        [~,idx2] = ismember(mCA(j,:),CA,'rows');
+                        r1 = rvar(idx1); r2 = rvar(idx2);
+                        avgrad = mean([r1,r2]);
+                        VOL = ((4*pi)/3)*(avgrad^3)*frac;
+                        tTV = tTV - VOL;
+                        %disp(tTV);
+                    end
+                end
+            end
+        end
     end
 end

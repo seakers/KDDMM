@@ -26,23 +26,23 @@ function volFrac = calcVF_NxN_feasOnly(CA,rvar,sel,sidenum)
     horizrads = [];
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
-            if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
-                    ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    horizrads = [horizrads,rvar(i)];
-                end
-            elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
-                    ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    horizrads = [horizrads,rvar(i)];
+            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
+            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
+            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
+            angle = acos((x2-x1)./L);
+            if angle == 0
+                if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
+                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        horizrads = [horizrads,rvar(i)];
+                    end
+                elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
+                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        horizrads = [horizrads,rvar(i)];
+                    end
                 end
             end
         end
@@ -50,24 +50,24 @@ function volFrac = calcVF_NxN_feasOnly(CA,rvar,sel,sidenum)
     vertrads = [];
     for i = 1:1:size(CA,1)
         for j = 1:1:(sidenum-1)
-            if ((CA(i,1) + j) == CA(i,2)) && ...
-                    ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    vertrads = [vertrads,rvar(i)];
+            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
+            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
+            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
+            angle = acos((x2-x1)./L);
+            if angle == (pi/2)
+                if ((CA(i,1) + j) == CA(i,2)) && ...
+                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        vertrads = [vertrads,rvar(i)];
+                    end
+                elseif ((CA(i,1) - j) == CA(i,2)) && ...
+                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
+                    singl = totl/(sidenum-1);
+                    for k = 1:1:(L/singl)
+                        vertrads = [vertrads,rvar(i)];
+                    end    
                 end
-            elseif ((CA(i,1) - j) == CA(i,2)) && ...
-                    ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                singl = totl/(sidenum-1);
-                x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-                y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-                L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-                for k = 1:1:(L/singl)
-                    vertrads = [vertrads,rvar(i)];
-                end    
             end
         end
     end
@@ -165,7 +165,7 @@ function tTV = subNodOLVol(NC,CA,tTV,rvar)
                         [~,idx1] = ismember(mCA(i,:),CA,'rows');
                         [~,idx2] = ismember(mCA(j,:),CA,'rows');
                         r1 = rvar(idx1); r2 = rvar(idx2);
-                        avgrad = mean(r1,r2);
+                        avgrad = mean([r1,r2]);
                         VOL = ((4*pi)/3)*(avgrad^3)*frac;
                         tTV = tTV - VOL;
                         %disp(tTV);
