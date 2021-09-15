@@ -22,7 +22,7 @@ import java.lang.Math.*;
 
 public class ConstantRadiusTrussProblem extends AbstractProblem {
 
-    private final boolean UseFibreStiffnessModel;
+    private final int modelSelection;
 
     private final String csvSavePath;
 
@@ -46,16 +46,22 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
 
     private final boolean constrainOrientation;
 
+    private final int numHeurObjectives;
+
+    private final int numHeurConstraints;
+
     private final double[][] NodalPositionArray = new double[9][2];
 
-    public ConstantRadiusTrussProblem(String savePath, boolean FibreStiffness, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation) {
+    public ConstantRadiusTrussProblem(String savePath, int modelSelection, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation, int numHeurObjectives, int numHeurConstraints) {
 
         super(32,2);
 
-        this.UseFibreStiffnessModel = FibreStiffness;
+        this.modelSelection = modelSelection;
         this.constrainFeasibility = constrainFeasibility;
         this.constrainStability = constrainStability;
         this.constrainOrientation = constrainOrientation;
+        this.numHeurObjectives = numHeurObjectives;
+        this.numHeurConstraints = numHeurConstraints;
 
         this.radius = 0.00005;
         this.YoungsModulus = 10000.0;
@@ -74,14 +80,16 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         }
     }
 
-    public ConstantRadiusTrussProblem(String savePath, boolean FibreStiffness, int numVariables, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation) {
+    public ConstantRadiusTrussProblem(String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation) {
 
         super(numVariables,2);
 
-        this.UseFibreStiffnessModel = FibreStiffness;
+        this.modelSelection = modelSelection;
         this.constrainFeasibility = constrainFeasibility;
         this.constrainStability = constrainStability;
         this.constrainOrientation = constrainOrientation;
+        this.numHeurObjectives = numHeurObjectives;
+        this.numHeurConstraints = numHeurConstraints;
 
         this.radius = rad;
         this.sel = sideLength;
@@ -102,8 +110,8 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
 
     @Override
     public void evaluate(Solution sltn) {
-        TrussRepeatableArchitecture trussArch = new TrussRepeatableArchitecture(sltn);
-        int[][] designConnArray = trussArch.getConnectivityArrayFromSolution(sltn);
+        TrussRepeatableArchitecture trussArch = new TrussRepeatableArchitecture(sltn, sidenum, numHeurObjectives, numHeurConstraints);
+        double[][] designConnArray = trussArch.getConnectivityArrayFromSolution(sltn);
         //int designTrussCount = trussArch.getTrussCountFromSolution(sltn);
         //System.out.println(Arrays.deepToString(designConnArray));
         //System.out.println(designTrussCount);
@@ -114,45 +122,120 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         // int C11Integer;
         // int C22Integer;
         double penaltyFactor = 1;
+        boolean useVariableRadiiModels = true;
+
         //try {
             //engine.startMatlab();
         //} catch (EngineException | InterruptedException e) {
             //e.printStackTrace();
         //}
         //MatlabEngine eng = MatlabEngine.startMatlab();
-        if (UseFibreStiffnessModel) {
+
+        double volFrac = 0.0;
+        if (modelSelection == 0) {
             Object[] outputs = null;
-            try {
-                //assert eng != null;
-                outputs = engine.feval(2,"fiberStiffnessModel",sel,radius,YoungsModulus,designConnArray,sidenum,nucFac);
-            } catch (InterruptedException | ExecutionException | NullPointerException e) {
-                e.printStackTrace();
+            if (useVariableRadiiModels) {
+                double[] radiusArray = new double[designConnArray.length];
+                for (int i = 0; i < designConnArray.length; i++) {
+                    radiusArray[i] = radius;
+                }
+                try {
+                    //assert eng != null;
+                    outputs = engine.feval(3,"fiberStiffnessModel_rVar_V3_mod",sel,radiusArray,YoungsModulus,designConnArray,nucFac,sidenum);
+                } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+                C11 = (double)outputs[0];
+                C22 = (double)outputs[1];
+                volFrac = (double)outputs[2];
+            } else {
+                try {
+                    //assert eng != null;
+                    outputs = engine.feval(2,"fiberStiffnessModel",sel,radius,YoungsModulus,designConnArray,sidenum,nucFac);
+                } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+                C11 = (double)outputs[0];
+                C22 = (double)outputs[1];
+                try {
+                    volFrac = getVolumeFraction(designConnArray);
+                } catch (ExecutionException | InterruptedException | NullPointerException e) {
+                    e.printStackTrace();
+                }
             }
+
             // C11Integer = (int)outputs[0];
             // C22Integer = (int)outputs[1];
             // C11 = (double)C11Integer;
             // C22 = (double)C22Integer;
-            C11 = (double)outputs[0];
-            C22 = (double)outputs[1];
+
             penaltyFactor = 1.5;
         }
-        else {
-            double[][] stiffnessMatrix = new double[3][3];
-            double area = Math.PI * radius * radius;
+        else if (modelSelection == 1) {
+            double[][] stiffnessMatrix;
+            Object[] outputs = null;
+            if (useVariableRadiiModels) {
+                double[] radiusArray = new double[designConnArray.length];
+                for (int i = 0; i < designConnArray.length; i++) {
+                    radiusArray[i] = radius;
+                }
+                try {
+                    outputs = engine.feval(2,"trussMetaCalc_NxN_rVar_AVar_mod",nucFac,sidenum,sel,radiusArray,YoungsModulus,designConnArray);
+                } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+                stiffnessMatrix = (double[][])outputs[0];
+                C11 = stiffnessMatrix[0][0];
+                C22 = stiffnessMatrix[1][1];
+                if (Double.isNaN(C11) | Double.isNaN(C22)) {
+                    C11 = 1e-6;
+                    C22 = 1e-3;
+                }
+                volFrac = (double)outputs[1];
+            } else {
+                double area = Math.PI * radius * radius;
+                stiffnessMatrix = new double[3][3];
+                try {
+                    outputs = engine.feval(3,"generateC",sel,radius,NodalPositionArray,designConnArray,area,YoungsModulus,stiffnessMatrix);
+                } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+                stiffnessMatrix = (double[][])outputs[0];
+                C11 = stiffnessMatrix[0][0];
+                C22 = stiffnessMatrix[1][1];
+                if (Double.isNaN(C11) | Double.isNaN(C22)) {
+                    C11 = 1e-6;
+                    C22 = 1e-3;
+                }
+                try {
+                    volFrac = getVolumeFraction(designConnArray);
+                } catch (ExecutionException | InterruptedException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } else { // ANSYS APDL Beam Model
+            double[][] stiffnessMatrix;
             Object[] outputs = null;
             try {
-                outputs = engine.feval(3,"generateC",sel,radius,NodalPositionArray,designConnArray,area,YoungsModulus,stiffnessMatrix);
+                outputs = engine.feval("APDL_2D_NxN_V1",sel,sidenum,radius,YoungsModulus,designConnArray);
             } catch (InterruptedException | ExecutionException | NullPointerException e) {
                 e.printStackTrace();
             }
             stiffnessMatrix = (double[][])outputs[0];
             C11 = stiffnessMatrix[0][0];
             C22 = stiffnessMatrix[1][1];
-            if (Double.isNaN(C11) | Double.isNaN(C22)) {
+            if (Double.isNaN(C11) | Double.isNaN(C22) | (C22 >= YoungsModulus) | (C11 >= YoungsModulus)) {
                 C11 = 1e-6;
                 C22 = 1e-3;
             }
+            try {
+                volFrac = getVolumeFraction(designConnArray);
+            } catch (ExecutionException | InterruptedException | NullPointerException e) {
+                e.printStackTrace();
+            }
         }
+
         double designFeasibilityScore = 0.0;
         try {
             designFeasibilityScore = getFeasibilityScore(designConnArray);
@@ -173,25 +256,18 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
             e.printStackTrace();
         }
 
-        double volFrac = 0.0;
         double penaltyFeasibility = 0.0;
         if (constrainFeasibility) {
-            penaltyFeasibility = Math.log10(Math.abs(designFeasibilityScore));
+            penaltyFeasibility = Math.log10(Math.abs(designFeasibilityScore))/20;
         }
         double penaltyStability = 0.0;
         if (constrainStability) {
-            penaltyStability = Math.log10(Math.abs(designStabilityScore));
+            penaltyStability = Math.log10(Math.abs(designStabilityScore))/20;
         }
 
         double penaltyOrientation = 0.0;
         if (constrainOrientation) {
-            penaltyOrientation = Math.log10(Math.abs(designOrientationScore));
-        }
-
-        try {
-            volFrac = getVolumeFraction(designConnArray);
-        } catch (ExecutionException | InterruptedException | NullPointerException e) {
-            e.printStackTrace();
+            penaltyOrientation = Math.log10(Math.abs(designOrientationScore))/20;
         }
 
         double[] objectives = new double[2];
@@ -216,15 +292,15 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         trueObjectives[0] = Math.abs((C11/C22) - targetStiffnessRatio);
         trueObjectives[1] = C22/volFrac;
 
-        objectives[0] = trueObjectives[0]/5 - penaltyFactor*penalty;
-        objectives[1] = -trueObjectives[1]/8500 - penaltyFactor*penalty;
+        objectives[0] = trueObjectives[0]/25 - penaltyFactor*penalty;
+        objectives[1] = -trueObjectives[1]/(200*YoungsModulus) - penaltyFactor*penalty;
 
         sltn.setObjectives(objectives);
 
-        //HashMap<String, Object> constraints = new HashMap<String, Object>();
-        //constraints.put("FeasibilityViolation", 1 - designFeasibilityScore);
-        //constraints.put("StabilityViolation", 1 - designStabilityScore);
-        //sltn.addAttributes(constraints);
+        //HashMap<String, Object> constrainthandling = new HashMap<String, Object>();
+        //constrainthandling.put("FeasibilityViolation", 1 - designFeasibilityScore);
+        //constrainthandling.put("StabilityViolation", 1 - designStabilityScore);
+        //sltn.addAttributes(constrainthandling);
 
         sltn.setAttribute("FeasibilityViolation", 1.0 - designFeasibilityScore);
         sltn.setAttribute("StabilityViolation", 1.0 - designStabilityScore);
@@ -233,11 +309,11 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         sltn.setAttribute("TrueObjective2", trueObjectives[1]);
     }
 
-    public double getFeasibilityScore (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
+    public double getFeasibilityScore (double[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
         return (double)engine.feval("feasibility_checker_nonbinary_V2",NodalPositionArray,designConnectivityArray);
     }
 
-    public double getStabilityScore (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
+    public double getStabilityScore (double[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
         // Object stabilityOutput;
         // stabilityOutput = eng.feval("stabilityTester_2D_V6_1",sidenum,designConnectivityArray,NodalPositionArray,sel);
         // return (double)stabilityOutput;
@@ -245,13 +321,14 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         // return (double)eng.feval("stabilityTester_2D_updated",sidenum,designConnectivityArray,NodalPositionArray);
     }
 
-    public double getOrientationScore (int[][] designConnectivityArray) throws ExecutionException, InterruptedException {
+    public double getOrientationScore (double[][] designConnectivityArray) throws ExecutionException, InterruptedException {
         //Object orientationOutput;
         //orientationOutput = engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
-        return (double) engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
+        return (double) engine.feval("orientationHeuristic",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
     }
 
-    private double getVolumeFraction (int[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
+    private double getVolumeFraction (double[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
+        // This function does not consider edge-correction. Edge-corrected volume fraction obtained from models.
         return (double)engine.feval("calcVF",NodalPositionArray,designConnectivityArray,radius,sel);
     }
 

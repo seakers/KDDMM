@@ -24,7 +24,7 @@ for i = 1:size(CA,1)
     hold on
 end
 hold off
-xlabel('X-position')
-ylabel('Y-position')
+%xlabel('X-position')
+%ylabel('Y-position')
 end
 

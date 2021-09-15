@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="ExternalSystem" externalSystem="Maven" />
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
@@ -31,6 +32,7 @@
     <orderEntry type="library" name="Maven: net.sourceforge:javaml:0.1.5" level="project" />
     <orderEntry type="library" name="Maven: seakers:mopAOS:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.jblas:jblas:1.2.4" level="project" />
+    <orderEntry type="library" name="Maven: seakers:system-architecture-problems:1.0" level="project" />
     <orderEntry type="library" name="Maven: com.mathworks:engine:R2020a" level="project" />
   </component>
 </module>

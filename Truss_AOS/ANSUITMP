@@ -1,0 +1,2 @@
+*VREAD,CAR(1),C:\Users\Public\APDL_Runs\para_in,txt,,IJK,CA_LENGTH,,,((20+CA_LENGTH)+CA_LENGTH+(2*(NUMLRCE+NUMTBCE)))
+(F5.0)

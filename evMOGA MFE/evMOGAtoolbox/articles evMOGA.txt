@@ -1,9 +1,0 @@
-J.M. Herrero, M. Martínez,  J. Sanchis and X. Blasco. Well-Distributed Pareto Front by Using the epsilon-MOGA Evolutionary Algorithm. Lecture Notes in Computer Science, 4507,  pp. 292-299,  2007. Springer-Verlag. (ISSN: 0302-9743)
-
-J.M. Herrero, X. Blasco, M. Martínez,  C. Ramos and J. Sanchis. Robust Identification of a Greenhouse Model using Multi-objective Evolutionary Algorithms. Biosystems Engineering. Vol. 98, Num. 3, pp. 335 - 346, Nov 2007. (ISSN 1537-5110)  
-
-J.M. Herrero, X. Blasco , M. Martínez, J. Sanchis. Multiobjective Tuning of Robust PID Controllers Using Evolutionary Algorithms. Lecture Notes in Computer Science, 4974,  pp. 515 - 524,  2008. Springer-Verlag. (ISSN: 0302-9743)
-
-M. Martínez, J.M. Herrero, J. Sanchis, X. Blasco and S. García-Nieto. Applied Pareto multi-objective optimization by stochastic solvers. Engineering Applications of Artificial Intelligence. Vol.  22  pp.  455 - 465, 2009 (ISSN:0952-1976). 
-
-J. M. Herrero, S. García-Nieto, X. Blasco, V. Romero-García, J. V. Sánchez-Pérez and L. M. Garcia-Raffi. Optimization of sonic crystal attenuation properties by ev-MOGA multiobjective evolutionary algorithm. Structural and Multidisciplinary Optimization.  Vol. 39,  num. 2, pp. 203 - 215, (ISSN:1615-1488). 

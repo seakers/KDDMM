@@ -1,4 +1,4 @@
-function [] = plot_pareto_callback_app_oa(gcbo,eventdata,NC,CA_all,design_array,feas_array,stab_array,orient_array,f_vals,sel,r,E,pen_fac,sidenum,nucfac,app,filename_intpen)
+function [] = plot_pareto_callback_app_oa(gcbo,eventdata,NC,CA_all,design_array,feas_array,stab_array,orient_array,f_vals_pen,f_vals_true,sel,r,E,pen_fac,sidenum,nucfac,app,filename_intpen,prob_num)
 % This function is the callback for the pareto plot in the
 % TrussGAVizapp app. For the selected point on the pareto front,
 % the truss design plot, feasibility and stability scores, stiffness
@@ -18,16 +18,20 @@ function [] = plot_pareto_callback_app_oa(gcbo,eventdata,NC,CA_all,design_array,
 axes_handle = get(gcbo,'Parent');
 point_pos = get(axes_handle, 'Currentpoint');
 
-point_pos_comp = [point_pos(1,1),-point_pos(1,2)];
+if prob_num=='1'
+    point_pos_comp = [point_pos(1,1),-point_pos(1,2)];
+elseif prob_num=='2'
+    point_pos_comp = [-point_pos(1,1),point_pos(1,2)];
+end
 
-euclid_dist = zeros(size(f_vals,1),1);
-for i = 1:size(f_vals,1)
-    current_point = f_vals(i,:);
+euclid_dist = zeros(size(f_vals_pen,1),1);
+for i = 1:size(f_vals_pen,1)
+    current_point = f_vals_pen(i,:);
     euclid_dist(i) = sqrt((current_point(1) - point_pos_comp(1))^2 + (current_point(2) - point_pos_comp(2))^2);
 end
 [~,min_index] = min(euclid_dist);
 
-f_pen_design = f_vals(min_index,:);
+f_pen_design = f_vals_pen(min_index,:);
 point_design = design_array(min_index);
 feas_design = feas_array(min_index);
 stab_design = stab_array(min_index);
@@ -35,11 +39,19 @@ orient_design = orient_array(min_index);
 point_des_char = point_design{1,1};
 
 cla(app.ParetoAxes);
-f_vals_true = [f_vals(:,1), -f_vals(:,2)];
-plot(app.ParetoAxes,f_vals_true(:,1),f_vals_true(:,2),'*','ButtonDownFcn',{@plot_pareto_callback_app_oa,NC,CA_all,design_array,feas_array,stab_array,orient_array,f_vals,sel,r,E,pen_fac,sidenum,nucfac,app,filename_intpen})
-hold(app.ParetoAxes,'on')
-plot(app.ParetoAxes,f_pen_design(1),-f_pen_design(2),'r*')
-hold(app.ParetoAxes,'off')
+if (prob_num == '1')
+    f_vals_corrected = [f_vals_pen(:,1), -f_vals_pen(:,2)];
+    plot(app.ParetoAxes,f_vals_corrected(:,1),f_vals_corrected(:,2),'*','ButtonDownFcn',{@plot_pareto_callback_app_oa,NC,CA_all,design_array,feas_array,stab_array,orient_array,f_vals_pen,f_vals_true,sel,r,E,pen_fac,sidenum,nucfac,app,filename_intpen,prob_num})
+    hold(app.ParetoAxes,'on')
+    plot(app.ParetoAxes,f_pen_design(1),-f_pen_design(2),'r*')
+    hold(app.ParetoAxes,'off')
+elseif (prob_num == '2')
+    f_vals_corrected = [-f_vals_pen(:,1), f_vals_pen(:,2)];
+    plot(app.ParetoAxes,f_vals_corrected(:,1),f_vals_corrected(:,2),'*','ButtonDownFcn',{@plot_pareto_callback_app_oa,NC,CA_all,design_array,feas_array,stab_array,orient_array,f_vals_pen,f_vals_true,sel,r,E,pen_fac,sidenum,nucfac,app,filename_intpen,prob_num})
+    hold(app.ParetoAxes,'on')
+    plot(app.ParetoAxes,-f_pen_design(1),f_pen_design(2),'r*')
+    hold(app.ParetoAxes,'off')
+end
 
 design_bool = zeros(size(point_des_char,2),1);
 for i = 1:size(point_des_char,2)
@@ -72,17 +84,7 @@ end
 %set(apphandles.hEditCMat,'Data',C_design);
 app.TrussCMat.Data = C_design_rounded;
 
-if (strcmp(filename_intpen,'fcon0_'))
-    penalty = log10(abs(feas_design));
-elseif (strcmp(filename_intpen,'scon0_'))
-    penalty = log10(abs(stab_design));
-elseif (strcmp(filename_intpen,'fscon0_'))
-    penalty = (log10(abs(feas_design)) + log10(abs(stab_design)))/2;
-else
-    penalty = 0;
-end     
-
-f_true = [5*(f_pen_design(1) + pen_fac*penalty), -8500*(f_pen_design(2) + pen_fac*penalty)];
+f_true = f_vals_true(min_index,:);
 f_true_rounded = [round(f_true(1),3), round(f_true(2),3)];
 
 %set(apphandles.true_objs,'string',mat2str(f_true));

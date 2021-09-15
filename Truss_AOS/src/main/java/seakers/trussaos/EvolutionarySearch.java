@@ -2,21 +2,16 @@ package seakers.trussaos;
 
 import seakers.aos.aos.AOS;
 import seakers.aos.history.AOSHistoryIO;
-import com.mathworks.engine.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-
 import org.moeaframework.algorithm.AbstractEvolutionaryAlgorithm;
 import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.Solution;
 import org.moeaframework.util.TypedProperties;
-import seakers.trussaos.problems.ConstantRadiusTrussProblem;
-import seakers.trussaos.problems.ConstantRadiusTrussProblem2;
-
 
 public class EvolutionarySearch implements Callable<Algorithm> {
 
@@ -24,18 +19,18 @@ public class EvolutionarySearch implements Callable<Algorithm> {
     private final String name;
     private final Algorithm alg;
     private final TypedProperties properties;
-    private static MatlabEngine engine;
-    private static boolean useFibreStiffness;
-    private static double targetStiffnessRatio;
+    private static double sidenum;
+    private static int numHeurObjectives;
+    private static int numHeurConstraints;
 
-    public EvolutionarySearch(Algorithm alg, TypedProperties properties, String savePath, String name, MatlabEngine eng, boolean fibreStiffness, double targetRatio) {
+    public EvolutionarySearch(Algorithm alg, TypedProperties properties, String savePath, String name, double sideNodeNumber, int numHeuristicObjectives, int numHeuristicConstraints) {
         this.alg = alg;
         this.properties = properties;
         this.savePath = savePath;
         this.name = name;
-        engine = eng;
-        targetStiffnessRatio = targetRatio;
-        useFibreStiffness = fibreStiffness;
+        sidenum = sideNodeNumber;
+        numHeurObjectives = numHeuristicObjectives;
+        numHeurConstraints = numHeuristicConstraints;
     }
 
     @Override
@@ -75,7 +70,7 @@ public class EvolutionarySearch implements Callable<Algorithm> {
         long finishTime = System.currentTimeMillis();
         System.out.println("Done with optimization. Execution time: " + ((finishTime - startTime) / 1000) + "s");
 
-        ResultIO resultIO = new ResultIO(engine,useFibreStiffness,targetStiffnessRatio);;
+        ResultIO resultIO = new ResultIO(alg.getProblem().getName(),sidenum,numHeurObjectives,numHeurConstraints);;
 
         //String filename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name;
         //ResultIO.savePopulation(((AbstractEvolutionaryAlgorithm) alg).getPopulation(), filename);

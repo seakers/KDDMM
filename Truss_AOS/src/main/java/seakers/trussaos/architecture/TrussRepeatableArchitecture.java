@@ -1,12 +1,17 @@
 package seakers.trussaos.architecture;
 
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.core.variable.EncodingUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
 /**
- * Design class for the binary design vector in the 2D 3x3 nodal grid case
+ * Design class for the binary design vector in the 2D NxN nodal grid case
  *
  * @author roshan94
  */
@@ -18,46 +23,58 @@ public class TrussRepeatableArchitecture extends Solution{
 
     private boolean[] CompleteBooleanDesign;
 
-    private int[][] FullConnectivityArray = {{1,2}, {1,3}, {1,4}, {1,5}, {1,6}, {1,7}, {1,8}, {1,9},
-                                            {2,3}, {2,4}, {2,5}, {2,6}, {2,7}, {2,8}, {2,9},
-                                            {3,4}, {3,5}, {3,6}, {3,7}, {3,8}, {3,9},
-                                            {4,5}, {4,6}, {4,7}, {4,8}, {4,9},
-                                            {5,6}, {5,7}, {5,8}, {5,9},
-                                            {6,7}, {6,8}, {6,9},
-                                            {7,8}, {7,9},
-                                            {8,9}};
+    //private int[][] FullConnectivityArray = {{1,2}, {1,3}, {1,4}, {1,5}, {1,6}, {1,7}, {1,8}, {1,9},
+                                            //{2,3}, {2,4}, {2,5}, {2,6}, {2,7}, {2,8}, {2,9},
+                                            //{3,4}, {3,5}, {3,6}, {3,7}, {3,8}, {3,9},
+                                            //{4,5}, {4,6}, {4,7}, {4,8}, {4,9},
+                                            //{5,6}, {5,7}, {5,8}, {5,9},
+                                            //{6,7}, {6,8}, {6,9},
+                                            //{7,8}, {7,9},
+                                            //{8,9}};
 
-    private int[][] DesignConnectivityArray;
+    private double[][] CompleteConnectivityArray;
 
-    public TrussRepeatableArchitecture(Solution solution) {
+    private double[][] DesignConnectivityArray;
+
+    private final double sidenum;
+
+    private final int numHeurObjectives;
+
+    private final int numHeurConstraints;
+
+    public TrussRepeatableArchitecture(Solution solution, double sidenum, int numHeuristicObjectives, int numHeuristicConstraints) {
         super(solution);
+        this.sidenum = sidenum;
+        this.numHeurConstraints = numHeuristicConstraints;
+        this.numHeurObjectives = numHeuristicObjectives;
 
         //// Extract the design as a boolean array
         boolean[] BooleanDesign = getBooleanDesignArray(solution);
+        this.CompleteConnectivityArray = getCompleteConnectivityArrayFromSidenum();
         //design = EncodingUtils.getBinary(solution.getVariable());
 
         //// Obtain corresponding Connectivity Array
         DesignConnectivityArray= ConvertToFullConnectivityArray(BooleanDesign);
 
         //// Compute number of trusses in the design
-        CompleteBooleanDesign = getCompleteBooleanDesignArray(BooleanDesign);
+        CompleteBooleanDesign = getCompleteBooleanDesignFromRepeatableDesign(BooleanDesign);
         NumberOfTrusses = getTrussCount(CompleteBooleanDesign);
 
     }
 
-    private int[][] ConvertToFullConnectivityArray(boolean[] CurrentDesign){
-        boolean[] FullDesign = getCompleteBooleanDesignArray(CurrentDesign);
+    private double[][] ConvertToFullConnectivityArray(boolean[] CurrentDesign){
+        boolean[] FullDesign = getCompleteBooleanDesignFromRepeatableDesign(CurrentDesign);
         int TrussCount = 0;
-        int[][] ConnArray = new int[FullDesign.length][2];
+        double[][] ConnArray = new double[FullDesign.length][2];
         //design = EncodingUtils.getBinary(solution.getVariable());
         for (int index = 0; index < FullDesign.length; index++){
             boolean decision = FullDesign[index];
             if (decision){
-                ConnArray[TrussCount] = FullConnectivityArray[index];
+                ConnArray[TrussCount] = CompleteConnectivityArray[index];
                 TrussCount += 1;
             }
         }
-        int[][] designConnArray;
+        double[][] designConnArray;
         designConnArray = sliceFullConnectivityArray(ConnArray, TrussCount);
         return designConnArray;
     }
@@ -84,27 +101,11 @@ public class TrussRepeatableArchitecture extends Solution{
         return design;
     }
 
-    private boolean[] getCompleteBooleanDesignArray (boolean[] CurrentDesign){
-        return new boolean[]{CurrentDesign[0], CurrentDesign[1], CurrentDesign[2], CurrentDesign[3], CurrentDesign[4],
-                CurrentDesign[5], CurrentDesign[6], CurrentDesign[7], CurrentDesign[8], CurrentDesign[9],
-                CurrentDesign[10], CurrentDesign[11], CurrentDesign[12], CurrentDesign[13], CurrentDesign[14],
-                CurrentDesign[15], CurrentDesign[16], CurrentDesign[2], CurrentDesign[17], CurrentDesign[18],
-                CurrentDesign[19], CurrentDesign[20], CurrentDesign[21], CurrentDesign[22], CurrentDesign[23],
-                CurrentDesign[24], CurrentDesign[25], CurrentDesign[26], CurrentDesign[27], CurrentDesign[28],
-                CurrentDesign[29], CurrentDesign[30], CurrentDesign[22], CurrentDesign[0], CurrentDesign[31],
-                CurrentDesign[8]};
-    }
-
     public boolean[] getBooleanDesignFromSolution (Solution solution) {
-        //// Extract the design as a boolean array
-        boolean[] BooleanDesign = getBooleanDesignArray(solution);
-        //design = EncodingUtils.getBinary(solution.getVariable());
-
-        //// Compute number of trusses in the design
-        return getCompleteBooleanDesignArray(BooleanDesign);
+        return getCompleteBooleanArrayFromSolutionNxN(solution);
     }
 
-    public int[][] getConnectivityArrayFromSolution (Solution solution) {
+    public double[][] getConnectivityArrayFromSolution (Solution solution) {
         //// Extract the design as a boolean array
         boolean[] BooleanDesign = getBooleanDesignArray(solution);
 
@@ -112,8 +113,8 @@ public class TrussRepeatableArchitecture extends Solution{
         return ConvertToFullConnectivityArray(BooleanDesign);
     }
 
-    private int[][] sliceFullConnectivityArray (int[][] fullConnectivityArray, int trussCount) {
-        int[][] connectivityArray = new int[trussCount][2];
+    private double[][] sliceFullConnectivityArray (double[][] fullConnectivityArray, int trussCount) {
+        double[][] connectivityArray = new double[trussCount][2];
         for (int i = 0; i < trussCount; i++) {
             for (int j = 0; j < 2; j++) {
                 connectivityArray[i][j] = fullConnectivityArray[i][j];
@@ -126,18 +127,18 @@ public class TrussRepeatableArchitecture extends Solution{
         return NumberOfTrusses;
     }
 
-    public TrussRepeatableArchitecture getArchitectureFromConnectivityArray (int[][] connArray) {
-        boolean[] designFullBooleanArray = new boolean[FullConnectivityArray.length];
+    public TrussRepeatableArchitecture getArchitectureFromConnectivityArray (double[][] connArray) {
+        boolean[] designFullBooleanArray = new boolean[CompleteConnectivityArray.length];
         boolean contains = false;
         int[] designFirstNodes = new int[connArray.length];
         int[] designSecondNodes = new int[connArray.length];
         for (int i = 0; i < connArray.length; i++) {
-            designFirstNodes[i] = connArray[i][0];
-            designSecondNodes[i] = connArray[i][1];
+            designFirstNodes[i] = (int) connArray[i][0];
+            designSecondNodes[i] = (int) connArray[i][1];
         }
-        for (int i = 0; i < FullConnectivityArray.length; i++) {
-            int firstNode = FullConnectivityArray[i][0];
-            int secondNode = FullConnectivityArray[i][1];
+        for (int i = 0; i < CompleteConnectivityArray.length; i++) {
+            int firstNode = (int) CompleteConnectivityArray[i][0];
+            int secondNode = (int) CompleteConnectivityArray[i][1];
             for (int j = 0; j < connArray.length; j++) {
                 if (designFirstNodes[j] == firstNode) {
                     if (designSecondNodes[j] == secondNode) {
@@ -149,28 +150,199 @@ public class TrussRepeatableArchitecture extends Solution{
             designFullBooleanArray[i] = contains;
             contains = false;
         }
-        boolean[] designRepeatableBooleanArray = getRepeatableBooleanDesign(designFullBooleanArray);
-        Solution architecture = new Solution(32,2);
+        boolean[] designRepeatableBooleanArray = getRepeatableBooleanArrayFromCompleteArray(designFullBooleanArray);
+        Solution architecture = new Solution(findNumberOfVariablesFromSidenum(),2+numHeurObjectives, 3+numHeurConstraints);
         for (int i = 0; i < designRepeatableBooleanArray.length; i++) {
             BinaryVariable var = new BinaryVariable(1);
             EncodingUtils.setBoolean(var,designRepeatableBooleanArray[i]);
             architecture.setVariable(i,var);
         }
-        return new TrussRepeatableArchitecture(architecture);
+        return new TrussRepeatableArchitecture(architecture,sidenum,numHeurObjectives,numHeurConstraints);
     }
 
-    private boolean[] getRepeatableBooleanDesign (boolean[] completeBooleanDesign) {
-        return new boolean[]{completeBooleanDesign[0], completeBooleanDesign[1], completeBooleanDesign[2],
-                                   completeBooleanDesign[3], completeBooleanDesign[4], completeBooleanDesign[5],
-                                   completeBooleanDesign[6], completeBooleanDesign[7], completeBooleanDesign[8],
-                                   completeBooleanDesign[9], completeBooleanDesign[10], completeBooleanDesign[11],
-                                   completeBooleanDesign[12], completeBooleanDesign[13], completeBooleanDesign[14],
-                                   completeBooleanDesign[15], completeBooleanDesign[16], completeBooleanDesign[18],
-                                   completeBooleanDesign[19], completeBooleanDesign[20], completeBooleanDesign[21],
-                                   completeBooleanDesign[22], completeBooleanDesign[23], completeBooleanDesign[24],
-                                   completeBooleanDesign[25], completeBooleanDesign[26], completeBooleanDesign[27],
-                                   completeBooleanDesign[28], completeBooleanDesign[29], completeBooleanDesign[30],
-                                   completeBooleanDesign[31], completeBooleanDesign[34]};
+    private double[][] getCompleteConnectivityArrayFromSidenum(){
+        int memberCount = 0;
+        //int[] nodesArray = IntStream.range(1,sidenum*sidenum).toArray();
+        int totalNumberOfMembers;
+        if (sidenum >= 5) {
+            int sidenumSquared = (int) (sidenum*sidenum);
+            totalNumberOfMembers =  sidenumSquared * (sidenumSquared - 1)/2;
+        }
+        else {
+            totalNumberOfMembers = (int) (CombinatoricsUtils.factorial((int) (sidenum*sidenum))/(CombinatoricsUtils.factorial((int) ((sidenum*sidenum) - 2)) * CombinatoricsUtils.factorial(2)));
+        }
+        double[][] completeConnectivityArray = new double[totalNumberOfMembers][2];
+        for (int i = 0; i < ((sidenum*sidenum)-1); i++) {
+            for (int j = i+1; j < (sidenum*sidenum); j++) {
+                completeConnectivityArray[memberCount][0] = i+1;
+                completeConnectivityArray[memberCount][1] = j+1;
+                memberCount += 1;
+            }
+        }
+        return completeConnectivityArray;
     }
+
+    private int findNumberOfVariablesFromSidenum () {
+        int totalNumberOfMembers;
+        if (sidenum >= 5) {
+            int sidenumSquared = (int) (sidenum*sidenum);
+            totalNumberOfMembers =  sidenumSquared * (sidenumSquared - 1)/2;
+        }
+        else {
+            totalNumberOfMembers = (int) (CombinatoricsUtils.factorial((int) (sidenum*sidenum))/(CombinatoricsUtils.factorial((int) ((sidenum*sidenum) - 2)) * CombinatoricsUtils.factorial(2)));
+        }
+        int numberOfRepeatableMembers = (int) (2 * (CombinatoricsUtils.factorial((int) sidenum)/(CombinatoricsUtils.factorial((int) (sidenum - 2)) * CombinatoricsUtils.factorial(2))));
+        return (totalNumberOfMembers - numberOfRepeatableMembers);
+    }
+
+    private boolean[] getRepeatableBooleanArrayFromCompleteArray (boolean[] completeBooleanArray) {
+        ArrayList<Boolean> repeatableBooleanArray = new ArrayList<>();
+        boolean[] isRepeated = identifyRepeatedEdgeMembers();
+        for (int i = 0; i < completeBooleanArray.length; i++) {
+            if (!isRepeated[i]) {
+                repeatableBooleanArray.add(completeBooleanArray[i]);
+            }
+        }
+        return convertBooleanArrayListToArray(repeatableBooleanArray);
+    }
+
+    private boolean[] identifyRepeatedEdgeMembers () {
+        double[][] completeConnArray = getCompleteConnectivityArrayFromSidenum();
+        int[] topNodes = getTopEdgeNodes();
+        int memberCount = 0;
+        boolean[] isReapeatedEdgeMember = new boolean[completeConnArray.length];
+        for (int i = 0; i < ((sidenum*sidenum)-1); i++) {
+            boolean rightEdge = false;
+            boolean topEgde = false;
+            int node = i+1;
+            for (int j = node+1; j < ((sidenum*sidenum)+1); j++) {
+                if (node > ((sidenum*sidenum)-sidenum)) { // identifying right edge members
+                    if (j > ((sidenum*sidenum)-sidenum)) {
+                        isReapeatedEdgeMember[memberCount] = true;
+                        rightEdge = true;
+                    }
+                }
+                if (IntStream.of(topNodes).anyMatch(x -> x == node)) { // identifying top edge members
+                    int finalJ = j;
+                    if (IntStream.of(topNodes).anyMatch(x -> x == finalJ)) {
+                        isReapeatedEdgeMember[memberCount] = true;
+                        topEgde = true;
+                    }
+                }
+                if (!rightEdge && !topEgde) {
+                    isReapeatedEdgeMember[memberCount] = false;
+                }
+                memberCount += 1;
+            }
+        }
+        return isReapeatedEdgeMember;
+    }
+
+    private double[][] getRepeatedConnectivityArrayFromSidenum () {
+        int memberCount = 0;
+        int numberOfVariables = findNumberOfVariablesFromSidenum();
+        int[] topNodes = getTopEdgeNodes();
+        double[][] repeatableConnectivityArray = new double[numberOfVariables][2];
+        for (int i = 0; i < ((sidenum*sidenum)-1); i++) {
+            int node = i+1;
+            for (int j = node+1; j < ((sidenum*sidenum)+1); j++) {
+                if (node > ((sidenum*sidenum)-sidenum)) { // identifying right edge members
+                    if (j > ((sidenum * sidenum) - sidenum)) {
+                        continue;
+                    }
+                }
+                if (IntStream.of(topNodes).anyMatch(x -> x == node)) { // identifying top edge members
+                    int finalJ = j;
+                    if (IntStream.of(topNodes).anyMatch(x -> x == finalJ)) {
+                        continue;
+                    }
+                }
+                repeatableConnectivityArray[memberCount][0] = i+1;
+                repeatableConnectivityArray[memberCount][1] = j;
+                memberCount += 1;
+            }
+        }
+        return repeatableConnectivityArray;
+    }
+
+    private boolean[] getCompleteBooleanDesignFromRepeatableDesign (boolean[] repeatableArray) {
+        //int totalNumberOfMembers = (int) (CombinatoricsUtils.factorial((int) (sidenum*sidenum))/(CombinatoricsUtils.factorial((int) ((sidenum*sidenum) - 2)) * CombinatoricsUtils.factorial(2)));
+        int[] topNodes = getTopEdgeNodes();
+        double[][] repeatableConnArray = getRepeatedConnectivityArrayFromSidenum();
+        ArrayList<Boolean> completeBooleanArrayList = new ArrayList<>();
+        int memberIndex = 0;
+        for (int i = 0; i < ((sidenum*sidenum)-1); i++) {
+            int node = i+1;
+            for (int j = node+1; j < ((sidenum*sidenum)+1); j++) {
+                boolean rightEdge = false;
+                boolean topEdge = false;
+                if (node > ((sidenum*sidenum)-sidenum)) { // identifying right edge members
+                    if (j > ((sidenum*sidenum)-sidenum)) {
+                        rightEdge = true;
+                        int[] repeatedMember = new int[]{(int) (node - ((sidenum-1) * sidenum)), (int) (j - ((sidenum-1) * sidenum))}; // corresponding left edge member
+                        int repeatedMemberIndex = getMemberIndex(repeatableConnArray, repeatedMember);
+                        completeBooleanArrayList.add(repeatableArray[repeatedMemberIndex]);
+                    }
+                }
+                if (IntStream.of(topNodes).anyMatch(x -> x == node)) { // identifying top edge members
+                    int finalJ = j;
+                    if (IntStream.of(topNodes).anyMatch(x -> x == finalJ)) {
+                        topEdge = true;
+                        int[] repeatedMember = new int[]{(int) (node - (sidenum-1)), (int) (j - (sidenum-1))}; // corresponding bottom edge member
+                        int repeatedMemberIndex = getMemberIndex(repeatableConnArray, repeatedMember);
+                        completeBooleanArrayList.add(repeatableArray[repeatedMemberIndex]);
+                    }
+                }
+                if (!rightEdge && !topEdge) {
+                    completeBooleanArrayList.add(repeatableArray[memberIndex]);
+                    memberIndex += 1;
+                }
+            }
+        }
+        return convertBooleanArrayListToArray(completeBooleanArrayList);
+    }
+
+    public boolean[] getCompleteBooleanArrayFromSolutionNxN (Solution solution) {
+        boolean[] repeatableBooleanArray = getBooleanDesignArray(solution);
+        return getCompleteBooleanDesignFromRepeatableDesign(repeatableBooleanArray);
+    }
+
+    private int[] getTopEdgeNodes () {
+        ArrayList<Integer> topNodes = new ArrayList<Integer>();
+        boolean reachedRightEdge = false;
+        int node = (int) sidenum;
+        while (!reachedRightEdge) {
+            if (node > (sidenum*sidenum)) {
+                reachedRightEdge = true;
+            } else {
+                topNodes.add(node);
+                node += sidenum;
+            }
+        }
+        return topNodes.stream().mapToInt(i->i).toArray();
+    }
+
+    private int getMemberIndex (double[][] connectivityArray, int[] member) {
+        int index = 0;
+        for (int i = 0; i < connectivityArray.length; i++) {
+            if (connectivityArray[i][0] == member[0]) {
+                if (connectivityArray[i][1] == member[1]) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        return index;
+    }
+
+    private boolean[] convertBooleanArrayListToArray (ArrayList<Boolean> booleanArrayList) {
+        boolean[] booleanArray = new boolean[booleanArrayList.size()];
+        for (int i = 0; i < booleanArrayList.size(); i++) {
+            booleanArray[i] = booleanArrayList.get(i);
+        }
+        return booleanArray;
+    }
+
+
 
 }

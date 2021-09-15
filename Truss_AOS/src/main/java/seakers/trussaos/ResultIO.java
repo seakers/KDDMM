@@ -15,27 +15,21 @@ import org.moeaframework.analysis.collector.InstrumentedAlgorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.PopulationIO;
 import org.moeaframework.core.Solution;
-import com.mathworks.engine.*;
-import org.moeaframework.problem.AbstractProblem;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
-import seakers.trussaos.problems.ConstantRadiusTrussProblem;
-import seakers.trussaos.problems.ConstantRadiusTrussProblem2;
 
 public class ResultIO implements Serializable {
     private static final long serialVersionUID = -2048768998854760056L;
-
-    private static MatlabEngine engine;
-
-    private static boolean useFibreStiffness;
-
-    private static double targetStiffnessRatio;
-
+    private static String problemClassName;
+    private final double sidenum;
+    private final int numHeurObjectives;
+    private final int numHeurConstraints;
     //private static AbstractProblem problem;
 
-    public ResultIO(MatlabEngine eng, boolean fibreStiffness, double targetRatio) {
-        engine = eng;
-        useFibreStiffness = fibreStiffness;
-        targetStiffnessRatio = targetRatio;
+    public ResultIO(String problemClass, double sidenum, int numHeuristicObjectives, int numHeuristicConstraints) {
+        problemClassName = problemClass;
+        this.sidenum = sidenum;
+        this.numHeurConstraints = numHeuristicConstraints;
+        this.numHeurObjectives = numHeuristicObjectives;
     }
 
     public static void saveSearchMetrics(InstrumentedAlgorithm instAlgorithm, String filename) {
@@ -116,36 +110,68 @@ public class ResultIO implements Serializable {
     }
 
     public void saveFinalResultToCsv(Population pop, String filename) throws IOException, ExecutionException, InterruptedException {
-        System.out.println("Saving results to csv file");
+        System.out.println("Saving final population to csv file");
         File csvFile = new File(filename);
         //ConstantRadiusTrussProblem aosProblem = new ConstantRadiusTrussProblem(filename,useFibreStiffness,targetStiffnessRatio,engine);
         FileWriter csvWrite = new FileWriter(csvFile);
         csvWrite.append("Full Design");
         csvWrite.append(",");
-        csvWrite.append("Penalized Target Ratio Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("Penalized Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("Penalized Target Ratio Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("Penalized Stiffness Objective");
+        }
         csvWrite.append(",");
-        csvWrite.append("Penalized Stiffness Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("Penalized Volume Fraction Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("Penalized Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("Penalized Deviation Objective");
+        }
         csvWrite.append(",");
-        csvWrite.append("True Target Ratio Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("True Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("True Target Ratio Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("True Stiffness Objective");
+        }
         csvWrite.append(",");
-        csvWrite.append("True Stiffness Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("True Volume Fraction Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("True Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("True Deviation Objective");
+        }
         csvWrite.append(",");
         csvWrite.append("Feasibility Score");
         csvWrite.append(",");
-        csvWrite.append("Stability Score");
+        csvWrite.append("Connectivity Score");
+        csvWrite.append(",");
+        csvWrite.append("Absolute Stiffness Ratio Difference");
+        csvWrite.append(",");
+        csvWrite.append("Partial Collapsibility Score");
+        csvWrite.append(",");
+        csvWrite.append("Nodal Properties Score");
         csvWrite.append(",");
         csvWrite.append("Orientation Score");
+        csvWrite.append(",");
+        csvWrite.append("Intersection Score");
         csvWrite.append("\n");
         //String[] designPopulation = new String[pop.size()];
-        double[][] objectives = new double[1][2];
+        //double[][] objectives = new double[1][2];
         //double[] feasibilityScores = new double[pop.size()];
         //double[] stabilityScores = new double[pop.size()];
 
         for (int i = 0; i < pop.size(); i++) {
             Solution currentSltn = pop.get(i);
 
-            TrussRepeatableArchitecture currentArch = new TrussRepeatableArchitecture(currentSltn);
-            boolean[] currentBooleanDesign = currentArch.getBooleanDesignFromSolution(currentSltn);
+            TrussRepeatableArchitecture currentArch = new TrussRepeatableArchitecture(currentSltn,sidenum,numHeurObjectives,numHeurConstraints);
+            boolean[] currentBooleanDesign = currentArch.getCompleteBooleanArrayFromSolutionNxN(currentSltn);
             //designPopulation[i] = Arrays.toString(currentBooleanDesign);
             double[] currentObjectives = currentSltn.getObjectives();
 
@@ -155,25 +181,37 @@ public class ResultIO implements Serializable {
             //double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
 
             double currentFeasibilityScore = 1.0d - (double)currentSltn.getAttribute("FeasibilityViolation");
-            double currentStabilityScore = 1.0d - (double)currentSltn.getAttribute("StabilityViolation");
+            double currentConnectivityScore = 1.0d - (double)currentSltn.getAttribute("ConnectivityViolation");
+            double currentStiffnessRatioDifference = (double)currentSltn.getAttribute("StiffnessRatioViolation");
+            double currentPartialCollapsibilityScore = 1.0d - (double)currentSltn.getAttribute("PartialCollapsibilityViolation");
+            double currentNodalPropertiesScore = 1.0d - (double)currentSltn.getAttribute("NodalPropertiesViolation");
             double currentOrientationScore = 1.0d - (double)currentSltn.getAttribute("OrientationViolation");
-            double currentTrueRatioObjective = (double)currentSltn.getAttribute("TrueObjective1");
-            double currentTrueStiffnessOjective = (double)currentSltn.getAttribute("TrueObjective2");
+            double currentIntersectionScore = 1.0d - (double)currentSltn.getAttribute("IntersectionViolation");
+            double currentTrueStiffnessObjective = (double)currentSltn.getAttribute("TrueObjective1");
+            double currentTrueVolumeFractionObjective = (double)currentSltn.getAttribute("TrueObjective2");
             csvWrite.append(convertBooleanArrayToBitstring(currentBooleanDesign));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[0]));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[1]));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentTrueRatioObjective));
+            csvWrite.append(Double.toString(currentTrueStiffnessObjective));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentTrueStiffnessOjective));
+            csvWrite.append(Double.toString(currentTrueVolumeFractionObjective));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentFeasibilityScore));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentStabilityScore));
+            csvWrite.append(Double.toString(currentConnectivityScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentStiffnessRatioDifference));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentPartialCollapsibilityScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentNodalPropertiesScore));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentOrientationScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentIntersectionScore));
             csvWrite.append("\n");
         }
         csvWrite.flush();
@@ -188,27 +226,59 @@ public class ResultIO implements Serializable {
         csvWrite.append(",");
         csvWrite.append("NFE");
         csvWrite.append(",");
-        csvWrite.append("Penalized Target Ratio Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("Penalized Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("Penalized Target Ratio Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("Penalized Stiffness Objective");
+        }
         csvWrite.append(",");
-        csvWrite.append("Penalized Stiffness Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("Penalized Volume Fraction Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("Penalized Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("Penalized Deviation Objective");
+        }
         csvWrite.append(",");
-        csvWrite.append("True Target Ratio Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("True Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("True Target Ratio Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("True Stiffness Objective");
+        }
         csvWrite.append(",");
-        csvWrite.append("True Stiffness Objective");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")){
+            csvWrite.append("True Volume Fraction Objective");
+        } else if (problemClassName.equals("ConstantRadiusTrussProblem")){
+            csvWrite.append("True Stiffness Objective");
+        } else if (problemClassName.equals("ConstantRadiusArteryProblem")) {
+            csvWrite.append("True Deviation Objective");
+        }
         csvWrite.append(",");
         csvWrite.append("Feasibility Score");
         csvWrite.append(",");
-        csvWrite.append("Stability Score");
+        csvWrite.append("Connectivity Score");
+        csvWrite.append(",");
+        csvWrite.append("Absolute Stiffness Ratio Difference");
+        csvWrite.append(",");
+        csvWrite.append("Partial Collapsibility Score");
+        csvWrite.append(",");
+        csvWrite.append("Nodal Properties Score");
         csvWrite.append(",");
         csvWrite.append("Orientation Score");
+        csvWrite.append(",");
+        csvWrite.append("Intersection Score");
         csvWrite.append("\n");
 
         Iterator iter = solutionSet.iterator();
 
         while (iter.hasNext()){
             Solution currentSolution = (Solution) iter.next();
-            TrussRepeatableArchitecture currentArch = new TrussRepeatableArchitecture(currentSolution);
-            boolean[] currentBooleanDesign = currentArch.getBooleanDesignFromSolution(currentSolution);
+            TrussRepeatableArchitecture currentArch = new TrussRepeatableArchitecture(currentSolution,sidenum,numHeurObjectives,numHeurConstraints);
+            boolean[] currentBooleanDesign = currentArch.getCompleteBooleanArrayFromSolutionNxN(currentSolution);
             csvWrite.append(convertBooleanArrayToBitstring(currentBooleanDesign));
             csvWrite.append(",");
             int numFunctionEvals = (int) currentSolution.getAttribute("NFE");
@@ -222,23 +292,36 @@ public class ResultIO implements Serializable {
             //double currentStabilityScore = problem.getStabilityScore(currentConnectivityArray);
 
             double currentFeasibilityScore = 1.0d - (double)currentSolution.getAttribute("FeasibilityViolation");
-            double currentStabilityScore = 1.0d - (double)currentSolution.getAttribute("StabilityViolation");
+            double currentConnectivityScore = 1.0d - (double)currentSolution.getAttribute("ConnectivityViolation");
+            double currentStiffnessRatioDifference = (double)currentSolution.getAttribute("StiffnessRatioViolation");
+            double currentPartialCollapsibilityScore = 1.0d - (double)currentSolution.getAttribute("PartialCollapsibilityViolation");
+            double currentNodalPropertiesScore = 1.0d - (double)currentSolution.getAttribute("NodalPropertiesViolation");
             double currentOrientationScore = 1.0d - (double)currentSolution.getAttribute("OrientationViolation");
-            double currentTrueRatioObjective = (double)currentSolution.getAttribute("TrueObjective1");
-            double currentTrueStiffnessOjective = (double)currentSolution.getAttribute("TrueObjective2");
+            double currentIntersectionScore = 1.0d - (double)currentSolution.getAttribute("IntersectionViolation");
+            double currentTrueStiffnessObjective = (double)currentSolution.getAttribute("TrueObjective1");
+            double currentTrueVolumeFractionObjective = (double)currentSolution.getAttribute("TrueObjective2");
+
             csvWrite.append(Double.toString(currentObjectives[0]));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentObjectives[1]));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentTrueRatioObjective));
+            csvWrite.append(Double.toString(currentTrueStiffnessObjective));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentTrueStiffnessOjective));
+            csvWrite.append(Double.toString(currentTrueVolumeFractionObjective));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentFeasibilityScore));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentStabilityScore));
+            csvWrite.append(Double.toString(currentConnectivityScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentStiffnessRatioDifference));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentPartialCollapsibilityScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentNodalPropertiesScore));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentOrientationScore));
+            csvWrite.append(",");
+            csvWrite.append(Double.toString(currentIntersectionScore));
             csvWrite.append("\n");
         }
         csvWrite.flush();

@@ -1,7 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7ba560f5-7e76-4b2a-948b-6675c5f0c38c" name="Default Changelist" comment="" />
+    <list default="true" id="7ba560f5-7e76-4b2a-948b-6675c5f0c38c" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__seakers_system_architecture_problems_1_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../KDDMM-Srikar_files/files_from_Srikar/Constraints_2D/feasibility_checker_nonbinary_V5.m" beforeDir="false" afterPath="$PROJECT_DIR$/../KDDMM-Srikar_files/files_from_Srikar/Constraints_2D/feasibility_checker_nonbinary_V5.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Truss_AOS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Truss_AOS.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feasibility_checker_nonbinary_V5.m" beforeDir="false" afterPath="$PROJECT_DIR$/feasibility_checker_nonbinary_V5.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generative_design_testing_V2.m" beforeDir="false" afterPath="$PROJECT_DIR$/generative_design_testing_V2.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_0_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_0_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_10_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_10_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_11_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_11_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_12_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_12_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_13_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_13_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_14_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_14_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_15_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_15_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_16_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_16_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_17_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_17_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_18_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_18_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_19_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_19_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_1_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_1_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_20_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_20_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_21_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_21_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_22_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_22_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_23_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_23_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_24_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_24_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_25_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_25_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_26_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_26_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_27_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_27_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_28_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_28_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_29_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_29_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_2_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_2_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_3_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_3_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_4_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_4_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_5_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_5_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_6_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_6_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_7_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_7_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_8_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_8_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_9_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_9_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_0_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_0_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_10_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_10_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_11_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_11_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_12_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_12_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_13_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_13_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_14_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_14_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_15_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_15_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_16_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_16_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_17_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_17_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_18_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_18_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_19_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_19_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_1_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_1_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_20_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_20_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_21_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_21_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_22_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_22_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_23_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_23_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_24_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_24_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_25_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_25_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_26_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_26_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_27_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_27_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_28_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_28_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_29_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_29_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_2_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_2_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_3_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_3_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_4_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_4_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_5_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_5_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_6_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_6_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_7_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_7_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_8_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_8_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_9_prob2_truss.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 5x5/EpsilonMOEA_emoea_9_prob2_truss_fullpop.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/extract_csv_data.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/ConstantRadiusMOEARun.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/ConstantRadiusMOEARun.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/IntegerMOEARun.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/IntegerMOEARun.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/architecture/IntegerRepeatableArchitecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/architecture/IntegerRepeatableArchitecture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/IntegerTrussProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/IntegerTrussProblem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/matlab/metrics_study.m" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/matlab/metrics_study.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/ConstantRadiusMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/ConstantRadiusMOEARun.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/EvolutionarySearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/EvolutionarySearch.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerEvolutionarySearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerEvolutionarySearch.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerMOEARun.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerResultIO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerResultIO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/ResultIO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/ResultIO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiEvolutionarySearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiEvolutionarySearch.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiMOEARun.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiResultIO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiResultIO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/IntegerRepeatableArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/IntegerRepeatableArchitecture.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/TrussRepeatableArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/TrussRepeatableArchitecture.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/VariableRadiiRepeatableArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/VariableRadiiRepeatableArchitecture.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/DisjunctiveNormalForm.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/DisjunctiveNormalForm.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/KnowledgeStochasticRanking.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/KnowledgeStochasticRanking.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationVariableRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddDiagonalMember.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddDiagonalMember.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddMember.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddMember.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/ImproveOrientation.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/ImproveOrientation.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/RemoveIntersection.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/RemoveIntersection.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/AddDiagonalMemberIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/AddDiagonalMemberIntegerRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/AddMemberIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/AddMemberIntegerRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/ImproveOrientationIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/ImproveOrientationIntegerRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/RemoveIntersectionIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/RemoveIntersectionIntegerRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddDiagonalMemberVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddDiagonalMemberVariableRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddMemberVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddMemberVariableRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/ImproveOrientationVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/ImproveOrientationVariableRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/RemoveIntersectionVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/RemoveIntersectionVariableRadii.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusArteryProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusArteryProblem.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/IntegerTrussProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/IntegerTrussProblem.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/VariableRadiusTrussProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/VariableRadiusTrussProblem.class" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -11,6 +184,9 @@
   <component name="CodeStyleSettingsInfer">
     <option name="done" value="true" />
   </component>
+  <component name="CoverageViewManager">
+    <option name="myElementSize" value="77" />
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -18,16 +194,39 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="importAutomatically" value="true" />
+        <option name="vmOptionsForImporter" value="-Xmx768m" />
+      </MavenImportingSettings>
+    </option>
+  </component>
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="1" />
   </component>
   <component name="ProjectId" id="1d0g71sMAZ0klkiDgUsu9L4aB0o" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../VASSAR/VASSAR_AMOS" />
-    <property name="project.structure.last.edited" value="Facets" />
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_directory_selection" value="$PROJECT_DIR$/src/main/java/seakers/trussaos" />
+    <property name="last_opened_file_path" value="$USER_HOME$/xchart-git/XChart" />
+    <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="preferences.externalDependencies" />
+    <property name="settings.editor.selected.configurable" value="MavenSettings" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="seakers.trussaos.initialization" />
+      <recent name="seakers.trussaos.operators.variableradii" />
+      <recent name="seakers.trussaos.operators.integerradii" />
+      <recent name="seakers.trussaos.operators.constantradii" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -41,9 +240,9 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.OrthogonalArrayMOEARun">
-    <configuration name="MOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.trussaos.MOEARun" />
+  <component name="RunManager" selected="Application.ConstantRadiusMOEARun">
+    <configuration name="ConstantRadiusMOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.trussaos.ConstantRadiusMOEARun" />
       <module name="Truss_AOS" />
       <extension name="coverage">
         <pattern>
@@ -55,12 +254,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="OrthogonalArrayMOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.trussaos.OrthogonalArrayMOEARun" />
+    <configuration name="IntegerMOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.trussaos.IntegerMOEARun" />
       <module name="Truss_AOS" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="seakers.trussaos.problems.*" />
+          <option name="PATTERN" value="seakers.trussaos.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -68,10 +267,29 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="VariableRadiiMOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.trussaos.VariableRadiiMOEARun" />
+      <module name="Truss_AOS" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="seakers.trussaos.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.ConstantRadiusMOEARun" />
+      <item itemvalue="Application.VariableRadiiMOEARun" />
+      <item itemvalue="Application.IntegerMOEARun" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.OrthogonalArrayMOEARun" />
-        <item itemvalue="Application.MOEARun" />
+        <item itemvalue="Application.ConstantRadiusMOEARun" />
+        <item itemvalue="Application.IntegerMOEARun" />
+        <item itemvalue="Application.VariableRadiiMOEARun" />
       </list>
     </recent_temporary>
   </component>
@@ -88,19 +306,38 @@
     </task>
     <servers />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="XDebuggerManager">
-    <watches-manager>
-      <configuration name="Application">
-        <watch expression="sols[0]" language="JAVA" />
-        <watch expression="sols[0]" language="JAVA" />
-        <watch expression="connectivityArray" />
-        <watch expression="newConnectivityArray[14]" />
-        <watch expression="designConnectivityArray[3]" />
-        <watch expression="designConnectivityArray[5]" />
-        <watch expression="designConnArray[3][1]" />
-        <watch expression="designConnArray[6]" />
-        <watch expression="((Double)((HashMap.Node)((HashMap)credits).entrySet().toArray()[0]).getValue()).value" custom="java.lang.Double,java.util.HashMap.Node,java.util.HashMap" />
-      </configuration>
-    </watches-manager>
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/IntegerTrussProblem.java</url>
+          <line>70</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/trussaos/architecture/IntegerRepeatableArchitecture.java</url>
+          <line>32</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Truss_AOS$IntegerMOEARun.ic" NAME="IntegerMOEARun Coverage Results" MODIFIED="1630703177643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>seakers.trussaos.*</FILTER>
+    </SUITE>
   </component>
 </project>

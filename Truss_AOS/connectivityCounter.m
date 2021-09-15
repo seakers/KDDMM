@@ -1,14 +1,30 @@
 % Connectivity Counter Function
 % This function counts the number of elements connecting to each node,
-% accounting for unit cell repeatability
-function N = connectivityCounter(sidenum,CA,NC,sel)
+% accounting for unit cell repeatability.  IT also counts the number of
+% holes (unused nodes), accounting for repeatability
+function [N,numHoles] = connectivityCounter(sidenum,CA,NC,sel)
     % Initialize variables
     ND = NC./sel;
     
     % Add up counters based on nodal connectivities (sans repeatability)
-    [N,~] = histcounts(CA,size(NC,1));
+    binedges = (1:1:(size(NC,1)+1)) - 0.5;
+    [N,~] = histcounts(CA,binedges);
     
-    % Loop through each node to account for repeatability
+    % Determine number of holes, accounting for repeatability
+    leftedgenodes = 2:1:(sidenum-1); 
+    bottomedgenodes = (sidenum+1):sidenum:((sidenum^2)-(2*sidenum)+1);
+    edgenodes = [leftedgenodes,bottomedgenodes];
+    numHoles = nnz(~N);
+    if N(1) == 0
+        numHoles = numHoles - 3;
+    end
+    for j = 1:1:length(edgenodes)
+        if N(edgenodes(j)) == 0
+            numHoles = numHoles - 1;
+        end
+    end
+    
+    % Loop through each node to account for repeatability in connectivity
     for i = 1:1:size(NC,1)
         if (ND(i,1) == 0) && (ND(i,2) == 0) % Node in bottom left corner
             % Identify opposite node

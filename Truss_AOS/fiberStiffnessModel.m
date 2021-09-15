@@ -81,3 +81,12 @@ function Cval = fiberCalc(volFrac,NC,CA,E,dir)
     Cval = (K*cLsum)/Lsum;
     
 end
+
+%%
+% sel = 10e-3;
+% r = 250e-6;
+% E = 1.8162e6;
+% CA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];
+% sidenum = 3;
+% nucFac = 3;
+% [C11,C22] = fiberStiffnessModel(sel,r,E,CA,sidenum,nucFac)

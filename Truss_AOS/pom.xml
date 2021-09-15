@@ -39,6 +39,11 @@
             <version>1.2.4</version>
         </dependency>
         <dependency>
+            <groupId>seakers</groupId>
+            <artifactId>system-architecture-problems</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.mathworks</groupId>
             <artifactId>engine</artifactId>
             <version>R2020a</version>
