@@ -18,8 +18,8 @@ nucFac = 3;
 sel = 0.01; 
 E = 1816200;
 % Case 1, 1 unit cell (3x3 grid)
-tinyCA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];
-tinyrvar = (250*(10^-6)).*ones(1,size(tinyCA,1));
+CA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];
+rvar = (250*(10^-6)).*ones(1,size(CA,1));
 %}
 function [C,volFrac] = ...
              trussMetaCalc_NxN_1UC_rVar_AVar(sidenum,sel,rvar,E,CA)
