@@ -1,7 +1,8 @@
 % FUNCTION TO CALCULATE VOLUME FRACTION 
-function volFrac = calcVF_NxN_feasOnly(CA,rvar,sel,sidenum)
+function volFrac = calcVF_NxN_feasOnly(CA,r,sel,sidenum)
     % Generate vector with nodal coordinates
     NC = generateNC(sel,sidenum);
+    rvar = r.*ones(1,size(CA,1));
     
     % Calculate Avar & modify for edge members
     Avar = pi.*(rvar.^2); % Cross-sectional areas of truss members
@@ -23,61 +24,11 @@ function volFrac = calcVF_NxN_feasOnly(CA,rvar,sel,sidenum)
     totalTrussVol = subNodOLVol(NC,CA,totalTrussVol,rvar);
     
     % Finding average side "thickness" due to differing element radii
-    horizrads = [];
-    for i = 1:1:size(CA,1)
-        for j = 1:1:(sidenum-1)
-            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-            angle = acos((x2-x1)./L);
-            if angle == 0
-                if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
-                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        horizrads = [horizrads,rvar(i)];
-                    end
-                elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
-                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        horizrads = [horizrads,rvar(i)];
-                    end
-                end
-            end
-        end
-    end
-    vertrads = [];
-    for i = 1:1:size(CA,1)
-        for j = 1:1:(sidenum-1)
-            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-            angle = acos((x2-x1)./L);
-            if angle == (pi/2)
-                if ((CA(i,1) + j) == CA(i,2)) && ...
-                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        vertrads = [vertrads,rvar(i)];
-                    end
-                elseif ((CA(i,1) - j) == CA(i,2)) && ...
-                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        vertrads = [vertrads,rvar(i)];
-                    end    
-                end
-            end
-        end
-    end
-    thick = mean([mean(horizrads),mean(vertrads)]);
-    disp(thick);
+    thick = mean(rvar);
     
     % Calculating volume fraction (using a solid square with 2*(avg 
     %   thickness) as a baseline)
     volFrac = totalTrussVol/(2*thick*(totl^2)); 
-    disp((2*thick*(totl^2)));
 end
 
 % FUNCTION TO GENERATE NODAL COORDINATES BASED ON GRID SIZE

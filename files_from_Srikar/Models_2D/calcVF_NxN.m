@@ -27,65 +27,14 @@ function volFrac = calcVF_NxN(CA,r,sel,sidenum)
     %disp(totalTrussVol);
     
     % Modify total member volume based on overlaps at nodes
-    totalTrussVol = subNodOLVol(NC,CA,totalTrussVol,r);
+    totalTrussVol = subNodOLVol(NC,CA,totalTrussVol,rvar);
     
     % Finding average side "thickness" due to differing element radii
-    % Finding average side "thickness" due to differing element radii
-    horizrads = [];
-    for i = 1:1:size(CA,1)
-        for j = 1:1:(sidenum-1)
-            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-            angle = acos((x2-x1)./L);
-            if angle == 0
-                if ((CA(i,1) + (j*sidenum)) == CA(i,2)) && ...
-                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        horizrads = [horizrads,rvar(i)];
-                    end
-                elseif ((CA(i,1) - (j*sidenum)) == CA(i,2)) && ...
-                        ((NC(CA(i,1),2) == totl) || (NC(CA(i,1),2) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        horizrads = [horizrads,rvar(i)];
-                    end
-                end
-            end
-        end
-    end
-    vertrads = [];
-    for i = 1:1:size(CA,1)
-        for j = 1:1:(sidenum-1)
-            x1 = NC(CA(i,1),1); x2 = NC(CA(i,2),1);
-            y1 = NC(CA(i,1),2); y2 = NC(CA(i,2),2);
-            L = sqrt(((x2-x1)^2)+((y2-y1)^2));
-            angle = acos((x2-x1)./L);
-            if angle == (pi/2)
-                if ((CA(i,1) + j) == CA(i,2)) && ...
-                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        vertrads = [vertrads,rvar(i)];
-                    end
-                elseif ((CA(i,1) - j) == CA(i,2)) && ...
-                        ((NC(CA(i,1),1) == totl) || (NC(CA(i,1),1) == 0))
-                    singl = totl/(sidenum-1);
-                    for k = 1:1:(L/singl)
-                        vertrads = [vertrads,rvar(i)];
-                    end    
-                end
-            end
-        end
-    end
-    thick = mean([mean(horizrads),mean(vertrads)]);
-    %disp(thick);
+    thick = mean(rvar);
     
     % Calculating volume fraction (using a solid square with 2*(avg 
     %   thickness) as a baseline)
     volFrac = totalTrussVol/(2*thick*(totl^2)); 
-    %disp((2*thick*(totl^2)));
 end
 
 % FUNCTION TO GENERATE NODAL COORDINATES BASED ON GRID SIZE
@@ -274,7 +223,7 @@ function orientation = findOrientation(p,q,r)
 end
 
 % FUNCTION TO SUBTRACT VOLUME OVERLAP AT NODES
-function tTV = subNodOLVol(NC,CA,tTV,r)
+function tTV = subNodOLVol(NC,CA,tTV,rvar)
     for z = 1:1:size(NC,1)
         % Isolate members originating/ending at the current node
         indione = CA(:,1) == z; inditwo = CA(:,2) == z;
