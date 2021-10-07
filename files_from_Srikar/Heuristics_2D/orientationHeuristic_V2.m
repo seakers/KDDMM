@@ -15,10 +15,15 @@ NC = [0,0;0,0.025;0,0.05;0.025,0;0.025,0.025;
 function [orientationScore,avgAngle] = ...
                      orientationHeuristic_V2(NC,CA,target)
     % Finding angles of members relative to horizontal
+    SortedCA = sortrows((sort(CA'))');
     x1 = NC(CA(:,1),1); x2 = NC(CA(:,2),1);
     y1 = NC(CA(:,1),2); y2 = NC(CA(:,2),2);
-    L = sqrt(((x2-x1).^2)+((y2-y1).^2));
-    angles = abs(acos((x2-x1)./L));
+    angles = atan((y2-y1)./(x2-x1));
+    for i = 1:1:length(angles)
+        if (angles(i)<0) && (angles(i)>=-90)
+            angles(i) = abs(angles(i));
+        end
+    end
     
     % Find average angle
     avgAngle = rad2deg(mean(angles));
