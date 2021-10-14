@@ -29,12 +29,7 @@ function [orientationScore,avgAngle] = ...
     avgAngle = rad2deg(mean(angles));
     
     % Find target angle
-    tA = rad2deg((0.5*atan(target-1))+(pi/4));
-    if target < 1
-        targetAngle = 90 - tA;
-    else
-        targetAngle = tA;
-    end
+    targetAngle = rad2deg(atan(target));
     
     % Find deviation of average angle from target angle
     deviation = avgAngle - targetAngle;
