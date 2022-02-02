@@ -75,8 +75,7 @@ public class AddDiagonalMemberIntegerRadii implements Variation {
                     updatedRadiusArray = addRandomRadiusMemberToArray(completeConnectivityArray,diagonalMembersAbsent[0],radiusArray);
                 }
                 else {
-                    Random random = new Random();
-                    int diagonalMemberChoice = random.nextInt(diagonalMembersAbsent.length);
+                    int diagonalMemberChoice = PRNG.nextInt(diagonalMembersAbsent.length);
                     updatedConnectivityArray = addMemberObject.addMemberToConnectivityArray(connectivityArray,diagonalMembersAbsent[diagonalMemberChoice]);
                     updatedRadiusArray = addRandomRadiusMemberToArray(completeConnectivityArray,diagonalMembersAbsent[diagonalMemberChoice],radiusArray);
                 }
@@ -105,8 +104,7 @@ public class AddDiagonalMemberIntegerRadii implements Variation {
                 updatedRadiusArray = addRandomRadiusMemberToArray(completeConnectivityArray,diagonalMembersAbsent[0],radiusArray);
             }
             else {
-                Random random = new Random();
-                int diagonalMemberChoice = random.nextInt(diagonalMembersAbsent.length);
+                int diagonalMemberChoice = PRNG.nextInt(diagonalMembersAbsent.length);
                 //updatedConnectivityArray = addMemberObject.addMemberToConnectivityArray(connectivityArray,diagonalMembersAbsent[diagonalMemberChoice]);
                 updatedRadiusArray = addRandomRadiusMemberToArray(completeConnectivityArray,diagonalMembersAbsent[diagonalMemberChoice],radiusArray);
             }
@@ -198,20 +196,18 @@ public class AddDiagonalMemberIntegerRadii implements Variation {
     }
 
     private double[] addRandomRadiusMemberToArray (double[][] fullDesignConnArray, double[] memberToAdd, double[] oldRadiusArray) {
-        synchronized (PRNG.getRandom()) {
-            int addPosition = 0;
-            for (int i = 0; i < fullDesignConnArray.length; i++) {
-                if (fullDesignConnArray[i][0] == memberToAdd[0]) {
-                    if (fullDesignConnArray[i][1] > memberToAdd[1])
-                        break;
-                }
-                if (fullDesignConnArray[i][0] > memberToAdd[0])
+        int addPosition = 0;
+        for (int i = 0; i < fullDesignConnArray.length; i++) {
+            if (fullDesignConnArray[i][0] == memberToAdd[0]) {
+                if (fullDesignConnArray[i][1] > memberToAdd[1])
                     break;
-                addPosition = i+1;
             }
-            addPosition = Math.min(addPosition, (oldRadiusArray.length-1));
-            oldRadiusArray[addPosition] = PRNG.nextInt(radii.length);
-            return oldRadiusArray;
+            if (fullDesignConnArray[i][0] > memberToAdd[0])
+                break;
+            addPosition = i+1;
         }
+        addPosition = Math.min(addPosition, (oldRadiusArray.length-1));
+        oldRadiusArray[addPosition] = PRNG.nextInt(radii.length);
+        return oldRadiusArray;
     }
 }

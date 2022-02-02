@@ -17,7 +17,7 @@ CA_all = get_CA_all(sidenum);
 nucFac = 3;
 biasFactor = 1;
 collapsibilityBiasFac = 0.5;
-choice_of_model = "Beam"; % "Fibre" -> fibre model, "Truss" -> truss model, "Beam" -> beam model
+choice_of_model = "Truss"; % "Fibre" -> fibre model, "Truss" -> truss model, "Beam" -> beam model
 
 %minimum_support = 0.005;
 

@@ -24,10 +24,13 @@ import org.moeaframework.algorithm.EpsilonMOEA;
 import seakers.aos.operatorselectors.OperatorSelector;
 import seakers.aos.operatorselectors.ProbabilityMatching;
 import seakers.trussaos.initialization.BiasedInitialization;
-import seakers.trussaos.operators.constantradii.RemoveIntersection;
+import seakers.trussaos.initialization.SynchronizedMersenneTwister;
+//import seakers.trussaos.operators.constantradii.RemoveIntersection;
+import seakers.trussaos.operators.constantradii.RemoveIntersection2;
 import seakers.trussaos.operators.constantradii.AddDiagonalMember;
 import seakers.trussaos.operators.constantradii.AddMember;
-import seakers.trussaos.operators.constantradii.ImproveOrientation;
+//import seakers.trussaos.operators.constantradii.ImproveOrientation;
+import seakers.trussaos.operators.constantradii.ImproveOrientation2;
 import seakers.trussaos.constrainthandling.KnowledgeStochasticRanking;
 import seakers.trussaos.problems.ConstantRadiusArteryProblem;
 import seakers.trussaos.problems.ConstantRadiusTrussProblem;
@@ -61,17 +64,21 @@ public class ConstantRadiusMOEARun {
         // Define problem parameters
         //String csvPath = "C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\src\\main\\java\\seakers\\trussaos";
         String csvPath = System.getProperty("user.dir");
-        double targetStiffnessRatio = 1;
 
         /**
          * modelChoice = 0 --> Fibre Stiffness Model
          *             = 1 --> Truss Stiffness Model
          *             = 2 --> Beam Model
          */
-        int modelChoice = 2; // Fibre stiffness model cannot be used for the artery problem
+        int modelChoice = 1; // Fibre stiffness model cannot be used for the artery problem
 
         boolean arteryProblem = true; // Solve the artery optimization (otherwise the original truss problem is solved)
         boolean useOptimizationProblem2 = true; // Use ConstantRadiusTrussProblem2 as problem class (instead of ConstantRadiusTrussProblem)
+
+        double targetStiffnessRatio = 1;
+        if (arteryProblem) {
+            targetStiffnessRatio = 0.421;
+        }
 
         // Heuristic Enforcement Methods
         /**
@@ -83,9 +90,9 @@ public class ConstantRadiusMOEARun {
          * heuristicsConstrained = [partialCollapsibilityConstrained, nodalPropertiesConstrained, orientationConstrained, intersectionConstrained]
          */
         boolean[] partialCollapsibilityConstrained = {false, false, false, false, false, false};
-        boolean[] nodalPropertiesConstrained = {false, false, false, false, false, false};
-        boolean[] orientationConstrained = {false, false, false, false, false, false};
-        boolean[] intersectionConstrained = {false, false, false, false, false, false};
+        boolean[] nodalPropertiesConstrained = {false, true, false, false, false, false};
+        boolean[] orientationConstrained = {false, true, false, false, false, false};
+        boolean[] intersectionConstrained = {false, true, false, false, false, false};
 
         // Bias initial population with low number of members
         boolean useLowMemberBiasing = false;
@@ -110,7 +117,7 @@ public class ConstantRadiusMOEARun {
         }
 
         int numCPU = 1;
-        int numRuns = 10;
+        int numRuns = 30;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
         engine = MatlabEngine.startMatlab();
@@ -123,7 +130,7 @@ public class ConstantRadiusMOEARun {
         TypedProperties properties = new TypedProperties();
         // Search paramaters set here
         int popSize = 100;
-        int maxEvals = 5000;
+        int maxEvals = 6000;
         properties.setInt("maxEvaluations", maxEvals);
         properties.setInt("populationSize", popSize);
 
@@ -190,6 +197,8 @@ public class ConstantRadiusMOEARun {
         double mutationProbability = 1. / numVariables;
         properties.setDouble("mutationProbability", mutationProbability);
 
+        PRNG.setRandom(new SynchronizedMersenneTwister());
+
         for (int i = 0; i < numRuns; i++) {
 
             // Problem class for printable solutions
@@ -210,13 +219,9 @@ public class ConstantRadiusMOEARun {
 
             //String fileSaveNameInit;
             if (partialCollapsibilityConstrained[2] || nodalPropertiesConstrained[2] || orientationConstrained[2] || intersectionConstrained[2] || useLowMemberBiasing) { // Initialization object
-                synchronized (PRNG.getRandom()) {
-                    initialization = new BiasedInitialization(trussProblem, popSize, useLowMemberBiasing, partialCollapsibilityConstrained[2], nodalPropertiesConstrained[2], orientationConstrained[2], intersectionConstrained[2], globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numberOfHeuristicObjectives, numberOfHeuristicConstraints);
-                }
+                initialization = new BiasedInitialization(trussProblem, arteryProblem, popSize, useLowMemberBiasing, partialCollapsibilityConstrained[2], nodalPropertiesConstrained[2], orientationConstrained[2], intersectionConstrained[2], globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numberOfHeuristicObjectives, numberOfHeuristicConstraints);
             } else {
-                synchronized (PRNG.getRandom()) {
-                    initialization = new RandomInitialization(trussProblem, popSize);
-                }
+                initialization = new RandomInitialization(trussProblem, popSize);
             }
 
             // Initialize population structure for algorithm
@@ -231,15 +236,19 @@ public class ConstantRadiusMOEARun {
             AOSVariation aosStrategy = null;
 
             // Initialize heuristic operators
-            AddDiagonalMember addDiagonalMember;
-            AddMember addMember;
-            ImproveOrientation improveOrientation;
-            RemoveIntersection removeIntersection;
+            Variation addDiagonalMember;
+            Variation addMember;
+            //Variation improveOrientation;
+            //Variation removeIntersection;
+            Variation improveOrientation;
+            Variation removeIntersection;
 
-            addMember = new AddMember(maintainFeasibility, engine, globalNodePositions, sideNodeNumber, printableSideLength, numberOfHeuristicObjectives, numberOfHeuristicConstraints);
-            removeIntersection = new RemoveIntersection(maintainStability, engine, globalNodePositions, sideNodeNumber, printableSideLength, numberOfHeuristicObjectives, numberOfHeuristicConstraints);
-            addDiagonalMember = new AddDiagonalMember(maintainFeasibility, engine, globalNodePositions, sideNodeNumber, printableSideLength, numberOfHeuristicObjectives, numberOfHeuristicConstraints);
-            improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numberOfHeuristicObjectives, numberOfHeuristicConstraints);
+            addMember = new CompoundVariation(new AddMember(maintainFeasibility, arteryProblem, engine, globalNodePositions, sideNodeNumber, printableSideLength, numberOfHeuristicObjectives, numberOfHeuristicConstraints), new BitFlip(mutationProbability));
+            //removeIntersection = new CompoundVariation(new RemoveIntersection(maintainStability, arteryProblem, engine, globalNodePositions, sideNodeNumber, printableSideLength, numberOfHeuristicObjectives, numberOfHeuristicConstraints), new BitFlip(mutationProbability));
+            removeIntersection = new CompoundVariation(new RemoveIntersection2(arteryProblem, engine, globalNodePositions, sideNodeNumber, printableSideLength, numberOfHeuristicObjectives, numberOfHeuristicConstraints), new BitFlip(mutationProbability));
+            addDiagonalMember = new CompoundVariation(new AddDiagonalMember(maintainFeasibility, arteryProblem, engine, globalNodePositions, sideNodeNumber, printableSideLength, numberOfHeuristicObjectives, numberOfHeuristicConstraints), new BitFlip(mutationProbability));
+            //improveOrientation = new CompoundVariation(new ImproveOrientation(arteryProblem, globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numberOfHeuristicObjectives, numberOfHeuristicConstraints), new BitFlip(mutationProbability));
+            improveOrientation = new CompoundVariation(new ImproveOrientation2(arteryProblem, globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numberOfHeuristicObjectives, numberOfHeuristicConstraints), new BitFlip(mutationProbability));
 
             Variation[] heuristicOperators = {addDiagonalMember, addMember, improveOrientation, removeIntersection};
             String[] heuristicAttributes = {"PartialCollapsibilityViolation","NodalPropertiesViolation","OrientationViolation","IntersectionViolation"};
@@ -334,7 +343,7 @@ public class ConstantRadiusMOEARun {
 
                 // Create credit assignment
                 //SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
-                OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0);
+                OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0, comp);
 
                 // Create AOS
                 //aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
@@ -343,8 +352,8 @@ public class ConstantRadiusMOEARun {
             }
             else { // Epsilon MOEA objects
                 properties.setDouble("crossoverProbability", crossoverProbability);
-                //crossOver = new OnePointCrossover(crossoverProbability);
-                crossOver = new TwoPointCrossover(crossoverProbability);
+                crossOver = new OnePointCrossover(crossoverProbability);
+                //crossOver = new TwoPointCrossover(crossoverProbability);
                 bitMutation = new BitFlip(mutationProbability);
                 var = new CompoundVariation(crossOver, bitMutation);
             }

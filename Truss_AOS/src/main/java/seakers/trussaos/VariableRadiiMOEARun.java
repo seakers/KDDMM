@@ -27,6 +27,7 @@ import seakers.aos.operatorselectors.ProbabilityMatching;
 import seakers.trussaos.initialization.BiasedInitializationVariableRadii;
 //import seakers.trussaos.constrainthandling.DisjunctiveNormalForm;
 import seakers.trussaos.constrainthandling.KnowledgeStochasticRanking;
+import seakers.trussaos.initialization.SynchronizedMersenneTwister;
 import seakers.trussaos.operators.variableradii.AddDiagonalMemberVariableRadii;
 import seakers.trussaos.operators.variableradii.AddMemberVariableRadii;
 import seakers.trussaos.operators.variableradii.ImproveOrientationVariableRadii;
@@ -165,6 +166,8 @@ public class VariableRadiiMOEARun {
 
         double mutationProbability = 1. / numVariables;
         properties.setDouble("mutationProbability", mutationProbability);
+
+        PRNG.setRandom(new SynchronizedMersenneTwister());
 
         for (int i = 0; i < numRuns; i++) {
             // Create a new problem class

@@ -3,6 +3,7 @@ package seakers.trussaos.operators.constantradii;
 import com.mathworks.engine.MatlabEngine;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
+import org.moeaframework.core.PRNG;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 
 import java.util.*;
@@ -11,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 public class AddDiagonalMember implements Variation {
 
     private final boolean keepFeasible;
+    private final boolean arteryProblem;
     private static MatlabEngine engine;
     private final double[][] nodalConnectivityArray;
     private final double sidenum;
@@ -18,8 +20,9 @@ public class AddDiagonalMember implements Variation {
     private final int numHeurObjectives;
     private final int numHeurConstraints;
 
-    public AddDiagonalMember(boolean keepFeasible, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel, int numHeuristicObjectives, int numHeuristicConstraints) {
+    public AddDiagonalMember(boolean keepFeasible, boolean arteryProblem, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel, int numHeuristicObjectives, int numHeuristicConstraints) {
         this.keepFeasible = keepFeasible;
+        this.arteryProblem = arteryProblem;
         engine = eng;
         this.nodalConnectivityArray = nodalConnArray;
         this.sidenum = sidenum;
@@ -39,7 +42,7 @@ public class AddDiagonalMember implements Variation {
         TrussRepeatableArchitecture architecture = new TrussRepeatableArchitecture(sols[0],sidenum,numHeurObjectives,numHeurConstraints);
         double[][] connectivityArray = architecture.getConnectivityArrayFromSolution(sols[0]);
         TrussRepeatableArchitecture newArchitecture = null;
-        AddMember addMemberObject = new AddMember(keepFeasible,engine,nodalConnectivityArray,sidenum,sel,numHeurObjectives,numHeurConstraints);
+        AddMember addMemberObject = new AddMember(keepFeasible,arteryProblem,engine,nodalConnectivityArray,sidenum,sel,numHeurObjectives,numHeurConstraints);
         double[][] updatedConnectivityArray;
 
         if (keepFeasible) {
@@ -62,11 +65,10 @@ public class AddDiagonalMember implements Variation {
                 }
                 else if (diagonalMembersAbsent.length == 1) {
                     updatedConnectivityArray = addMemberObject.addMemberToConnectivityArray(connectivityArray,diagonalMembersAbsent[0]);
-                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray);
+                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray, arteryProblem);
                 }
                 else {
-                    Random random = new Random();
-                    int diagonalMemberChoice = random.nextInt(diagonalMembersAbsent.length);
+                    int diagonalMemberChoice = PRNG.nextInt(diagonalMembersAbsent.length);
                     updatedConnectivityArray = addMemberObject.addMemberToConnectivityArray(connectivityArray,diagonalMembersAbsent[diagonalMemberChoice]);
                 }
                 try {
@@ -78,7 +80,7 @@ public class AddDiagonalMember implements Variation {
                 //int oldNumberOfIntersectingTrusses = oldDesignTrussIntersections.get(0) == null ? 0 : oldDesignTrussIntersections.get(0).size();
                 if (oldDesignTrussIntersections >= newDesignTrussIntersections) {
                     feasibilitySameOrBetter = true;
-                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray);
+                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray, arteryProblem);
                 }
                 else {
                     numberOfAttempts += 1;
@@ -94,11 +96,10 @@ public class AddDiagonalMember implements Variation {
                 updatedConnectivityArray = addMemberObject.addMemberToConnectivityArray(connectivityArray,diagonalMembersAbsent[0]);
             }
             else {
-                Random random = new Random();
-                int diagonalMemberChoice = random.nextInt(diagonalMembersAbsent.length);
+                int diagonalMemberChoice = PRNG.nextInt(diagonalMembersAbsent.length);
                 updatedConnectivityArray = addMemberObject.addMemberToConnectivityArray(connectivityArray,diagonalMembersAbsent[diagonalMemberChoice]);
             }
-            newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray);
+            newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray, arteryProblem);
         }
         return new Solution[]{newArchitecture};
     }

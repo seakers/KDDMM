@@ -5,10 +5,9 @@ import com.mathworks.engine.MatlabEngine;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 //import java.util.ArrayList;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-//import org.moeaframework.core.PRNG;
+import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
 
@@ -25,6 +24,7 @@ public class RemoveIntersection implements Variation {
      * Boolean value determining whether to consider stability while employing operator
      */
     private final boolean KeepStable;
+    private final boolean arteryProblem;
     private static MatlabEngine engine;
     //private final TrussRepeatableArchitecture architecture;
     //private final int[][] FullConnectivityArray;
@@ -40,8 +40,9 @@ public class RemoveIntersection implements Variation {
      * @param nodalConnArray
      * @param eng
      */
-    public RemoveIntersection(boolean KeepStable, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel, int numHeuristicObjectives, int numHeuristicConstraints){
+    public RemoveIntersection(boolean KeepStable, boolean arteryProblem, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel, int numHeuristicObjectives, int numHeuristicConstraints){
         this.KeepStable = KeepStable;
+        this.arteryProblem = arteryProblem;
         engine = eng;
         this.nodalConnectivityArray = nodalConnArray;
         this.sidenum = sidenum;
@@ -88,7 +89,7 @@ public class RemoveIntersection implements Variation {
                 }
                 numberOfAttempts += 1;
             }
-            newArchitecture = architecture.getArchitectureFromConnectivityArray(newConnectivityArray);
+            newArchitecture = architecture.getArchitectureFromConnectivityArray(newConnectivityArray, arteryProblem);
         }
         else {
             try {
@@ -96,7 +97,7 @@ public class RemoveIntersection implements Variation {
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
-            newArchitecture = architecture.getArchitectureFromConnectivityArray(newConnectivityArray);
+            newArchitecture = architecture.getArchitectureFromConnectivityArray(newConnectivityArray, arteryProblem);
         }
         return new Solution[]{newArchitecture};
     }
@@ -196,10 +197,9 @@ public class RemoveIntersection implements Variation {
             newConnectivityArray = designConnectivityArray.clone();
         }
         else {
-            Random ran = new Random();
-            int intersectionChoice = ran.nextInt(trussIntersections.length);
+            int intersectionChoice = PRNG.nextInt(trussIntersections.length);
             double[] intersectingTrussIndexPair = trussIntersections[intersectionChoice];
-            int trussIndexChoiceToDelete = ran.nextInt(intersectingTrussIndexPair.length);
+            int trussIndexChoiceToDelete = PRNG.nextInt(intersectingTrussIndexPair.length);
             double trussIndexToDelete = intersectingTrussIndexPair[trussIndexChoiceToDelete];
             newConnectivityArray = new double[designConnectivityArray.length-1][2];
             int next = 0;

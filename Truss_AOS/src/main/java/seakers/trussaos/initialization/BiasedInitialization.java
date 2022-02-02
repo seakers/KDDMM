@@ -4,6 +4,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.moeaframework.core.Initialization;
 import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.PRNG;
 //import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.core.variable.EncodingUtils;
@@ -26,6 +27,7 @@ import java.util.stream.IntStream;
 
 public class BiasedInitialization implements Initialization {
     private final Problem problem;
+    private final boolean arteryProblem;
     private final int populationSize;
     private final boolean lowMemberBiasing;
     private final boolean partialCollapsibilityEnforced;
@@ -39,8 +41,9 @@ public class BiasedInitialization implements Initialization {
     private final int numHeurConstraints;
     private static double orientaionAcceptanceMargin = 10;
 
-    public BiasedInitialization(Problem problem, int populationSize, boolean lowMemberBiasing, boolean partialCollapsibilityEnforced, boolean nodalPropertiesEnforced, boolean orientationEnforced, boolean intersectionEnforced, double[][] globalNodePositions, double targetStiffnessRatio, int sideNodeNumber, int numHeuristicObjectives, int numHeuristicConstraints) {
+    public BiasedInitialization(Problem problem, boolean arteryProblem, int populationSize, boolean lowMemberBiasing, boolean partialCollapsibilityEnforced, boolean nodalPropertiesEnforced, boolean orientationEnforced, boolean intersectionEnforced, double[][] globalNodePositions, double targetStiffnessRatio, int sideNodeNumber, int numHeuristicObjectives, int numHeuristicConstraints) {
         this.problem = problem;
+        this.arteryProblem = arteryProblem;
         this.populationSize = populationSize;
         this.lowMemberBiasing = lowMemberBiasing;
         this.partialCollapsibilityEnforced = partialCollapsibilityEnforced;
@@ -74,12 +77,12 @@ public class BiasedInitialization implements Initialization {
         //if (intersectionEnforced && !nodalPropertiesEnforced) {
             //numberOfMembers = new double[]{6, 9, 12, 15};
         //}
-        if (intersectionEnforced && nodalPropertiesEnforced) {
+        if (intersectionEnforced || (intersectionEnforced && nodalPropertiesEnforced)) {
             int numberOfVariables = findNumberOfVariablesFromSidenum();
             numberOfMembers = new double[]{numberOfVariables/4D, numberOfVariables*7D/24D, numberOfVariables*1D/3D, numberOfVariables*3D/8D};
         }
 
-        Random rand = new Random();
+        //Random rand = new Random();
         boolean val;
 
         if (!partialCollapsibilityEnforced && !nodalPropertiesEnforced && !orientationEnforced && !intersectionEnforced) {
@@ -87,7 +90,7 @@ public class BiasedInitialization implements Initialization {
                 for (int j = 0;j < solutionsPerGroup;j++) {
                     Solution solution = this.problem.newSolution();
                     for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                        val = rand.nextFloat() < normalProb;
+                        val = PRNG.nextFloat() < normalProb;
                         BinaryVariable var = new BinaryVariable(1);
                         EncodingUtils.setBoolean(var,val);
                         solution.setVariable(k,var);
@@ -98,14 +101,14 @@ public class BiasedInitialization implements Initialization {
             }
         }
 
-        if (nodalPropertiesEnforced && !partialCollapsibilityEnforced && !orientationEnforced) {
+        if ((nodalPropertiesEnforced || intersectionEnforced) && !partialCollapsibilityEnforced && !orientationEnforced) {
             int numberOfVariables = findNumberOfVariablesFromSidenum();
             for (int i = 0;i < 4;i++) {
                 double TrueProb = numberOfMembers[i]/numberOfVariables;
                 for (int j = 0;j < solutionsPerGroup;j++) {
                     Solution solution = this.problem.newSolution();
                     for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                        val = rand.nextFloat() < TrueProb;
+                        val = PRNG.nextFloat() < TrueProb;
                         BinaryVariable var = new BinaryVariable(1);
                         EncodingUtils.setBoolean(var,val);
                         solution.setVariable(k,var);
@@ -124,10 +127,10 @@ public class BiasedInitialization implements Initialization {
                 Solution solution = this.problem.newSolution();
                 for (int k = 0; k < solution.getNumberOfVariables(); ++k) {
                     if (booleanDiagonalsRepeatable[k]) {
-                        val = rand.nextFloat() < diagProb;
+                        val = PRNG.nextFloat() < diagProb;
                     } else {
-                        //val = rand.nextFloat() < 0.5;
-                        val = rand.nextFloat() < normalProb;
+                        //val = PRNG.nextFloat() < 0.5;
+                        val = PRNG.nextFloat() < normalProb;
                     }
                     BinaryVariable var = new BinaryVariable(1);
                     EncodingUtils.setBoolean(var,val);
@@ -149,9 +152,9 @@ public class BiasedInitialization implements Initialization {
                     Solution solution = this.problem.newSolution();
                     for (int k = 0;k < solution.getNumberOfVariables();++k) {
                         if (booleanDiagonalsRepeatable[k]) {
-                            val = rand.nextFloat() < diagProb;
+                            val = PRNG.nextFloat() < diagProb;
                         } else {
-                            val = rand.nextFloat() < TrueProb;
+                            val = PRNG.nextFloat() < TrueProb;
                         }
                         BinaryVariable var = new BinaryVariable(1);
                         EncodingUtils.setBoolean(var,val);
@@ -166,14 +169,14 @@ public class BiasedInitialization implements Initialization {
         ImproveOrientation improveOrientation;
         double targetOrientation;
         if (!partialCollapsibilityEnforced && !nodalPropertiesEnforced && orientationEnforced && !intersectionEnforced) {
-            improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            improveOrientation = new ImproveOrientation(arteryProblem, globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
             targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
             int m = 0;
             while (m < populationSize) {
                 Solution solution = this.problem.newSolution();
                 for (int n = 0; n < solution.getNumberOfVariables(); ++n) {
                     //val = rand.nextFloat() < 0.5;
-                    val = rand.nextFloat() < normalProb;
+                    val = PRNG.nextFloat() < normalProb;
                     BinaryVariable var = new BinaryVariable(1);
                     EncodingUtils.setBoolean(var, val);
                     solution.setVariable(n, var);
@@ -198,7 +201,7 @@ public class BiasedInitialization implements Initialization {
             int numberOfVariables = findNumberOfVariablesFromSidenum();
             boolean[] booleanDiagonals = identifyDiagonalMembers();
             boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-            improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            improveOrientation = new ImproveOrientation(arteryProblem, globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
             targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
             for (int i = 0;i < 4;i++) {
                 double TrueProb = numberOfMembers[i]/numberOfVariables;
@@ -207,9 +210,9 @@ public class BiasedInitialization implements Initialization {
                     Solution solution = this.problem.newSolution();
                     for (int k = 0;k < solution.getNumberOfVariables();++k) {
                         if (booleanDiagonalsRepeatable[k]) {
-                            val = rand.nextFloat() < diagProb;
+                            val = PRNG.nextFloat() < diagProb;
                         } else {
-                            val = rand.nextFloat() < TrueProb;
+                            val = PRNG.nextFloat() < TrueProb;
                         }
                         BinaryVariable var = new BinaryVariable(1);
                         EncodingUtils.setBoolean(var,val);
@@ -233,7 +236,7 @@ public class BiasedInitialization implements Initialization {
             }
         } else if (!partialCollapsibilityEnforced && nodalPropertiesEnforced && orientationEnforced) {
             int numberOfVariables = findNumberOfVariablesFromSidenum();
-            improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            improveOrientation = new ImproveOrientation(arteryProblem, globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
             targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
             for (int i = 0;i < 4;i++) {
                 double TrueProb = numberOfMembers[i]/numberOfVariables;
@@ -241,7 +244,7 @@ public class BiasedInitialization implements Initialization {
                 while (j < solutionsPerGroup) {
                     Solution solution = this.problem.newSolution();
                     for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                        val = rand.nextFloat() < TrueProb;
+                        val = PRNG.nextFloat() < TrueProb;
                         BinaryVariable var = new BinaryVariable(1);
                         EncodingUtils.setBoolean(var,val);
                         solution.setVariable(k,var);
@@ -266,17 +269,17 @@ public class BiasedInitialization implements Initialization {
             double diagProb = 0.75;
             boolean[] booleanDiagonals = identifyDiagonalMembers();
             boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-            improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            improveOrientation = new ImproveOrientation(arteryProblem, globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
             targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
             int m = 0;
             while (m < populationSize) {
                 Solution solution = this.problem.newSolution();
                 for (int n = 0; n < solution.getNumberOfVariables(); ++n) {
                     if (booleanDiagonalsRepeatable[n]) {
-                        val = rand.nextFloat() < diagProb;
+                        val = PRNG.nextFloat() < diagProb;
                     } else {
-                        //val = rand.nextFloat() < 0.5;
-                        val = rand.nextFloat() < normalProb;
+                        //val = PRNG.nextFloat() < 0.5;
+                        val = PRNG.nextFloat() < normalProb;
                     }
                     BinaryVariable var = new BinaryVariable(1);
                     EncodingUtils.setBoolean(var, val);
@@ -300,7 +303,7 @@ public class BiasedInitialization implements Initialization {
         }
         if (!partialCollapsibilityEnforced && !nodalPropertiesEnforced && orientationEnforced && intersectionEnforced) {
             int numberOfVariables = findNumberOfVariablesFromSidenum();
-            improveOrientation = new ImproveOrientation(globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            improveOrientation = new ImproveOrientation(arteryProblem, globalNodePositions, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
             targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
             for (int i = 0;i < 4;i++) {
                 double TrueProb = numberOfMembers[i]/numberOfVariables;
@@ -308,7 +311,7 @@ public class BiasedInitialization implements Initialization {
                 while (j < solutionsPerGroup) {
                     Solution solution = this.problem.newSolution();
                     for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                        val = rand.nextFloat() < TrueProb;
+                        val = PRNG.nextFloat() < TrueProb;
                         BinaryVariable var = new BinaryVariable(1);
                         EncodingUtils.setBoolean(var,val);
                         solution.setVariable(k,var);

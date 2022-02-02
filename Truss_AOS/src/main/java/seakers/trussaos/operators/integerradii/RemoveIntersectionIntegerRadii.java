@@ -5,10 +5,9 @@ import com.mathworks.engine.MatlabEngine;
 import seakers.trussaos.architecture.IntegerRepeatableArchitecture;
 //import java.util.ArrayList;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-//import org.moeaframework.core.PRNG;
+import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
 
@@ -178,10 +177,9 @@ public class RemoveIntersectionIntegerRadii implements Variation{
 
     private double getTrussIndexToDelete (double[][] designConnectivityArray, double[][] fullConnectivityArray, double[][] intersectingTrusses) throws ExecutionException, InterruptedException {
         //double[][] trussIntersections = findIntersectingTrusses(designConnectivityArray);
-        Random ran = new Random();
-        int intersectionChoice = ran.nextInt(intersectingTrusses.length);
+        int intersectionChoice = PRNG.nextInt(intersectingTrusses.length);
         double[] intersectingTrussIndexPair = intersectingTrusses[intersectionChoice];
-        int trussIndexChoiceToDelete = ran.nextInt(intersectingTrussIndexPair.length);
+        int trussIndexChoiceToDelete = PRNG.nextInt(intersectingTrussIndexPair.length);
         double trussIndexToRemove = intersectingTrussIndexPair[trussIndexChoiceToDelete];
         double[] trussPairToRemove = designConnectivityArray[(int) trussIndexToRemove];
         double memberPosition = 0;

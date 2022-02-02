@@ -1,13 +1,13 @@
 package seakers.trussaos.problems;
 
 import com.mathworks.engine.MatlabEngine;
+import com.mathworks.engine.MatlabExecutionException;
 import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.problem.AbstractProblem;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Double.NaN;
@@ -29,9 +29,9 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
     private final double sel;
     private final double sidenum;
     private final double nucFac;
+    private final double targetStiffnessRatio;
     private final double radius;
     private final double YoungsModulus;
-    private final double targetStiffnessRatio;
     private final boolean[][] heuristicsConstrainedBooleans;
     private final int numHeurObjectives;
     private final int numHeurConstraints;
@@ -46,7 +46,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
      * constrainHeuristics = [partialCollapsibilityConstrained, nodalPropertiesConstrained, orientationConstrained, intersectionConstrained]
      */
 
-    public ConstantRadiusArteryProblem (String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double targetCRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
+    public ConstantRadiusArteryProblem (String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double targetStiffnessRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
         // For default NxN node grid
         super(numVariables,2+numHeurObjectives,2+numHeurConstraints);
 
@@ -60,14 +60,14 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
         this.sel = 0.05;
         this.sidenum = 3.0;
         this.nucFac = 1.0;
-        this.targetStiffnessRatio = targetCRatio;
+        this.targetStiffnessRatio = targetStiffnessRatio;
         this.csvSavePath = savePath;
         this.engine = eng;
 
         this.NodalPositionArray = getNodalConnectivityArrayFromSidenum((int) sidenum, sel);
     }
 
-    public ConstantRadiusArteryProblem (String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
+    public ConstantRadiusArteryProblem (String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetStiffnessRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
 
         super(numVariables,2+numHeurObjectives,2+numHeurConstraints);
 
@@ -81,7 +81,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
         this.YoungsModulus = E;
         this.sidenum = sideNodeNum;
         this.nucFac = nucFac;
-        this.targetStiffnessRatio = targetCRatio;
+        this.targetStiffnessRatio = targetStiffnessRatio;
         this.csvSavePath = savePath;
         this.engine = eng;
 
@@ -97,8 +97,8 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
             radiusArray[i] = radius;
         }
 
-        double C11;
-        double C22;
+        double C11 = 0;
+        double C22 = 0;
         double C12 = 0;
         double C21 = 0;
         double C16 = 0;
@@ -120,7 +120,6 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
             double[][] stiffnessMatrix;
             Object[] outputs = null;
             if (useVariableRadiiModels) {
-                // For the model, sidenum = (2*nucFac) + 1
                 try {
                     //outputs = engine.feval(2,"trussMetaCalc_NxN_rVar_AVar",nucFac,sel,radiusArray,YoungsModulus,designConnArray);
                     outputs = engine.feval(2,"trussMetaCalc_NxN_1UC_rVar_AVar",sidenum,sel,radiusArray,YoungsModulus,designConnArray);
@@ -171,7 +170,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
                     C16 = 1e3;
                     C26 = 1e3;
                 }
-                if ((C22 < 1) | (C11 < 1) | (C12 < 1) | (C21 < 1) | (C16 < 1) | (C26 < 1) | (C61 < 1) | (C62 < 1) | (C66 < 1)) {
+                if ((C22 < 1) | (C11 < 1) | (C12 < 1) | (C21 < 1)) {
                     noStiffnessIndicated = true;
                 }
                 try {
@@ -253,7 +252,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
                 C16 = 1e3;
                 C26 = 1e3;
             }
-            if ((C22 < 1) | (C11 < 1) | (C12 < 1) | (C21 < 1) | (C16 < 1) | (C26 < 1) | (C61 < 1) | (C62 < 1) | (C66 < 1)) {
+            if ((C22 < 1) | (C11 < 1) | (C12 < 1) | (C21 < 1)) {
                 noStiffnessIndicated = true;
             }
             try {
@@ -355,10 +354,10 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
 
         double[] trueObjectives = new double[2+numHeurObjectives];
         trueObjectives[0] = C11/volFrac;
-        trueObjectives[1] = (Math.abs(C22/C11 - 0.421) + Math.abs(C12/C11 - 0.0745) + Math.abs(C21/C11 - 0.0745) + Math.abs(C61/YoungsModulus) + Math.abs(C16/YoungsModulus) + Math.abs(C62/YoungsModulus) + Math.abs(C26/YoungsModulus) + Math.abs(C66/C11 - 5.038))/8;
+        trueObjectives[1] = (Math.abs(C22/C11 - targetStiffnessRatio) + Math.abs(C12/C11 - 0.0745) + Math.abs(C21/C11 - 0.0745) + Math.abs(C61/YoungsModulus) + Math.abs(C16/YoungsModulus) + Math.abs(C62/YoungsModulus) + Math.abs(C26/YoungsModulus) + Math.abs(C66/C11 - 5.038))/8;
 
-        objectives[0] = -trueObjectives[0]/YoungsModulus + penaltyFactor*penalty;
-        objectives[1] = trueObjectives[1] + penaltyFactor*penalty;
+        objectives[0] = -(trueObjectives[0] - 2e5)/1e6 + penaltyFactor*penalty;
+        objectives[1] = ((Math.abs(C22/C11 - targetStiffnessRatio))/6 + Math.abs(C12/C11 - 0.0745) + Math.abs(C21/C11 - 0.0745) + Math.abs(C61/1.5e5) + Math.abs(C16/9e4) + Math.abs(C62/1.5e5) + Math.abs(C26/9.5e4) + (Math.abs(C66/C11 - 5.038) - 4.5)/0.5)/8 + penaltyFactor*penalty;
 
         int heurObjectiveCount = 0;
         if (numHeurObjectives > 0) {
@@ -387,7 +386,12 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
         }
 
         sltn.setObjectives(objectives);
-        sltn.setConstraints(constraints);
+        try {
+            sltn.setConstraints(constraints);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         sltn.setAttribute("FeasibilityViolation", 1.0 - designFeasibilityScore);
         sltn.setAttribute("ConnectivityViolation", 1.0 - designConnectivityScore);
@@ -404,7 +408,13 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
     }
 
     public double getFeasibilityScoreVariableRadii(double[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {
-        return (double)engine.feval("feasibility_checker_nonbinary_V5",NodalPositionArray,designConnectivityArray,sel,sidenum);
+        double feasibilityScore = 0.0;
+        try {
+            feasibilityScore = (double)engine.feval("feasibility_checker_nonbinary_V5",NodalPositionArray,designConnectivityArray,sel,sidenum);
+        } catch (ExecutionException | InterruptedException | NullPointerException e) {
+            e.printStackTrace();
+        }
+        return feasibilityScore;
     }
 
     public double getConnectivityScoreVariableRadii(double[][] designConnectivityArray, double biasFactor) throws ExecutionException, InterruptedException, NullPointerException {
@@ -422,8 +432,8 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
 
     private double getOrientationScoreVariableRadii(double[][] designConnectivityArray) throws ExecutionException, InterruptedException {
         //Object orientationOutput;
-        //orientationOutput = engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
-        return (double) engine.feval("orientationHeuristicNorm",NodalPositionArray,designConnectivityArray,sel,targetStiffnessRatio);
+        //orientationOutput = engine.feval("orientationHeuristicNorm",NodalPositionArray,designConnectivityArray,sel,targetStiffnessRatio);
+        return (double) engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
     }
 
     private double getIntersectionScore(double[][] designConnectivityArray) throws ExecutionException, InterruptedException {
@@ -468,16 +478,12 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
 
     @Override
     public Solution newSolution() {
-
-        synchronized (PRNG.getRandom()) {
-            Solution newSol = new Solution(this.numberOfVariables, 2+numHeurObjectives, 2+numHeurConstraints);
-            Random rnd = new Random();
-            for (int i = 0; i < this.numberOfVariables; i++) {
-                BinaryVariable newVar = new BinaryVariable(1);
-                newVar.set(0, rnd.nextBoolean());
-                newSol.setVariable(i, newVar);
-            }
-            return newSol;
+        Solution newSol = new Solution(this.numberOfVariables, 2+numHeurObjectives, 2+numHeurConstraints);
+        for (int i = 0; i < this.numberOfVariables; i++) {
+            BinaryVariable newVar = new BinaryVariable(1);
+            newVar.set(0, PRNG.nextBoolean());
+            newSol.setVariable(i, newVar);
         }
+        return newSol;
     }
 }

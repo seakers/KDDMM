@@ -318,16 +318,13 @@ public class VariableRadiusTrussProblem extends AbstractProblem {
 
     @Override
     public Solution newSolution() {
-        synchronized (PRNG.getRandom()) {
-            Solution newSol = new Solution(this.numberOfVariables, 2);
-            //Random rnd = new Random();
-            for (int i = 0; i < this.numberOfVariables; i++) {
-                RealVariable newVar = new RealVariable(radiusLowerBounds[i],radiusUpperBounds[i]);
-                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[i],radiusUpperBounds[i]));
-                newSol.setVariable(i, newVar);
-            }
-            return newSol;
+        Solution newSol = new Solution(this.numberOfVariables, 2);
+        //Random rnd = new Random();
+        for (int i = 0; i < this.numberOfVariables; i++) {
+            RealVariable newVar = new RealVariable(radiusLowerBounds[i],radiusUpperBounds[i]);
+            newVar.setValue(PRNG.nextDouble(radiusLowerBounds[i],radiusUpperBounds[i]));
+            newSol.setVariable(i, newVar);
         }
-
+        return newSol;
     }
 }

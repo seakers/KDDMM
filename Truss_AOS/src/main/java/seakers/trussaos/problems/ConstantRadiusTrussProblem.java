@@ -340,10 +340,9 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
     public Solution newSolution() {
         synchronized (PRNG.getRandom()) {
             Solution newSol = new Solution(this.numberOfVariables, 2);
-            Random rnd = new Random();
             for (int i = 0; i < this.numberOfVariables; i++) {
                 BinaryVariable newVar = new BinaryVariable(1);
-                newVar.set(0, rnd.nextBoolean());
+                newVar.set(0, PRNG.nextBoolean());
                 newSol.setVariable(i, newVar);
             }
             return newSol;

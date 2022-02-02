@@ -1,4 +1,0 @@
-*CFOPEN,C:\Users\Public\APDL_Runs\para_out,txt,,
-*VWRITE,RESULT(1)
-(E20.10)
-*CFCLOS

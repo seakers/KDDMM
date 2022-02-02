@@ -54,66 +54,97 @@ public class BiasedInitializationVariableRadii implements Initialization {
 
     @Override
     public Solution[] initialize() {
-        synchronized (PRNG.getRandom()) {
-            int solutionsPerGroup = (int) Math.round(populationSize/4);
+        int solutionsPerGroup = (int) Math.round(populationSize/4);
 
-            Solution[] initialPopulation = new Solution[this.populationSize];
-            int solutionCount = 0;
+        Solution[] initialPopulation = new Solution[this.populationSize];
+        int solutionCount = 0;
 
-            double[] numberOfMembers = new double[4];
-            if (nodalPropertiesConstrained && !feasibilityEnforced) {
-                int numberOfVariables = findNumberOfVariablesFromSidenum();
-                numberOfMembers = new double[]{numberOfVariables/2D, numberOfVariables*7D/12D, numberOfVariables*2D/3D, numberOfVariables*3D/4D};
-            }
-            if (feasibilityEnforced && !nodalPropertiesConstrained) {
-                numberOfMembers = new double[]{6, 9, 12, 15};
-            }
-            if (feasibilityEnforced && nodalPropertiesConstrained) {
-                int numberOfVariables = findNumberOfVariablesFromSidenum();
-                numberOfMembers = new double[]{numberOfVariables/4D, numberOfVariables*7D/24D, numberOfVariables*1D/3D, numberOfVariables*3D/8D};
-            }
-            Random rand = new Random();
-            boolean val;
+        double[] numberOfMembers = new double[4];
+        if (nodalPropertiesConstrained && !feasibilityEnforced) {
+            int numberOfVariables = findNumberOfVariablesFromSidenum();
+            numberOfMembers = new double[]{numberOfVariables/2D, numberOfVariables*7D/12D, numberOfVariables*2D/3D, numberOfVariables*3D/4D};
+        }
+        if (feasibilityEnforced && !nodalPropertiesConstrained) {
+            numberOfMembers = new double[]{6, 9, 12, 15};
+        }
+        if (feasibilityEnforced && nodalPropertiesConstrained) {
+            int numberOfVariables = findNumberOfVariablesFromSidenum();
+            numberOfMembers = new double[]{numberOfVariables/4D, numberOfVariables*7D/24D, numberOfVariables*1D/3D, numberOfVariables*3D/8D};
+        }
+        boolean val;
 
-            if ((nodalPropertiesConstrained || feasibilityEnforced) && !partialCollapsibilityConstrained && !orientationConstrained) {
-                int numberOfVariables = findNumberOfVariablesFromSidenum();
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfVariables;
-                    for (int j = 0;j < solutionsPerGroup;j++) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                            val = rand.nextFloat() < TrueProb;
-                            RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
-                            if (val) {
-                                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
-                            } else {
-                                newVar.setValue(radiusLowerBounds[k]);
-                            }
-                            solution.setVariable(k, newVar);
+        if ((nodalPropertiesConstrained || feasibilityEnforced) && !partialCollapsibilityConstrained && !orientationConstrained) {
+            int numberOfVariables = findNumberOfVariablesFromSidenum();
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfVariables;
+                for (int j = 0;j < solutionsPerGroup;j++) {
+                    Solution solution = this.problem.newSolution();
+                    for (int k = 0;k < solution.getNumberOfVariables();++k) {
+                        val = PRNG.nextFloat() < TrueProb;
+                        RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
+                        if (val) {
+                            newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
+                        } else {
+                            newVar.setValue(radiusLowerBounds[k]);
                         }
-                        initialPopulation[solutionCount] = solution;
-                        solutionCount++;
+                        solution.setVariable(k, newVar);
                     }
+                    initialPopulation[solutionCount] = solution;
+                    solutionCount++;
                 }
             }
+        }
 
-            if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && !orientationConstrained) {
-                double diagProb = 0.75;
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                for (int i = 0; i < populationSize; i++) {
+        if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && !orientationConstrained) {
+            double diagProb = 0.75;
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            for (int i = 0; i < populationSize; i++) {
+                Solution solution = this.problem.newSolution();
+                for (int k = 0; k < solution.getNumberOfVariables(); ++k) {
+                    RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
+                    if (booleanDiagonalsRepeatable[k]) {
+                        val = PRNG.nextFloat() < diagProb;
+                        if (val) {
+                            newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
+                        } else {
+                            newVar.setValue(radiusLowerBounds[k]);
+                        }
+                    } else {
+                        val = PRNG.nextFloat() < 0.5;
+                        if (val) {
+                            newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
+                        } else {
+                            newVar.setValue(radiusLowerBounds[k]);
+                        }
+                    }
+                    solution.setVariable(k, newVar);
+                }
+                initialPopulation[solutionCount] = solution;
+                solutionCount++;
+            }
+        }
+
+        if (partialCollapsibilityConstrained && nodalPropertiesConstrained && !orientationConstrained) {
+            double diagProb = 0.75;
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            int numberOfVariables = findNumberOfVariablesFromSidenum();
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfVariables;
+                for (int j = 0;j < solutionsPerGroup;j++) {
                     Solution solution = this.problem.newSolution();
-                    for (int k = 0; k < solution.getNumberOfVariables(); ++k) {
+                    for (int k = 0;k < solution.getNumberOfVariables();++k) {
                         RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
                         if (booleanDiagonalsRepeatable[k]) {
-                            val = rand.nextFloat() < diagProb;
+                            val = PRNG.nextFloat() < diagProb;
                             if (val) {
                                 newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
                             } else {
                                 newVar.setValue(radiusLowerBounds[k]);
                             }
                         } else {
-                            val = rand.nextFloat() < 0.5;
+                            val = PRNG.nextFloat() < TrueProb;
                             if (val) {
                                 newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
                             } else {
@@ -126,183 +157,185 @@ public class BiasedInitializationVariableRadii implements Initialization {
                     solutionCount++;
                 }
             }
+        }
 
-            if (partialCollapsibilityConstrained && nodalPropertiesConstrained && !orientationConstrained) {
-                double diagProb = 0.75;
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                int numberOfVariables = findNumberOfVariablesFromSidenum();
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfVariables;
-                    for (int j = 0;j < solutionsPerGroup;j++) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                            RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
-                            if (booleanDiagonalsRepeatable[k]) {
-                                val = rand.nextFloat() < diagProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
-                                } else {
-                                    newVar.setValue(radiusLowerBounds[k]);
-                                }
+        ImproveOrientationVariableRadii improveOrientation;
+        double targetOrientation;
+        if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !feasibilityEnforced) {
+            improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            int m = 0;
+            while (m < populationSize) {
+                Solution solution = this.problem.newSolution();
+                for (int n = 0; n < solution.getNumberOfVariables(); ++n) {
+                    val = PRNG.nextFloat() < 0.5;
+                    RealVariable newVar = new RealVariable(radiusLowerBounds[n],radiusUpperBounds[n]);
+                    if (val) {
+                        newVar.setValue(PRNG.nextDouble(radiusLowerBounds[n],radiusUpperBounds[n]));
+                    } else {
+                        newVar.setValue(radiusLowerBounds[n]);
+                    }
+                    solution.setVariable(n, newVar);
+                }
+                VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
+                int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
+
+                double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+
+                double totalOrientation = 0;
+                for (int i = 0; i < architectureOrientations.length; i++) {
+                    totalOrientation += architectureOrientations[i];
+                }
+                double meanOrientation = totalOrientation / architectureOrientations.length;
+                if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                    initialPopulation[m] = solution;
+                    m++;
+                }
+            }
+        } else if (partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
+            double diagProb = 0.75;
+            int numberOfVariables = findNumberOfVariablesFromSidenum();
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfVariables;
+                int j = 0;
+                while (j < solutionsPerGroup) {
+                    Solution solution = this.problem.newSolution();
+                    for (int k = 0;k < solution.getNumberOfVariables();++k) {
+                        RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
+                        if (booleanDiagonalsRepeatable[k]) {
+                            val = PRNG.nextFloat() < diagProb;
+                            if (val) {
+                                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
                             } else {
-                                val = rand.nextFloat() < TrueProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
-                                } else {
-                                    newVar.setValue(radiusLowerBounds[k]);
-                                }
+                                newVar.setValue(radiusLowerBounds[k]);
                             }
-                            solution.setVariable(k, newVar);
+                        } else {
+                            val = PRNG.nextFloat() < TrueProb;
+                            if (val) {
+                                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
+                            } else {
+                                newVar.setValue(radiusLowerBounds[k]);
+                            }
                         }
-                        initialPopulation[solutionCount] = solution;
-                        solutionCount++;
+                        solution.setVariable(k, newVar);
+                    }
+                    VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
+                    int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
+
+                    double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+
+                    double totalOrientation = 0;
+                    for (int s = 0; s < architectureOrientations.length; s++) {
+                        totalOrientation += architectureOrientations[s];
+                    }
+                    double meanOrientation = totalOrientation / architectureOrientations.length;
+                    if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                        initialPopulation[j] = solution;
+                        j++;
                     }
                 }
             }
-
-            ImproveOrientationVariableRadii improveOrientation;
-            double targetOrientation;
-            if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !feasibilityEnforced) {
-                improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                int m = 0;
-                while (m < populationSize) {
+        } else if (!partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
+            int numberOfVariables = findNumberOfVariablesFromSidenum();
+            improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfVariables;
+                int j = 0;
+                while (j < solutionsPerGroup) {
                     Solution solution = this.problem.newSolution();
-                    for (int n = 0; n < solution.getNumberOfVariables(); ++n) {
-                        val = rand.nextFloat() < 0.5;
-                        RealVariable newVar = new RealVariable(radiusLowerBounds[n],radiusUpperBounds[n]);
+                    for (int k = 0;k < solution.getNumberOfVariables();++k) {
+                        val = PRNG.nextFloat() < TrueProb;
+                        RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
+                        if (val) {
+                            newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
+                        } else {
+                            newVar.setValue(radiusLowerBounds[k]);
+                        }
+                        solution.setVariable(k, newVar);
+                    }
+                    VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
+                    int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
+
+                    double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+
+                    double totalOrientation = 0;
+                    for (int s = 0; s < architectureOrientations.length; s++) {
+                        totalOrientation += architectureOrientations[s];
+                    }
+                    double meanOrientation = totalOrientation / architectureOrientations.length;
+                    if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                        initialPopulation[j] = solution;
+                        j++;
+                    }
+                }
+            }
+        } else if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !feasibilityEnforced) {
+            double diagProb = 0.75;
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            int m = 0;
+            while (m < populationSize) {
+                Solution solution = this.problem.newSolution();
+                for (int n = 0; n < solution.getNumberOfVariables(); ++n) {
+                    RealVariable newVar = new RealVariable(radiusLowerBounds[n],radiusUpperBounds[n]);
+                    if (booleanDiagonalsRepeatable[n]) {
+                        val = PRNG.nextFloat() < diagProb;
                         if (val) {
                             newVar.setValue(PRNG.nextDouble(radiusLowerBounds[n],radiusUpperBounds[n]));
                         } else {
                             newVar.setValue(radiusLowerBounds[n]);
                         }
-                        solution.setVariable(n, newVar);
-                    }
-                    VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
-                    int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
-
-                    double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
-
-                    double totalOrientation = 0;
-                    for (int i = 0; i < architectureOrientations.length; i++) {
-                        totalOrientation += architectureOrientations[i];
-                    }
-                    double meanOrientation = totalOrientation / architectureOrientations.length;
-                    if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                        initialPopulation[m] = solution;
-                        m++;
-                    }
-                }
-            } else if (partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
-                double diagProb = 0.75;
-                int numberOfVariables = findNumberOfVariablesFromSidenum();
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfVariables;
-                    int j = 0;
-                    while (j < solutionsPerGroup) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                            RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
-                            if (booleanDiagonalsRepeatable[k]) {
-                                val = rand.nextFloat() < diagProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
-                                } else {
-                                    newVar.setValue(radiusLowerBounds[k]);
-                                }
-                            } else {
-                                val = rand.nextFloat() < TrueProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
-                                } else {
-                                    newVar.setValue(radiusLowerBounds[k]);
-                                }
-                            }
-                            solution.setVariable(k, newVar);
-                        }
-                        VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
-                        int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
-
-                        double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
-
-                        double totalOrientation = 0;
-                        for (int s = 0; s < architectureOrientations.length; s++) {
-                            totalOrientation += architectureOrientations[s];
-                        }
-                        double meanOrientation = totalOrientation / architectureOrientations.length;
-                        if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                            initialPopulation[j] = solution;
-                            j++;
-                        }
-                    }
-                }
-            } else if (!partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
-                int numberOfVariables = findNumberOfVariablesFromSidenum();
-                improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfVariables;
-                    int j = 0;
-                    while (j < solutionsPerGroup) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                            val = rand.nextFloat() < TrueProb;
-                            RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
-                            if (val) {
-                                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
-                            } else {
-                                newVar.setValue(radiusLowerBounds[k]);
-                            }
-                            solution.setVariable(k, newVar);
-                        }
-                        VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
-                        int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
-
-                        double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
-
-                        double totalOrientation = 0;
-                        for (int s = 0; s < architectureOrientations.length; s++) {
-                            totalOrientation += architectureOrientations[s];
-                        }
-                        double meanOrientation = totalOrientation / architectureOrientations.length;
-                        if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                            initialPopulation[j] = solution;
-                            j++;
-                        }
-                    }
-                }
-            } else if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !feasibilityEnforced) {
-                double diagProb = 0.75;
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                int m = 0;
-                while (m < populationSize) {
-                    Solution solution = this.problem.newSolution();
-                    for (int n = 0; n < solution.getNumberOfVariables(); ++n) {
-                        RealVariable newVar = new RealVariable(radiusLowerBounds[n],radiusUpperBounds[n]);
-                        if (booleanDiagonalsRepeatable[n]) {
-                            val = rand.nextFloat() < diagProb;
-                            if (val) {
-                                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[n],radiusUpperBounds[n]));
-                            } else {
-                                newVar.setValue(radiusLowerBounds[n]);
-                            }
+                    } else {
+                        val = PRNG.nextFloat() < 0.5;
+                        if (val) {
+                            newVar.setValue(PRNG.nextDouble(radiusLowerBounds[n],radiusUpperBounds[n]));
                         } else {
-                            val = rand.nextFloat() < 0.5;
-                            if (val) {
-                                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[n],radiusUpperBounds[n]));
-                            } else {
-                                newVar.setValue(radiusLowerBounds[n]);
-                            }
+                            newVar.setValue(radiusLowerBounds[n]);
                         }
-                        solution.setVariable(n, newVar);
+                    }
+                    solution.setVariable(n, newVar);
+                }
+                VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
+                int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
+
+                double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+
+                double totalOrientation = 0;
+                for (int i = 0; i < architectureOrientations.length; i++) {
+                    totalOrientation += architectureOrientations[i];
+                }
+                double meanOrientation = totalOrientation / architectureOrientations.length;
+                if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                    initialPopulation[m] = solution;
+                    m++;
+                }
+            }
+        }
+        if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && feasibilityEnforced) {
+            int numberOfVariables = findNumberOfVariablesFromSidenum();
+            improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfVariables;
+                int j = 0;
+                while (j < solutionsPerGroup) {
+                    Solution solution = this.problem.newSolution();
+                    for (int k = 0;k < solution.getNumberOfVariables();++k) {
+                        val = PRNG.nextFloat() < TrueProb;
+                        RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
+                        if (val) {
+                            newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
+                        } else {
+                            newVar.setValue(radiusLowerBounds[k]);
+                        }
+                        solution.setVariable(k, newVar);
                     }
                     VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
                     int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
@@ -310,55 +343,19 @@ public class BiasedInitializationVariableRadii implements Initialization {
                     double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
 
                     double totalOrientation = 0;
-                    for (int i = 0; i < architectureOrientations.length; i++) {
-                        totalOrientation += architectureOrientations[i];
+                    for (int s = 0; s < architectureOrientations.length; s++) {
+                        totalOrientation += architectureOrientations[s];
                     }
                     double meanOrientation = totalOrientation / architectureOrientations.length;
                     if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                        initialPopulation[m] = solution;
-                        m++;
+                        initialPopulation[j] = solution;
+                        j++;
                     }
                 }
             }
-            if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && feasibilityEnforced) {
-                int numberOfVariables = findNumberOfVariablesFromSidenum();
-                improveOrientation = new ImproveOrientationVariableRadii(globalNodePositions, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor, targetStiffnessRatio, (int) sideNodeNumber);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfVariables;
-                    int j = 0;
-                    while (j < solutionsPerGroup) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k < solution.getNumberOfVariables();++k) {
-                            val = rand.nextFloat() < TrueProb;
-                            RealVariable newVar = new RealVariable(radiusLowerBounds[k],radiusUpperBounds[k]);
-                            if (val) {
-                                newVar.setValue(PRNG.nextDouble(radiusLowerBounds[k],radiusUpperBounds[k]));
-                            } else {
-                                newVar.setValue(radiusLowerBounds[k]);
-                            }
-                            solution.setVariable(k, newVar);
-                        }
-                        VariableRadiiRepeatableArchitecture trussArch = new VariableRadiiRepeatableArchitecture(solution, (int) sideNodeNumber, radiusLowerBounds, radiusUpperBounds, smallestAcceptanceFactor);
-                        int[][] connectivityArray = trussArch.getFullCAFromSolutionVariableRadii();
-
-                        double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
-
-                        double totalOrientation = 0;
-                        for (int s = 0; s < architectureOrientations.length; s++) {
-                            totalOrientation += architectureOrientations[s];
-                        }
-                        double meanOrientation = totalOrientation / architectureOrientations.length;
-                        if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                            initialPopulation[j] = solution;
-                            j++;
-                        }
-                    }
-                }
-            }
-            // return (Solution[]) initialPopulation.toArray();
-            return initialPopulation;
         }
+        // return (Solution[]) initialPopulation.toArray();
+        return initialPopulation;
     }
 
     private boolean[] identifyDiagonalMembers () {

@@ -14,8 +14,8 @@
 clc;    
 close all; 
 clear;
+nucFac = 3; 
 sel = 0.01; 
-sidenum = 3;
 E = 1816200;
 % Case 1, 1 unit cell (3x3 grid)
 CA = [1,2;2,3;1,4;1,5;2,5;3,5;3,6;4,5;5,6;4,7;5,7;5,8;5,9;6,9;7,8;8,9];

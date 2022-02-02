@@ -2,25 +2,23 @@ package seakers.trussaos.operators.constantradii;
 
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
+import org.moeaframework.core.PRNG;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 
 import java.lang.Math;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class ImproveOrientation implements Variation {
 
+    private final boolean arteryProblem;
     private final double[][] nodalConnectivityArray;
-
     private final int sidenum;
-
     private final double targetCRatio;
-
     private final int numHeurObjectives;
-
     private final int numHeurConstraints;
 
-    public ImproveOrientation(double[][] nodalConnArray, double targetCRatio, int sidenum, int numHeuristicObjectives, int numHeuristicConstraints) {
+    public ImproveOrientation(boolean arteryProblem, double[][] nodalConnArray, double targetCRatio, int sidenum, int numHeuristicObjectives, int numHeuristicConstraints) {
+        this.arteryProblem = arteryProblem;
         this.nodalConnectivityArray = nodalConnArray;
         this.targetCRatio = targetCRatio;
         this.sidenum = sidenum;
@@ -93,7 +91,7 @@ public class ImproveOrientation implements Variation {
         if (meanOrientation > targetOrientation) {
             while (!memberAdded && (numAttempts < 5)) {
                 ArrayList<Integer> memberChoice = new ArrayList<Integer>();
-                int randomMemberIndex = ThreadLocalRandom.current().nextInt(0,horizontalMembers.size());
+                int randomMemberIndex = PRNG.nextInt(horizontalMembers.size());
                 memberChoice = horizontalMembers.get(randomMemberIndex);
                 if (!connectivityArrayList.contains(memberChoice)) {
                     newConnArray = addMemberToConnectivityArray(connectivityArray,memberChoice.stream().filter(t -> t != null).mapToDouble(t -> t).toArray());
@@ -110,7 +108,7 @@ public class ImproveOrientation implements Variation {
         else if (meanOrientation < targetOrientation) {
             while (!memberAdded && (numAttempts < 5)) {
                 ArrayList<Integer> memberChoice = new ArrayList<Integer>();
-                int randomMemberIndex = ThreadLocalRandom.current().nextInt(0,verticalMembers.size());
+                int randomMemberIndex = PRNG.nextInt(verticalMembers.size());
                 memberChoice = verticalMembers.get(randomMemberIndex);
                 if (!connectivityArrayList.contains(memberChoice)) {
                     newConnArray = addMemberToConnectivityArray(connectivityArray,memberChoice.stream().filter(t -> t != null).mapToDouble(t -> t).toArray());
@@ -128,7 +126,7 @@ public class ImproveOrientation implements Variation {
             newConnArray = connectivityArray.clone();
         }
         assert newConnArray != null;
-        newArchitecture = architecture.getArchitectureFromConnectivityArray(newConnArray);
+        newArchitecture = architecture.getArchitectureFromConnectivityArray(newConnArray, arteryProblem);
         return new Solution[]{newArchitecture};
     }
 
@@ -140,7 +138,7 @@ public class ImproveOrientation implements Variation {
         return memberOrientations;
     }
 
-    private double findMemberOrientation(double[] memberNodes) {
+    private double findMemberOrientation(double[] memberNodes) { // CHANGE BASED ON NEW ORIENTATION HEURISTIC
         double x1 = nodalConnectivityArray[(int) memberNodes[0]-1][0];
         double y1 = nodalConnectivityArray[(int) memberNodes[0]-1][1];
         double x2 = nodalConnectivityArray[(int) memberNodes[1]-1][0];
@@ -151,7 +149,7 @@ public class ImproveOrientation implements Variation {
         return Math.toDegrees(Math.acos((x2-x1)/memberLength));
     }
 
-    public double findTargetOrientation(double targetRatio) {
+    public double findTargetOrientation(double targetRatio) { // MUST BE UPDATED
         return Math.toDegrees((0.5d*Math.atan(targetRatio-1)) + (Math.PI/4));
     }
 

@@ -127,7 +127,7 @@ public class TrussRepeatableArchitecture extends Solution{
         return NumberOfTrusses;
     }
 
-    public TrussRepeatableArchitecture getArchitectureFromConnectivityArray (double[][] connArray) {
+    public TrussRepeatableArchitecture getArchitectureFromConnectivityArray (double[][] connArray, boolean arteryProblem) {
         boolean[] designFullBooleanArray = new boolean[CompleteConnectivityArray.length];
         boolean contains = false;
         int[] designFirstNodes = new int[connArray.length];
@@ -151,7 +151,12 @@ public class TrussRepeatableArchitecture extends Solution{
             contains = false;
         }
         boolean[] designRepeatableBooleanArray = getRepeatableBooleanArrayFromCompleteArray(designFullBooleanArray);
-        Solution architecture = new Solution(findNumberOfVariablesFromSidenum(),2+numHeurObjectives, 3+numHeurConstraints);
+        Solution architecture;
+        if (arteryProblem) {
+            architecture = new Solution(findNumberOfVariablesFromSidenum(),2+numHeurObjectives, 2+numHeurConstraints);
+        } else {
+            architecture = new Solution(findNumberOfVariablesFromSidenum(),2+numHeurObjectives, 3+numHeurConstraints);
+        }
         for (int i = 0; i < designRepeatableBooleanArray.length; i++) {
             BinaryVariable var = new BinaryVariable(1);
             EncodingUtils.setBoolean(var,designRepeatableBooleanArray[i]);

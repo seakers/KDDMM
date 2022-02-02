@@ -181,7 +181,7 @@ function [feasibilityScore] = feasibility_checker_nonbinary_V5(NC,CA,sel,sidenum
     
     % Score design based on number of unconnected nodes
     if flowbool ~= 1
-        penalty = max(length(startunique,endunique));
+        penalty = max(length(startunique),length(endunique));
         feasibilityScore = feasibilityScore - (0.1*penalty);
         if feasibilityScore < 0.1
             return

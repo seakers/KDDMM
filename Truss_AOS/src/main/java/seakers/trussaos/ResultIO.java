@@ -152,8 +152,10 @@ public class ResultIO implements Serializable {
         csvWrite.append(",");
         csvWrite.append("Connectivity Score");
         csvWrite.append(",");
-        csvWrite.append("Absolute Stiffness Ratio Difference");
-        csvWrite.append(",");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")) {
+            csvWrite.append("Absolute Stiffness Ratio Difference");
+            csvWrite.append(",");
+        }
         csvWrite.append("Partial Collapsibility Score");
         csvWrite.append(",");
         csvWrite.append("Nodal Properties Score");
@@ -166,6 +168,8 @@ public class ResultIO implements Serializable {
         //double[][] objectives = new double[1][2];
         //double[] feasibilityScores = new double[pop.size()];
         //double[] stabilityScores = new double[pop.size()];
+
+        double currentStiffnessRatioDifference = 0;
 
         for (int i = 0; i < pop.size(); i++) {
             Solution currentSltn = pop.get(i);
@@ -182,7 +186,9 @@ public class ResultIO implements Serializable {
 
             double currentFeasibilityScore = 1.0d - (double)currentSltn.getAttribute("FeasibilityViolation");
             double currentConnectivityScore = 1.0d - (double)currentSltn.getAttribute("ConnectivityViolation");
-            double currentStiffnessRatioDifference = (double)currentSltn.getAttribute("StiffnessRatioViolation");
+            if (problemClassName.equals("ConstantRadiusTrussProblem2")) {
+                currentStiffnessRatioDifference = (double)currentSltn.getAttribute("StiffnessRatioViolation");
+            }
             double currentPartialCollapsibilityScore = 1.0d - (double)currentSltn.getAttribute("PartialCollapsibilityViolation");
             double currentNodalPropertiesScore = 1.0d - (double)currentSltn.getAttribute("NodalPropertiesViolation");
             double currentOrientationScore = 1.0d - (double)currentSltn.getAttribute("OrientationViolation");
@@ -203,8 +209,10 @@ public class ResultIO implements Serializable {
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentConnectivityScore));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentStiffnessRatioDifference));
-            csvWrite.append(",");
+            if (problemClassName.equals("ConstantRadiusTrussProblem2")) {
+                csvWrite.append(Double.toString(currentStiffnessRatioDifference));
+                csvWrite.append(",");
+            }
             csvWrite.append(Double.toString(currentPartialCollapsibilityScore));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentNodalPropertiesScore));
@@ -262,8 +270,10 @@ public class ResultIO implements Serializable {
         csvWrite.append(",");
         csvWrite.append("Connectivity Score");
         csvWrite.append(",");
-        csvWrite.append("Absolute Stiffness Ratio Difference");
-        csvWrite.append(",");
+        if (problemClassName.equals("ConstantRadiusTrussProblem2")) {
+            csvWrite.append("Absolute Stiffness Ratio Difference");
+            csvWrite.append(",");
+        }
         csvWrite.append("Partial Collapsibility Score");
         csvWrite.append(",");
         csvWrite.append("Nodal Properties Score");
@@ -272,6 +282,8 @@ public class ResultIO implements Serializable {
         csvWrite.append(",");
         csvWrite.append("Intersection Score");
         csvWrite.append("\n");
+
+        double currentStiffnessRatioDifference = 0;
 
         Iterator iter = solutionSet.iterator();
 
@@ -293,7 +305,9 @@ public class ResultIO implements Serializable {
 
             double currentFeasibilityScore = 1.0d - (double)currentSolution.getAttribute("FeasibilityViolation");
             double currentConnectivityScore = 1.0d - (double)currentSolution.getAttribute("ConnectivityViolation");
-            double currentStiffnessRatioDifference = (double)currentSolution.getAttribute("StiffnessRatioViolation");
+            if (problemClassName.equals("ConstantRadiusTrussProblem2")) {
+                currentStiffnessRatioDifference = (double)currentSolution.getAttribute("StiffnessRatioViolation");
+            }
             double currentPartialCollapsibilityScore = 1.0d - (double)currentSolution.getAttribute("PartialCollapsibilityViolation");
             double currentNodalPropertiesScore = 1.0d - (double)currentSolution.getAttribute("NodalPropertiesViolation");
             double currentOrientationScore = 1.0d - (double)currentSolution.getAttribute("OrientationViolation");
@@ -313,8 +327,10 @@ public class ResultIO implements Serializable {
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentConnectivityScore));
             csvWrite.append(",");
-            csvWrite.append(Double.toString(currentStiffnessRatioDifference));
-            csvWrite.append(",");
+            if (problemClassName.equals("ConstantRadiusTrussProblem2")) {
+                csvWrite.append(Double.toString(currentStiffnessRatioDifference));
+                csvWrite.append(",");
+            }
             csvWrite.append(Double.toString(currentPartialCollapsibilityScore));
             csvWrite.append(",");
             csvWrite.append(Double.toString(currentNodalPropertiesScore));

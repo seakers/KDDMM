@@ -5,12 +5,41 @@
       <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__seakers_system_architecture_problems_1_0.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../KDDMM-Srikar_files/files_from_Srikar/Constraints_2D/feasibility_checker_nonbinary_V5.m" beforeDir="false" afterPath="$PROJECT_DIR$/../KDDMM-Srikar_files/files_from_Srikar/Constraints_2D/feasibility_checker_nonbinary_V5.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../KDDMM-Srikar_files/files_from_Srikar/Models_2D/trussMetaCalc_NxN_1UC_rVar_AVar.m" beforeDir="false" afterPath="$PROJECT_DIR$/../KDDMM-Srikar_files/files_from_Srikar/Models_2D/trussMetaCalc_NxN_1UC_rVar_AVar.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ANSUITMP" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Beam_2D_NxN_PBC.m" beforeDir="false" afterPath="$PROJECT_DIR$/Beam_2D_NxN_PBC.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EE" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Truss_AOS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Truss_AOS.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/calcVF_NxN.m" beforeDir="false" afterPath="$PROJECT_DIR$/calcVF_NxN.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/calcVF_NxN_feasOnly.m" beforeDir="false" afterPath="$PROJECT_DIR$/calcVF_NxN_feasOnly.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/feasibility_checker_nonbinary_V5.m" beforeDir="false" afterPath="$PROJECT_DIR$/feasibility_checker_nonbinary_V5.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/file.DSP" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file.emat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file.esav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file.mntr" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file0.emat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file0.err" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file0.esav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file0.full" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file0.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file0.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file1.emat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file1.err" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file1.esav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file1.full" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file1.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/file1.rst" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/generative_design_testing_V2.m" beforeDir="false" afterPath="$PROJECT_DIR$/generative_design_testing_V2.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/EpsilonMOEA_emoea_0_prob2_truss_3x3.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/EpsilonMOEA_emoea_0_prob2_truss_5x5.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/EpsilonMOEA_emoea_0_prob2_truss_fullpop_3x3.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/EpsilonMOEA_emoea_0_prob2_truss_fullpop_5x5.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data.zip" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_0_prob2_truss.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_0_prob2_truss_fullpop.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/Unit 3x3/EpsilonMOEA_emoea_10_prob2_truss.csv" beforeDir="false" />
@@ -134,29 +163,37 @@
       <change beforePath="$PROJECT_DIR$/result/Unit 3x3 and 5x5 data/extract_csv_data.m" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/ConstantRadiusMOEARun.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/ConstantRadiusMOEARun.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/IntegerMOEARun.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/IntegerMOEARun.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/ResultIO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/ResultIO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/VariableRadiiMOEARun.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/VariableRadiiMOEARun.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/architecture/IntegerRepeatableArchitecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/architecture/IntegerRepeatableArchitecture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/architecture/TrussRepeatableArchitecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/architecture/TrussRepeatableArchitecture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitialization.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitialization.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitializationVariableRadii.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/initialization/BiasedInitializationVariableRadii.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/AddDiagonalMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/AddDiagonalMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/AddMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/AddMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/ImproveOrientation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/ImproveOrientation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/RemoveIntersection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/constantradii/RemoveIntersection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/AddDiagonalMemberIntegerRadii.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/AddDiagonalMemberIntegerRadii.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/AddMemberIntegerRadii.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/AddMemberIntegerRadii.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/ImproveOrientationIntegerRadii.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/ImproveOrientationIntegerRadii.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/RemoveIntersectionIntegerRadii.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/operators/integerradii/RemoveIntersectionIntegerRadii.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/ConstantRadiusArteryProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/ConstantRadiusArteryProblem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/ConstantRadiusTrussProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/ConstantRadiusTrussProblem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/ConstantRadiusTrussProblem2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/ConstantRadiusTrussProblem2.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/IntegerTrussProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/IntegerTrussProblem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/VariableRadiusTrussProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/trussaos/problems/VariableRadiusTrussProblem.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/matlab/metrics_study.m" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/matlab/metrics_study.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/ConstantRadiusMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/ConstantRadiusMOEARun.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/EvolutionarySearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/EvolutionarySearch.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerEvolutionarySearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerEvolutionarySearch.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerMOEARun.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerResultIO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/IntegerResultIO.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/ResultIO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/ResultIO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiEvolutionarySearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiEvolutionarySearch.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiMOEARun.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiResultIO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/VariableRadiiResultIO.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/IntegerRepeatableArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/IntegerRepeatableArchitecture.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/TrussRepeatableArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/TrussRepeatableArchitecture.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/VariableRadiiRepeatableArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/architecture/VariableRadiiRepeatableArchitecture.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/DisjunctiveNormalForm.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/DisjunctiveNormalForm.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/KnowledgeStochasticRanking.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/constrainthandling/KnowledgeStochasticRanking.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitialization.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationIntegerRadii.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/BiasedInitializationVariableRadii.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/initialization/SynchronizedMersenneTwister.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddDiagonalMember.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddDiagonalMember.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddMember.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/AddMember.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/ImproveOrientation.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/constantradii/ImproveOrientation.class" afterDir="false" />
@@ -165,15 +202,14 @@
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/AddMemberIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/AddMemberIntegerRadii.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/ImproveOrientationIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/ImproveOrientationIntegerRadii.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/RemoveIntersectionIntegerRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/integerradii/RemoveIntersectionIntegerRadii.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddDiagonalMemberVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddDiagonalMemberVariableRadii.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddMemberVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/AddMemberVariableRadii.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/ImproveOrientationVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/ImproveOrientationVariableRadii.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/RemoveIntersectionVariableRadii.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/operators/variableradii/RemoveIntersectionVariableRadii.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusArteryProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusArteryProblem.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/ConstantRadiusTrussProblem2.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/IntegerTrussProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/IntegerTrussProblem.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/VariableRadiusTrussProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/seakers/trussaos/problems/VariableRadiusTrussProblem.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/trussMetaCalc_NxN_1UC_rVar_AVar.m" beforeDir="false" afterPath="$PROJECT_DIR$/trussMetaCalc_NxN_1UC_rVar_AVar.m" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -218,7 +254,7 @@
     <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="MavenSettings" />
+    <property name="settings.editor.selected.configurable" value="settings.github" />
   </component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
@@ -250,6 +286,9 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <RunnerSettings RunnerId="Debug with VisualVM">
+        <option name="visualVMId" value="70521135075900" />
+      </RunnerSettings>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -332,8 +371,26 @@
           <line>32</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/trussaos/ConstantRadiusMOEARun.java</url>
+          <line>376</line>
+          <option name="timeStamp" value="50" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/trussaos/EvolutionarySearch.java</url>
+          <line>43</line>
+          <option name="timeStamp" value="53" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="designConnectivityArray[2]" />
+        <watch expression="connectivityArray" />
+        <watch expression="connectivityArray[10]" />
+        <watch expression="connectivityArray[10]" language="JAVA" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Truss_AOS$IntegerMOEARun.ic" NAME="IntegerMOEARun Coverage Results" MODIFIED="1630703177643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">

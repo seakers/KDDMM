@@ -7,7 +7,6 @@ import seakers.trussaos.architecture.IntegerRepeatableArchitecture;
 
 import java.lang.Math;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class ImproveOrientationIntegerRadii implements Variation {
 
@@ -99,7 +98,7 @@ public class ImproveOrientationIntegerRadii implements Variation {
         if (meanOrientation > targetOrientation) {
             while (!memberAdded && (numAttempts < 5)) {
                 ArrayList<Double> memberChoice = new ArrayList<Double>();
-                int randomMemberIndex = ThreadLocalRandom.current().nextInt(0,horizontalMembers.size());
+                int randomMemberIndex = PRNG.nextInt(0,horizontalMembers.size());
                 memberChoice = horizontalMembers.get(randomMemberIndex);
                 if (!connectivityArrayList.contains(memberChoice)) {
                     //newConnArray = addMemberToConnectivityArray(connectivityArray,memberChoice.stream().filter(t -> t != null).mapToInt(t -> t).toArray());
@@ -118,7 +117,7 @@ public class ImproveOrientationIntegerRadii implements Variation {
         else if (meanOrientation < targetOrientation) {
             while (!memberAdded && (numAttempts < 5)) {
                 ArrayList<Double> memberChoice = new ArrayList<Double>();
-                int randomMemberIndex = ThreadLocalRandom.current().nextInt(0,verticalMembers.size());
+                int randomMemberIndex = PRNG.nextInt(0,verticalMembers.size());
                 memberChoice = verticalMembers.get(randomMemberIndex);
                 if (!connectivityArrayList.contains(memberChoice)) {
                     //newConnArray = addMemberToConnectivityArray(connectivityArray,memberChoice.stream().filter(t -> t != null).mapToInt(t -> t).toArray());
@@ -202,21 +201,19 @@ public class ImproveOrientationIntegerRadii implements Variation {
     }
 
     private double[] addRandomRadiusMemberToArray (double[][] fullDesignConnArray, double[] memberToAdd, double[] oldRadiusArray) {
-        synchronized (PRNG.getRandom()) {
-            int addPosition = 0;
-            for (int i = 0; i < fullDesignConnArray.length; i++) {
-                if (fullDesignConnArray[i][0] == memberToAdd[0]) {
-                    if (fullDesignConnArray[i][1] > memberToAdd[1])
-                        break;
-                }
-                if (fullDesignConnArray[i][0] > memberToAdd[0])
+        int addPosition = 0;
+        for (int i = 0; i < fullDesignConnArray.length; i++) {
+            if (fullDesignConnArray[i][0] == memberToAdd[0]) {
+                if (fullDesignConnArray[i][1] > memberToAdd[1])
                     break;
-                addPosition = i+1;
             }
-            addPosition = Math.min(addPosition, (oldRadiusArray.length-1));
-            oldRadiusArray[addPosition] = PRNG.nextInt(radii.length);
-            return oldRadiusArray;
+            if (fullDesignConnArray[i][0] > memberToAdd[0])
+                break;
+            addPosition = i+1;
         }
+        addPosition = Math.min(addPosition, (oldRadiusArray.length-1));
+        oldRadiusArray[addPosition] = PRNG.nextInt(radii.length);
+        return oldRadiusArray;
     }
 
 

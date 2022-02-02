@@ -1,6 +1,7 @@
 seakers\trussaos\initialization\BiasedInitializationIntegerRadii.class
 seakers\trussaos\ResultIO.class
 seakers\trussaos\operators\constantradii\ImproveOrientation.class
+seakers\trussaos\operators\constantradii\ImproveOrientation2.class
 seakers\trussaos\problems\ConstantRadiusArteryProblem.class
 seakers\trussaos\operators\variableradii\RemoveIntersectionVariableRadii.class
 seakers\trussaos\EvolutionarySearch.class
@@ -27,6 +28,7 @@ seakers\trussaos\operators\integerradii\ImproveOrientationIntegerRadii.class
 seakers\trussaos\initialization\BiasedInitializationVariableRadii.class
 seakers\trussaos\constrainthandling\KnowledgeStochasticRanking.class
 seakers\trussaos\problems\ConstantRadiusTrussProblem.class
+seakers\trussaos\operators\constantradii\RemoveIntersection2.class
 seakers\trussaos\operators\variableradii\AddDiagonalMemberVariableRadii.class
 seakers\trussaos\problems\IntegerTrussProblem.class
 seakers\trussaos\problems\VariableRadiusTrussProblem.class

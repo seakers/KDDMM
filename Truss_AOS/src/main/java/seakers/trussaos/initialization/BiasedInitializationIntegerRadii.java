@@ -57,60 +57,95 @@ public class BiasedInitializationIntegerRadii implements Initialization{
 
     @Override
     public Solution[] initialize() {
-        synchronized (PRNG.getRandom()) {
-            int solutionsPerGroup = (int) Math.round(populationSize/4);
+        int solutionsPerGroup = (int) Math.round(populationSize/4);
 
-            Solution[] initialPopulation = new Solution[this.populationSize];
-            int solutionCount = 0;
+        Solution[] initialPopulation = new Solution[this.populationSize];
+        int solutionCount = 0;
 
-            double[] numberOfMembers = new double[4];
-            if (nodalPropertiesConstrained && !intersectionEnforced) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                numberOfMembers = new double[]{numberOfTrussVariables/2D, numberOfTrussVariables*7D/12D, numberOfTrussVariables*2D/3D, numberOfTrussVariables*3D/4D};
-            }
-            if (intersectionEnforced && !nodalPropertiesConstrained) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                numberOfMembers = new double[]{numberOfTrussVariables/6D, numberOfTrussVariables/4D, numberOfTrussVariables/3D, numberOfTrussVariables/2D};
-            }
-            if (intersectionEnforced && nodalPropertiesConstrained) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                numberOfMembers = new double[]{numberOfTrussVariables/4D, numberOfTrussVariables*7D/24D, numberOfTrussVariables*1D/3D, numberOfTrussVariables*3D/8D};
-            }
-            boolean val;
+        double[] numberOfMembers = new double[4];
+        if (nodalPropertiesConstrained && !intersectionEnforced) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            numberOfMembers = new double[]{numberOfTrussVariables/2D, numberOfTrussVariables*7D/12D, numberOfTrussVariables*2D/3D, numberOfTrussVariables*3D/4D};
+        }
+        if (intersectionEnforced && !nodalPropertiesConstrained) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            numberOfMembers = new double[]{numberOfTrussVariables/6D, numberOfTrussVariables/4D, numberOfTrussVariables/3D, numberOfTrussVariables/2D};
+        }
+        if (intersectionEnforced && nodalPropertiesConstrained) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            numberOfMembers = new double[]{numberOfTrussVariables/4D, numberOfTrussVariables*7D/24D, numberOfTrussVariables*1D/3D, numberOfTrussVariables*3D/8D};
+        }
+        boolean val;
 
-            if ((nodalPropertiesConstrained || intersectionEnforced) && !partialCollapsibilityConstrained && !orientationConstrained) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
-                    for (int j = 0;j < solutionsPerGroup;j++) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k <= numberOfTrussVariables-1;++k) {
-                            val = PRNG.nextFloat() < TrueProb;
-                            RealVariable newVar = new RealVariable(0,radii.length);
-                            if (val) {
-                                newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                            } else {
-                                newVar.setValue(0);
-                            }
-                            solution.setVariable(k, newVar);
+        if ((nodalPropertiesConstrained || intersectionEnforced) && !partialCollapsibilityConstrained && !orientationConstrained) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
+                for (int j = 0;j < solutionsPerGroup;j++) {
+                    Solution solution = this.problem.newSolution();
+                    for (int k = 0;k <= numberOfTrussVariables-1;++k) {
+                        val = PRNG.nextFloat() < TrueProb;
+                        RealVariable newVar = new RealVariable(0,radii.length);
+                        if (val) {
+                            newVar.setValue(PRNG.nextInt(1,radii.length-1));
+                        } else {
+                            newVar.setValue(0);
                         }
-                        RealVariable newEVar = new RealVariable(0,youngsModulii.length);
-                        newEVar.setValue(PRNG.nextInt(youngsModulii.length));
-                        solution.setVariable(numberOfTrussVariables, newEVar);
-                        initialPopulation[solutionCount] = solution;
-                        solutionCount++;
+                        solution.setVariable(k, newVar);
                     }
+                    RealVariable newEVar = new RealVariable(0,youngsModulii.length);
+                    newEVar.setValue(PRNG.nextInt(youngsModulii.length));
+                    solution.setVariable(numberOfTrussVariables, newEVar);
+                    initialPopulation[solutionCount] = solution;
+                    solutionCount++;
                 }
             }
+        }
 
-            if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && !orientationConstrained) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                double diagProb = 0.75;
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                for (int i = 0; i < populationSize; i++) {
+        if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && !orientationConstrained) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            double diagProb = 0.75;
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            for (int i = 0; i < populationSize; i++) {
+                Solution solution = this.problem.newSolution();
+                for (int k = 0; k <= numberOfTrussVariables-1; ++k) {
+                    RealVariable newVar = new RealVariable(0,radii.length);
+                    if (booleanDiagonalsRepeatable[k]) {
+                        val = PRNG.nextFloat() < diagProb;
+                        if (val) {
+                            newVar.setValue(PRNG.nextInt(1,radii.length-1));
+                        } else {
+                            newVar.setValue(0);
+                        }
+                    } else {
+                        val = PRNG.nextFloat() < 0.5;
+                        if (val) {
+                            newVar.setValue(PRNG.nextInt(1,radii.length-1));
+                        } else {
+                            newVar.setValue(0);
+                        }
+                    }
+                    solution.setVariable(k, newVar);
+                }
+                RealVariable newEVar = new RealVariable(0,youngsModulii.length);
+                newEVar.setValue(PRNG.nextInt(youngsModulii.length));
+                solution.setVariable(numberOfTrussVariables, newEVar);
+                initialPopulation[solutionCount] = solution;
+                solutionCount++;
+            }
+        }
+
+        if (partialCollapsibilityConstrained && nodalPropertiesConstrained && !orientationConstrained) {
+            double diagProb = 0.75;
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
+                for (int j = 0;j < solutionsPerGroup;j++) {
                     Solution solution = this.problem.newSolution();
-                    for (int k = 0; k <= numberOfTrussVariables-1; ++k) {
+                    for (int k = 0;k <= numberOfTrussVariables-1;++k) {
                         RealVariable newVar = new RealVariable(0,radii.length);
                         if (booleanDiagonalsRepeatable[k]) {
                             val = PRNG.nextFloat() < diagProb;
@@ -120,7 +155,7 @@ public class BiasedInitializationIntegerRadii implements Initialization{
                                 newVar.setValue(0);
                             }
                         } else {
-                            val = PRNG.nextFloat() < 0.5;
+                            val = PRNG.nextFloat() < TrueProb;
                             if (val) {
                                 newVar.setValue(PRNG.nextInt(1,radii.length-1));
                             } else {
@@ -136,182 +171,60 @@ public class BiasedInitializationIntegerRadii implements Initialization{
                     solutionCount++;
                 }
             }
+        }
 
-            if (partialCollapsibilityConstrained && nodalPropertiesConstrained && !orientationConstrained) {
-                double diagProb = 0.75;
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
-                    for (int j = 0;j < solutionsPerGroup;j++) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k <= numberOfTrussVariables-1;++k) {
-                            RealVariable newVar = new RealVariable(0,radii.length);
-                            if (booleanDiagonalsRepeatable[k]) {
-                                val = PRNG.nextFloat() < diagProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                                } else {
-                                    newVar.setValue(0);
-                                }
-                            } else {
-                                val = PRNG.nextFloat() < TrueProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                                } else {
-                                    newVar.setValue(0);
-                                }
-                            }
-                            solution.setVariable(k, newVar);
-                        }
-                        RealVariable newEVar = new RealVariable(0,youngsModulii.length);
-                        newEVar.setValue(PRNG.nextInt(youngsModulii.length));
-                        solution.setVariable(numberOfTrussVariables, newEVar);
-                        initialPopulation[solutionCount] = solution;
-                        solutionCount++;
+        ImproveOrientationIntegerRadii improveOrientation;
+        double targetOrientation;
+        if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !intersectionEnforced) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            int m = 0;
+            while (m < populationSize) {
+                Solution solution = this.problem.newSolution();
+                for (int n = 0; n <= numberOfTrussVariables-1; ++n) {
+                    val = PRNG.nextFloat() < 0.5;
+                    RealVariable newVar = new RealVariable(0,radii.length);
+                    if (val) {
+                        newVar.setValue(PRNG.nextInt(1,radii.length-1));
+                    } else {
+                        newVar.setValue(0);
                     }
+                    solution.setVariable(n, newVar);
+                }
+                RealVariable newEVar = new RealVariable(0,youngsModulii.length);
+                newEVar.setValue(PRNG.nextInt(youngsModulii.length));
+                solution.setVariable(numberOfTrussVariables, newEVar);
+                IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);
+                double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
+
+                double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+
+                double totalOrientation = 0;
+                for (int i = 0; i < architectureOrientations.length; i++) {
+                    totalOrientation += architectureOrientations[i];
+                }
+                double meanOrientation = totalOrientation / architectureOrientations.length;
+                if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                    initialPopulation[m] = solution;
+                    m++;
                 }
             }
-
-            ImproveOrientationIntegerRadii improveOrientation;
-            double targetOrientation;
-            if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !intersectionEnforced) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                int m = 0;
-                while (m < populationSize) {
+        } else if (partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
+            double diagProb = 0.75;
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
+                int j = 0;
+                while (j < solutionsPerGroup) {
                     Solution solution = this.problem.newSolution();
-                    for (int n = 0; n <= numberOfTrussVariables-1; ++n) {
-                        val = PRNG.nextFloat() < 0.5;
+                    for (int k = 0;k <= numberOfTrussVariables-1;++k) {
                         RealVariable newVar = new RealVariable(0,radii.length);
-                        if (val) {
-                            newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                        } else {
-                            newVar.setValue(0);
-                        }
-                        solution.setVariable(n, newVar);
-                    }
-                    RealVariable newEVar = new RealVariable(0,youngsModulii.length);
-                    newEVar.setValue(PRNG.nextInt(youngsModulii.length));
-                    solution.setVariable(numberOfTrussVariables, newEVar);
-                    IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);
-                    double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
-
-                    double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
-
-                    double totalOrientation = 0;
-                    for (int i = 0; i < architectureOrientations.length; i++) {
-                        totalOrientation += architectureOrientations[i];
-                    }
-                    double meanOrientation = totalOrientation / architectureOrientations.length;
-                    if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                        initialPopulation[m] = solution;
-                        m++;
-                    }
-                }
-            } else if (partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
-                double diagProb = 0.75;
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
-                    int j = 0;
-                    while (j < solutionsPerGroup) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k <= numberOfTrussVariables-1;++k) {
-                            RealVariable newVar = new RealVariable(0,radii.length);
-                            if (booleanDiagonalsRepeatable[k]) {
-                                val = PRNG.nextFloat() < diagProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                                } else {
-                                    newVar.setValue(0);
-                                }
-                            } else {
-                                val = PRNG.nextFloat() < TrueProb;
-                                if (val) {
-                                    newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                                } else {
-                                    newVar.setValue(0);
-                                }
-                            }
-                            solution.setVariable(k, newVar);
-                        }
-                        RealVariable newEVar = new RealVariable(0,youngsModulii.length);
-                        newEVar.setValue(PRNG.nextInt(youngsModulii.length));
-                        solution.setVariable(numberOfTrussVariables, newEVar);
-                        IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);;
-                        double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
-
-                        double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
-
-                        double totalOrientation = 0;
-                        for (int s = 0; s < architectureOrientations.length; s++) {
-                            totalOrientation += architectureOrientations[s];
-                        }
-                        double meanOrientation = totalOrientation / architectureOrientations.length;
-                        if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                            initialPopulation[j] = solution;
-                            j++;
-                        }
-                    }
-                }
-            } else if (!partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
-                    int j = 0;
-                    while (j < solutionsPerGroup) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k <= numberOfTrussVariables-1;++k) {
-                            val = PRNG.nextFloat() < TrueProb;
-                            RealVariable newVar = new RealVariable(0,radii.length);
-                            if (val) {
-                                newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                            } else {
-                                newVar.setValue(0);
-                            }
-                            solution.setVariable(k, newVar);
-                        }
-                        RealVariable newEVar = new RealVariable(0,youngsModulii.length);
-                        newEVar.setValue(PRNG.nextInt(youngsModulii.length));
-                        solution.setVariable(numberOfTrussVariables, newEVar);
-                        IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);;
-                        double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
-
-                        double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
-
-                        double totalOrientation = 0;
-                        for (int s = 0; s < architectureOrientations.length; s++) {
-                            totalOrientation += architectureOrientations[s];
-                        }
-                        double meanOrientation = totalOrientation / architectureOrientations.length;
-                        if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                            initialPopulation[j] = solution;
-                            j++;
-                        }
-                    }
-                }
-            } else if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !intersectionEnforced) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                double diagProb = 0.75;
-                boolean[] booleanDiagonals = identifyDiagonalMembers();
-                boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
-                improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                int m = 0;
-                while (m < populationSize) {
-                    Solution solution = this.problem.newSolution();
-                    for (int n = 0; n <= numberOfTrussVariables-1; ++n) {
-                        RealVariable newVar = new RealVariable(0,radii.length);
-                        if (booleanDiagonalsRepeatable[n]) {
+                        if (booleanDiagonalsRepeatable[k]) {
                             val = PRNG.nextFloat() < diagProb;
                             if (val) {
                                 newVar.setValue(PRNG.nextInt(1,radii.length-1));
@@ -319,14 +232,14 @@ public class BiasedInitializationIntegerRadii implements Initialization{
                                 newVar.setValue(0);
                             }
                         } else {
-                            val = PRNG.nextFloat() < 0.5;
+                            val = PRNG.nextFloat() < TrueProb;
                             if (val) {
-                                newVar.setValue(PRNG.nextDouble(1,radii.length-1));
+                                newVar.setValue(PRNG.nextInt(1,radii.length-1));
                             } else {
                                 newVar.setValue(0);
                             }
                         }
-                        solution.setVariable(n, newVar);
+                        solution.setVariable(k, newVar);
                     }
                     RealVariable newEVar = new RealVariable(0,youngsModulii.length);
                     newEVar.setValue(PRNG.nextInt(youngsModulii.length));
@@ -337,58 +250,143 @@ public class BiasedInitializationIntegerRadii implements Initialization{
                     double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
 
                     double totalOrientation = 0;
-                    for (int i = 0; i < architectureOrientations.length; i++) {
-                        totalOrientation += architectureOrientations[i];
+                    for (int s = 0; s < architectureOrientations.length; s++) {
+                        totalOrientation += architectureOrientations[s];
                     }
                     double meanOrientation = totalOrientation / architectureOrientations.length;
                     if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                        initialPopulation[m] = solution;
-                        m++;
+                        initialPopulation[j] = solution;
+                        j++;
                     }
                 }
             }
-            if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && intersectionEnforced) {
-                int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
-                improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
-                targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
-                for (int i = 0;i < 4;i++) {
-                    double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
-                    int j = 0;
-                    while (j < solutionsPerGroup) {
-                        Solution solution = this.problem.newSolution();
-                        for (int k = 0;k <= numberOfTrussVariables-1;++k) {
-                            val = PRNG.nextFloat() < TrueProb;
-                            RealVariable newVar = new RealVariable(0,radii.length);
-                            if (val) {
-                                newVar.setValue(PRNG.nextInt(1,radii.length-1));
-                            } else {
-                                newVar.setValue(0);
-                            }
-                            solution.setVariable(k, newVar);
+        } else if (!partialCollapsibilityConstrained && nodalPropertiesConstrained && orientationConstrained) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
+                int j = 0;
+                while (j < solutionsPerGroup) {
+                    Solution solution = this.problem.newSolution();
+                    for (int k = 0;k <= numberOfTrussVariables-1;++k) {
+                        val = PRNG.nextFloat() < TrueProb;
+                        RealVariable newVar = new RealVariable(0,radii.length);
+                        if (val) {
+                            newVar.setValue(PRNG.nextInt(1,radii.length-1));
+                        } else {
+                            newVar.setValue(0);
                         }
-                        RealVariable newEVar = new RealVariable(0,youngsModulii.length);
-                        newEVar.setValue(PRNG.nextInt(youngsModulii.length));
-                        solution.setVariable(numberOfTrussVariables, newEVar);
-                        IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);;
-                        double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
+                        solution.setVariable(k, newVar);
+                    }
+                    RealVariable newEVar = new RealVariable(0,youngsModulii.length);
+                    newEVar.setValue(PRNG.nextInt(youngsModulii.length));
+                    solution.setVariable(numberOfTrussVariables, newEVar);
+                    IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);;
+                    double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
 
-                        double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+                    double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
 
-                        double totalOrientation = 0;
-                        for (double architectureOrientation : architectureOrientations) {
-                            totalOrientation += architectureOrientation;
-                        }
-                        double meanOrientation = totalOrientation / architectureOrientations.length;
-                        if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
-                            initialPopulation[j] = solution;
-                            j++;
-                        }
+                    double totalOrientation = 0;
+                    for (int s = 0; s < architectureOrientations.length; s++) {
+                        totalOrientation += architectureOrientations[s];
+                    }
+                    double meanOrientation = totalOrientation / architectureOrientations.length;
+                    if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                        initialPopulation[j] = solution;
+                        j++;
                     }
                 }
             }
-            // return (Solution[]) initialPopulation.toArray();
-            return initialPopulation;
+        } else if (partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && !intersectionEnforced) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            double diagProb = 0.75;
+            boolean[] booleanDiagonals = identifyDiagonalMembers();
+            boolean[] booleanDiagonalsRepeatable = getRepeatableBooleanArrayFromCompleteArray(booleanDiagonals);
+            improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            int m = 0;
+            while (m < populationSize) {
+                Solution solution = this.problem.newSolution();
+                for (int n = 0; n <= numberOfTrussVariables-1; ++n) {
+                    RealVariable newVar = new RealVariable(0,radii.length);
+                    if (booleanDiagonalsRepeatable[n]) {
+                        val = PRNG.nextFloat() < diagProb;
+                        if (val) {
+                            newVar.setValue(PRNG.nextInt(1,radii.length-1));
+                        } else {
+                            newVar.setValue(0);
+                        }
+                    } else {
+                        val = PRNG.nextFloat() < 0.5;
+                        if (val) {
+                            newVar.setValue(PRNG.nextDouble(1,radii.length-1));
+                        } else {
+                            newVar.setValue(0);
+                        }
+                    }
+                    solution.setVariable(n, newVar);
+                }
+                RealVariable newEVar = new RealVariable(0,youngsModulii.length);
+                newEVar.setValue(PRNG.nextInt(youngsModulii.length));
+                solution.setVariable(numberOfTrussVariables, newEVar);
+                IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);;
+                double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
+
+                double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+
+                double totalOrientation = 0;
+                for (int i = 0; i < architectureOrientations.length; i++) {
+                    totalOrientation += architectureOrientations[i];
+                }
+                double meanOrientation = totalOrientation / architectureOrientations.length;
+                if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                    initialPopulation[m] = solution;
+                    m++;
+                }
+            }
         }
+        if (!partialCollapsibilityConstrained && !nodalPropertiesConstrained && orientationConstrained && intersectionEnforced) {
+            int numberOfTrussVariables = findNumberOfTrussVariablesFromSidenum();
+            improveOrientation = new ImproveOrientationIntegerRadii(globalNodePositions, radii, youngsModulii, targetStiffnessRatio, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints);
+            targetOrientation = improveOrientation.findTargetOrientation(targetStiffnessRatio);
+            for (int i = 0;i < 4;i++) {
+                double TrueProb = numberOfMembers[i]/numberOfTrussVariables;
+                int j = 0;
+                while (j < solutionsPerGroup) {
+                    Solution solution = this.problem.newSolution();
+                    for (int k = 0;k <= numberOfTrussVariables-1;++k) {
+                        val = PRNG.nextFloat() < TrueProb;
+                        RealVariable newVar = new RealVariable(0,radii.length);
+                        if (val) {
+                            newVar.setValue(PRNG.nextInt(1,radii.length-1));
+                        } else {
+                            newVar.setValue(0);
+                        }
+                        solution.setVariable(k, newVar);
+                    }
+                    RealVariable newEVar = new RealVariable(0,youngsModulii.length);
+                    newEVar.setValue(PRNG.nextInt(youngsModulii.length));
+                    solution.setVariable(numberOfTrussVariables, newEVar);
+                    IntegerRepeatableArchitecture trussArch = new IntegerRepeatableArchitecture(solution, (int) sideNodeNumber, numHeurObjectives, numHeurConstraints, radii, youngsModulii);;
+                    double[][] connectivityArray = trussArch.getFullCAFromSolutionIntegerRadii();
+
+                    double[] architectureOrientations = improveOrientation.findMemberOrientations(connectivityArray);
+
+                    double totalOrientation = 0;
+                    for (double architectureOrientation : architectureOrientations) {
+                        totalOrientation += architectureOrientation;
+                    }
+                    double meanOrientation = totalOrientation / architectureOrientations.length;
+                    if (Math.abs(meanOrientation - targetOrientation) < orientaionAcceptanceMargin) {
+                        initialPopulation[j] = solution;
+                        j++;
+                    }
+                }
+            }
+        }
+        // return (Solution[]) initialPopulation.toArray();
+        return initialPopulation;
     }
 
     private boolean[] identifyDiagonalMembers () {

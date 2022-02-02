@@ -276,9 +276,9 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
 
         double[] heuristicObjectives = {-designPartialCollapsibilityScore, -designNodalPropertiesScore, -designOrientationScore, -designIntersectionScore};
 
-        double penaltyFeasibility = Math.log10(Math.abs(designFeasibilityScore))/16;
+        //double penaltyFeasibility = Math.log10(Math.abs(designFeasibilityScore))/16;
 
-        double penaltyConnectivity = Math.log10(Math.abs(designConnectivityScore))/16;
+        //double penaltyConnectivity = Math.log10(Math.abs(designConnectivityScore))/16;
 
         double penaltyPartialCollapsibility = 0.0;
         if (heuristicsConstrainedBooleans[0][0] || heuristicsConstrainedBooleans[0][4] || heuristicsConstrainedBooleans[0][5]) {
@@ -414,8 +414,8 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
 
     private double getOrientationScoreVariableRadii(double[][] designConnectivityArray) throws ExecutionException, InterruptedException {
         //Object orientationOutput;
-        //orientationOutput = engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
-        return (double) engine.feval("orientationHeuristicNorm",NodalPositionArray,designConnectivityArray,sel,targetStiffnessRatio);
+        //orientationOutput = engine.feval("orientationHeuristicNorm",NodalPositionArray,designConnectivityArray,sel,targetStiffnessRatio);
+        return (double) engine.feval("orientationHeuristic_V2",NodalPositionArray,designConnectivityArray,targetStiffnessRatio);
     }
 
     private double getIntersectionScore(double[][] designConnectivityArray) throws ExecutionException, InterruptedException {
@@ -460,15 +460,12 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
 
     @Override
     public Solution newSolution() {
-        synchronized (PRNG.getRandom()) {
-            Solution newSol = new Solution(this.numberOfVariables, 2+numHeurObjectives, 3+numHeurConstraints);
-            Random rnd = new Random();
-            for (int i = 0; i < this.numberOfVariables; i++) {
-                BinaryVariable newVar = new BinaryVariable(1);
-                newVar.set(0, rnd.nextBoolean());
-                newSol.setVariable(i, newVar);
-            }
-            return newSol;
+        Solution newSol = new Solution(this.numberOfVariables, 2+numHeurObjectives, 3+numHeurConstraints);
+        for (int i = 0; i < this.numberOfVariables; i++) {
+            BinaryVariable newVar = new BinaryVariable(1);
+            newVar.set(0, PRNG.nextBoolean());
+            newSol.setVariable(i, newVar);
         }
+        return newSol;
     }
 }

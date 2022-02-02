@@ -8,7 +8,7 @@ import org.moeaframework.problem.AbstractProblem;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 import com.mathworks.engine.*;
 import seakers.trussaos.architecture.IntegerRepeatableArchitecture;
-import seakers.architecture.util.IntegerVariable;
+//import seakers.architecture.util.IntegerVariable;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -3,6 +3,7 @@ package seakers.trussaos.operators.constantradii;
 import com.mathworks.engine.MatlabEngine;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
+import org.moeaframework.core.PRNG;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 
 import java.util.*;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 public class AddMember implements Variation {
 
     private final boolean keepFeasible;
+    private final boolean arteryProblem;
     private static MatlabEngine engine;
     private final double[][] nodalConnectivityArray;
     private final double sidenum;
@@ -19,8 +21,9 @@ public class AddMember implements Variation {
     private final int numHeurObjectives;
     private final int numHeurConstraints;
 
-    public AddMember(boolean keepFeasible, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel, int numHeuristicObjectives, int numHeuristicConstraints) {
+    public AddMember(boolean keepFeasible, boolean arteryProblem, MatlabEngine eng, double[][] nodalConnArray, double sidenum, double sel, int numHeuristicObjectives, int numHeuristicConstraints) {
         this.keepFeasible = keepFeasible;
+        this.arteryProblem = arteryProblem;
         engine = eng;
         this.nodalConnectivityArray = nodalConnArray;
         this.sidenum = sidenum;
@@ -57,7 +60,6 @@ public class AddMember implements Variation {
                     updatedConnectivityArray = connectivityArray.clone();
                 }
                 else if (nodesWithLowConnections.length == 1) {
-                    Random random = new Random();
                     double[] nodesToConnect = new double[2];
                     nodesToConnect[0] = nodesWithLowConnections[0];
                     int[] secondNodeChoices = new int[8];
@@ -70,11 +72,11 @@ public class AddMember implements Variation {
                             nextIndex += 1;
                         }
                     }
-                    int secondNodeIndex = random.nextInt(secondNodeChoices.length);
+                    int secondNodeIndex = PRNG.nextInt(secondNodeChoices.length);
                     nodesToConnect[1] = secondNodeChoices[secondNodeIndex];
                     Arrays.sort(nodesToConnect);
                     updatedConnectivityArray = addMemberToConnectivityArray(connectivityArray,nodesToConnect);
-                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray);
+                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray, arteryProblem);
                 }
                 else {
                     List<Integer> nodesList = Arrays.stream(nodesWithLowConnections).boxed().collect(Collectors.toList());
@@ -94,7 +96,7 @@ public class AddMember implements Variation {
                 //int oldNumberOfIntersectingTrusses = oldDesignTrussIntersections.get(0) == null ? 0 : oldDesignTrussIntersections.get(0).size();
                 if (oldDesignTrussIntersections >= newDesignTrussIntersections) {
                     feasibilitySameOrBetter = true;
-                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray);
+                    newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray, arteryProblem);
                 }
                 else {
                     numberOfAttempts += 1;
@@ -107,7 +109,6 @@ public class AddMember implements Variation {
                 newArchitecture = new TrussRepeatableArchitecture(architecture.deepCopy(),sidenum,numHeurObjectives,numHeurConstraints);
             }
             else if (nodesWithLowConnections.length == 1) {
-                Random random = new Random();
                 double[] nodesToConnect = new double[2];
                 nodesToConnect[0] = nodesWithLowConnections[0];
                 int[] secondNodeChoices = new int[8];
@@ -120,11 +121,11 @@ public class AddMember implements Variation {
                         nextIndex += 1;
                     }
                 }
-                int secondNodeIndex = random.nextInt(secondNodeChoices.length);
+                int secondNodeIndex = PRNG.nextInt(secondNodeChoices.length);
                 nodesToConnect[1] = secondNodeChoices[secondNodeIndex];
                 Arrays.sort(nodesToConnect);
                 double[][] updatedConnectivityArray = addMemberToConnectivityArray(connectivityArray,nodesToConnect);
-                newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray);
+                newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray, arteryProblem);
             }
             else {
                 List<Integer> nodesList = Arrays.stream(nodesWithLowConnections).boxed().collect(Collectors.toList());
@@ -134,7 +135,7 @@ public class AddMember implements Variation {
                 nodesToConnect[1] = nodesList.get(1);
                 Arrays.sort(nodesToConnect);
                 double[][] updatedConnectivityArray = addMemberToConnectivityArray(connectivityArray,nodesToConnect);
-                newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray);
+                newArchitecture = architecture.getArchitectureFromConnectivityArray(updatedConnectivityArray, arteryProblem);
             }
         }
         return new Solution[]{newArchitecture};
