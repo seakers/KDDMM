@@ -47,7 +47,8 @@ switch gen_mode
                         exit
                     end
                 case "Truss"
-                    [C_des, volfrac_des] = trussMetaCalc_NxN_1UC_rVar_AVar(sidenum,sel,rvar_des,E,CA_des);
+                    [C_des, ~] = trussMetaCalc_NxN_1UC_rVar_AVar(sidenum,sel,rvar_des,E,CA_des);
+                    volfrac_des = calcVF_NxN_feasOnly(CA_des,r,sel,sidenum);
                 case "Beam"
                     C_des = Beam_2D_NxN_PBC(sel,sidenum,r,E,CA_des);
                     volfrac_des = calcVF_NxN_feasOnly(CA_des,r,sel,sidenum);

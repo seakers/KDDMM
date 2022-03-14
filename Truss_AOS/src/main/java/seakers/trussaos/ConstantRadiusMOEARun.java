@@ -90,9 +90,9 @@ public class ConstantRadiusMOEARun {
          * heuristicsConstrained = [partialCollapsibilityConstrained, nodalPropertiesConstrained, orientationConstrained, intersectionConstrained]
          */
         boolean[] partialCollapsibilityConstrained = {false, false, false, false, false, false};
-        boolean[] nodalPropertiesConstrained = {false, true, false, false, false, false};
-        boolean[] orientationConstrained = {false, true, false, false, false, false};
-        boolean[] intersectionConstrained = {false, true, false, false, false, false};
+        boolean[] nodalPropertiesConstrained = {false, false, false, false, false, false};
+        boolean[] orientationConstrained = {false, false, false, false, false, false};
+        boolean[] intersectionConstrained = {false, false, false, false, false, false};
 
         // Bias initial population with low number of members
         boolean useLowMemberBiasing = false;
@@ -117,7 +117,7 @@ public class ConstantRadiusMOEARun {
         }
 
         int numCPU = 1;
-        int numRuns = 30;
+        int numRuns = 1;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
         engine = MatlabEngine.startMatlab();

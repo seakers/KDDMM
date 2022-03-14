@@ -23,7 +23,7 @@ n_variables = n_total_members - n_repeated_members;
 %% Cases to consider for GA data
 constrad_read = true;
 % Case - Epsilon MOEA
-truss_problem = false; % true -> truss problem, false -> artery problem
+truss_problem = true; % true -> truss problem, false -> artery problem
 case1_partcoll_bools = [false, false, false, false];
 case1_nodalprop_bools = [false, false, false, false];
 case1_orient_bools = [false, false, false, false];
@@ -34,6 +34,7 @@ if ~truss_problem
     c_ratio = 0.421;
 end
 
+use_only_final_population = false;
 %% Generate random architectures, objectives, constraints and heuristics for ease of satisfaction study
 n_des_rand = 300; % number of architectures to generate
 n_runs_rand = 10; % number of runs to generate "n_des" architectures
@@ -146,17 +147,18 @@ support_full_inters_runs = zeros(n_runs,1);
 n_true_pf_runs = zeros(n_runs,1);
 
 %support_pen_pf_runs = zeros(n_runs,1);
-support_true_pf_runs = zeros(n_runs,1);
+support_pf_runs = zeros(n_runs,1);
 
-random_mode = "PartcollAndConn";
-if ~truss_problem
-    random_mode = "Conn";
-end
+% random_mode = "PartcollAndConn";
+% if ~truss_problem
+%     random_mode = "Conn";
+% end
+random_mode = "Random";
 
 if add_ga_data
     pop_size = 100;
 
-    [f_pen_nonans_allcases, f_true_nonans_allcases, constr_nonans_allcases, heur_nonans_allcases, ~] = obtain_combined_data_allruns(truss_problem, choice_of_model, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, constrad_read, sidenum, pop_size, n_runs);   
+    [f_pen_nonans_allcases, f_true_nonans_allcases, constr_nonans_allcases, heur_nonans_allcases, ~] = obtain_combined_data_allruns(truss_problem, choice_of_model, use_only_final_population, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, constrad_read, sidenum, pop_size, n_runs);   
 end
 
 for i = 1:n_runs   
@@ -283,25 +285,25 @@ for i = 1:n_runs
     
     %%% Support calculation
     % Constraints
-    support_full_feas_runs(i,1) = length(feas_total(feas_total==1))/size(obj1_total,1);
+    support_full_feas_runs(i,1) = max([1e-4,length(feas_total(feas_total==1))/size(obj1_total,1)]);
     support_full_conn_runs(i,1) = length(conn_total(conn_total==1))/size(obj1_total,1);
     if truss_problem
-        support_full_stiffrat_runs(i,1) = length(stiffrat_total(stiffrat_total==0))/size(obj1_total,1);
+        support_full_stiffrat_runs(i,1) = max([1e-4,length(stiffrat_total(stiffrat_total==0))/size(obj1_total,1)]);
     end
     
     % Heuristics
     support_full_coll_runs(i,1) = length(coll_total(coll_total==1))/size(obj1_total,1);
     support_full_nod_runs(i,1) = length(nod_total(nod_total==1))/size(obj1_total,1);
     support_full_orient_runs(i,1) = length(orient_total(orient_total==1))/size(obj1_total,1);
-    support_full_inters_runs(i,1) = length(inters_total(inters_total==1))/size(obj1_total,1);
+    support_full_inters_runs(i,1) = max([1e-4,length(inters_total(inters_total==1))/size(obj1_total,1)]);
     
     n_true_pf_runs(i,1) = size(pen_objs_pareto,1);
     
-    support_true_pf_runs(i,1) = size(true_objs_pareto_correct,1)/size(obj1_total,1);
+    support_pf_runs(i,1) = size(pen_objs_pareto,1)/size(obj1_total,1);
 end
 
 if truss_problem
-    support_tablestats = [mean(support_true_pf_runs), std(support_true_pf_runs);
+    support_tablestats = [mean(support_pf_runs), std(support_pf_runs);
         mean(support_full_feas_runs), std(support_full_feas_runs);
         mean(support_full_conn_runs), std(support_full_conn_runs);
         mean(support_full_stiffrat_runs), std(support_full_stiffrat_runs);
@@ -310,7 +312,7 @@ if truss_problem
         mean(support_full_orient_runs), std(support_full_orient_runs);
         mean(support_full_inters_runs), std(support_full_inters_runs)];
 else
-    support_tablestats = [mean(support_true_pf_runs), std(support_true_pf_runs);
+    support_tablestats = [mean(support_pf_runs), std(support_pf_runs);
         mean(support_full_feas_runs), std(support_full_feas_runs);
         mean(support_full_conn_runs), std(support_full_conn_runs);
         mean(support_full_coll_runs), std(support_full_coll_runs);
@@ -319,7 +321,7 @@ else
         mean(support_full_inters_runs), std(support_full_inters_runs)];
 end
 
-%% Heuristic violation plots
+%% Create full arrays to determine thresholds for ARM (not required for indices)
 
 n_des_total = 0;
 for i = 1:n_runs
@@ -455,102 +457,6 @@ else
         mean(orient_array), std(orient_array);
         mean(inters_array), std(inters_array)];
 end
-
-figure 
-scatter(obj1_pen_array,obj2_pen_array,[],1 - coll_array,'filled')
-if truss_problem
-    xlabel('Penalized $C_{22}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized $v_f$','Interpreter','Latex','FontSize',16)
-else 
-    xlabel('Penalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized deviation','Interpreter','Latex','FontSize',16)
-end
-colorbar
-title('Partial Collapsibility Violation','FontSize',16)
-
-figure 
-scatter(obj1_pen_array,obj2_pen_array,[],1 - nod_array,'filled')
-if truss_problem
-    xlabel('Penalized $C_{22}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized $v_f$','Interpreter','Latex','FontSize',16)
-else
-    xlabel('Penalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized deviation','Interpreter','Latex','FontSize',16)
-end
-colorbar;
-title('Nodal Properties Violation','FontSize',16)
-
-figure 
-scatter(obj1_pen_array,obj2_pen_array,[],1 - orient_array,'filled')
-if truss_problem
-    xlabel('Penalized $C_{22}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized $v_f$','Interpreter','Latex','FontSize',16)
-else
-    xlabel('Penalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized deviation','Interpreter','Latex','FontSize',16)
-end
-colorbar;
-title('Orientation Violation','FontSize',16)
-
-figure 
-scatter(obj1_pen_array,obj2_pen_array,[],1 - inters_array,'filled')
-if truss_problem
-    xlabel('Penalized $C_{22}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized $v_f$','Interpreter','Latex','FontSize',16)
-else
-    xlabel('Penalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
-    ylabel('Penalized deviation','Interpreter','Latex','FontSize',16)
-end
-colorbar;
-title('Intersection Violation','FontSize',16)
-
-figure 
-scatter(obj1_true_array,obj2_true_array,[],1 - coll_array,'filled')
-if truss_problem
-    xlabel('$C_{22}$','Interpreter','Latex')
-    ylabel('$v_f$','Interpreter','Latex')
-else
-    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
-    ylabel('deviation','Interpreter','Latex')
-end
-colorbar
-title('Partial Collapsibility Violation')
-
-figure 
-scatter(obj1_true_array,obj2_true_array,[],1 - nod_array,'filled')
-if truss_problem
-    xlabel('$C_{22}$','Interpreter','Latex')
-    ylabel('$v_f$','Interpreter','Latex')
-else
-    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
-    ylabel('deviation','Interpreter','Latex')
-end
-colorbar;
-title('Nodal Properties Violation')
-
-figure 
-scatter(obj1_true_array,obj2_true_array,[],1 - orient_array,'filled')
-if truss_problem
-    xlabel('$C_{22}$','Interpreter','Latex')
-    ylabel('$v_f$','Interpreter','Latex')
-else
-    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
-    ylabel('deviation','Interpreter','Latex')
-end
-colorbar;
-title('Orientation Violation')
-
-figure 
-scatter(obj1_true_array,obj2_true_array,[],1 - inters_array,'filled')
-if truss_problem
-    xlabel('$C_{22}$','Interpreter','Latex')
-    ylabel('$v_f$','Interpreter','Latex')
-else
-    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
-    ylabel('deviation','Interpreter','Latex')
-end
-colorbar;
-title('Intersection Violation')
 
 %% Compute correlation coefficients of each heuristic with objectives and constraints
 pearson_coll_truepfdist = zeros(n_runs,1);
@@ -804,6 +710,8 @@ else
 end
 corr_min = 0.4; % minimum significant correlation value
 
+use_truepfdist = false; % use correlation with minimum distance to true PF, if false use normalized PF 
+
 %%%% VERSION 1
 
 % indices_partcoll_total = zeros(n_runs,1);
@@ -895,19 +803,35 @@ corr_min = 0.4; % minimum significant correlation value
 
 %%%% VERSION 2
 % Compute average correlation coefficients
-corr_avg_coll_truepfdist = (pearson_coll_truepfdist + spearman_coll_truepfdist)/2;
+if use_truepfdist
+    corr_avg_coll_truepfdist = (pearson_coll_truepfdist + spearman_coll_truepfdist)/2;
+else
+    corr_avg_coll_penpfdist = (pearson_coll_penpfdist + spearman_coll_penpfdist)/2;
+end
 corr_avg_coll_feas = (pearson_coll_feas + spearman_coll_feas)/2;
 corr_avg_coll_conn = (pearson_coll_conn + spearman_coll_conn)/2;
 
-corr_avg_nod_truepfdist = (pearson_nod_truepfdist + spearman_nod_truepfdist)/2;
+if use_truepfdist
+    corr_avg_nod_truepfdist = (pearson_nod_truepfdist + spearman_nod_truepfdist)/2;
+else
+    corr_avg_nod_penpfdist = (pearson_nod_penpfdist + spearman_nod_penpfdist)/2;
+end
 corr_avg_nod_feas = (pearson_nod_feas + spearman_nod_feas)/2;
 corr_avg_nod_conn = (pearson_nod_conn + spearman_nod_conn)/2;
 
-corr_avg_orient_truepfdist = (pearson_orient_truepfdist + spearman_orient_truepfdist)/2;
+if use_truepfdist
+    corr_avg_orient_truepfdist = (pearson_orient_truepfdist + spearman_orient_truepfdist)/2;
+else
+    corr_avg_orient_penpfdist = (pearson_orient_penpfdist + spearman_orient_penpfdist)/2;
+end
 corr_avg_orient_feas = (pearson_orient_feas + spearman_orient_feas)/2;
 corr_avg_orient_conn = (pearson_orient_conn + spearman_orient_conn)/2;
 
-corr_avg_inters_truepfdist = (pearson_inters_truepfdist + spearman_inters_truepfdist)/2;
+if use_truepfdist
+    corr_avg_inters_truepfdist = (pearson_inters_truepfdist + spearman_inters_truepfdist)/2;
+else
+    corr_avg_inters_penpfdist = (pearson_inters_penpfdist + spearman_inters_penpfdist)/2;
+end
 corr_avg_inters_feas = (pearson_inters_feas + spearman_inters_feas)/2;
 corr_avg_inters_conn = (pearson_inters_conn + spearman_inters_conn)/2;
 
@@ -932,18 +856,57 @@ end
 %     compute_heuristic_I1_contribution(corr_avg_inters_feas, corr_min, corr_exp_inters(2), support_full_feas_runs) + ...
 %     compute_heuristic_I1_contribution(corr_avg_inters_conn, corr_min, corr_exp_inters(3), support_full_conn_runs);
 
-I1_partcoll = compute_heuristic_I1_contribution2(corr_avg_coll_truepfdist, corr_exp_partcoll(1), support_true_pf_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs);
-I1_nodalprop = compute_heuristic_I1_contribution2(corr_avg_nod_truepfdist, corr_exp_nodalprop(1), support_true_pf_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs);
-I1_orient = compute_heuristic_I1_contribution2(corr_avg_orient_truepfdist, corr_exp_orient(1), support_true_pf_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs);
-I1_inters = compute_heuristic_I1_contribution2(corr_avg_inters_truepfdist, corr_exp_inters(1), support_true_pf_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs) + ...
-    compute_heuristic_I1_contribution2(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs);
+if use_truepfdist
+%     I1_partcoll = compute_heuristic_I1_contribution2(corr_avg_coll_truepfdist, corr_exp_partcoll(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs);
+%     I1_nodalprop = compute_heuristic_I1_contribution2(corr_avg_nod_truepfdist, corr_exp_nodalprop(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs);
+%     I1_orient = compute_heuristic_I1_contribution2(corr_avg_orient_truepfdist, corr_exp_orient(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs);
+%     I1_inters = compute_heuristic_I1_contribution2(corr_avg_inters_truepfdist, corr_exp_inters(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs);
+I1_partcoll = compute_heuristic_I1_contribution_run_vec(corr_avg_coll_truepfdist, corr_exp_partcoll(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs);
+    I1_nodalprop = compute_heuristic_I1_contribution_run_vec(corr_avg_nod_truepfdist, corr_exp_nodalprop(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs);
+    I1_orient = compute_heuristic_I1_contribution_run_vec(corr_avg_orient_truepfdist, corr_exp_orient(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs);
+    I1_inters = compute_heuristic_I1_contribution_run_vec(corr_avg_inters_truepfdist, corr_exp_inters(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs);
+else
+%     I1_partcoll = compute_heuristic_I1_contribution2(corr_avg_coll_penpfdist, corr_exp_partcoll(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs);
+%     I1_nodalprop = compute_heuristic_I1_contribution2(corr_avg_nod_penpfdist, corr_exp_nodalprop(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs);
+%     I1_orient = compute_heuristic_I1_contribution2(corr_avg_orient_penpfdist, corr_exp_orient(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs);
+%     I1_inters = compute_heuristic_I1_contribution2(corr_avg_inters_penpfdist, corr_exp_inters(1), support_pf_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs) + ...
+%         compute_heuristic_I1_contribution2(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs);
+    I1_partcoll = compute_heuristic_I1_contribution_run_vec(corr_avg_coll_penpfdist, corr_exp_partcoll(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs);
+    I1_nodalprop = compute_heuristic_I1_contribution_run_vec(corr_avg_nod_penpfdist, corr_exp_nodalprop(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs);
+    I1_orient = compute_heuristic_I1_contribution_run_vec(corr_avg_orient_penpfdist, corr_exp_orient(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs);
+    I1_inters = compute_heuristic_I1_contribution_run_vec(corr_avg_inters_penpfdist, corr_exp_inters(1), support_pf_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs) + ...
+        compute_heuristic_I1_contribution_run_vec(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs);
+end
 
 if truss_problem
 %     I1_partcoll = I1_partcoll + compute_heuristic_I1_contribution(corr_avg_coll_stiffrat, corr_min, corr_exp_partcoll(4), support_full_stiffrat_runs);
@@ -951,10 +914,15 @@ if truss_problem
 %     I1_orient = I1_orient + compute_heuristic_I1_contribution(corr_avg_orient_stiffrat, corr_min, corr_exp_orient(4), support_full_stiffrat_runs);
 %     I1_inters = I1_inters + compute_heuristic_I1_contribution(corr_avg_inters_stiffrat, corr_min, corr_exp_inters(4), support_full_stiffrat_runs);
 
-    I1_partcoll = I1_partcoll + compute_heuristic_I1_contribution2(corr_avg_coll_stiffrat, corr_exp_partcoll(4), support_full_stiffrat_runs);
-    I1_nodalprop = I1_nodalprop + compute_heuristic_I1_contribution2(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), support_full_stiffrat_runs);
-    I1_orient = I1_orient + compute_heuristic_I1_contribution2(corr_avg_orient_stiffrat, corr_exp_orient(4), support_full_stiffrat_runs);
-    I1_inters = I1_inters + compute_heuristic_I1_contribution2(corr_avg_inters_stiffrat, corr_exp_inters(4), support_full_stiffrat_runs);
+%     I1_partcoll = I1_partcoll + compute_heuristic_I1_contribution2(corr_avg_coll_stiffrat, corr_exp_partcoll(4), support_full_stiffrat_runs);
+%     I1_nodalprop = I1_nodalprop + compute_heuristic_I1_contribution2(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), support_full_stiffrat_runs);
+%     I1_orient = I1_orient + compute_heuristic_I1_contribution2(corr_avg_orient_stiffrat, corr_exp_orient(4), support_full_stiffrat_runs);
+%     I1_inters = I1_inters + compute_heuristic_I1_contribution2(corr_avg_inters_stiffrat, corr_exp_inters(4), support_full_stiffrat_runs);
+    
+    I1_partcoll = I1_partcoll + compute_heuristic_I1_contribution_run_vec(corr_avg_coll_stiffrat, corr_exp_partcoll(4), support_full_stiffrat_runs);
+    I1_nodalprop = I1_nodalprop + compute_heuristic_I1_contribution_run_vec(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), support_full_stiffrat_runs);
+    I1_orient = I1_orient + compute_heuristic_I1_contribution_run_vec(corr_avg_orient_stiffrat, corr_exp_orient(4), support_full_stiffrat_runs);
+    I1_inters = I1_inters + compute_heuristic_I1_contribution_run_vec(corr_avg_inters_stiffrat, corr_exp_inters(4), support_full_stiffrat_runs);
 
     I1_partcoll = I1_partcoll/4;
     I1_nodalprop = I1_nodalprop/4;
@@ -986,18 +954,59 @@ I1_norm_inters = I1_inters/(abs(I1_partcoll) + abs(I1_nodalprop) + abs(I1_orient
 %     compute_heuristic_I2_contribution(corr_avg_inters_feas, corr_min, corr_exp_inters(2), support_full_feas_runs, support_full_inters_runs) + ...
 %     compute_heuristic_I2_contribution(corr_avg_inters_conn, corr_min, corr_exp_inters(3), support_full_conn_runs, support_full_inters_runs);
 
-I2_partcoll = compute_heuristic_I2_contribution2(corr_avg_coll_truepfdist, corr_exp_partcoll(1), support_true_pf_runs, support_full_coll_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs, support_full_coll_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs, support_full_coll_runs);
-I2_nodalprop = compute_heuristic_I2_contribution2(corr_avg_nod_truepfdist, corr_exp_nodalprop(1), support_true_pf_runs, support_full_nod_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs, support_full_nod_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs, support_full_nod_runs);
-I2_orient = compute_heuristic_I2_contribution2(corr_avg_orient_truepfdist, corr_exp_orient(1), support_true_pf_runs, support_full_orient_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs, support_full_orient_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs, support_full_orient_runs);
-I2_inters = compute_heuristic_I2_contribution2(corr_avg_inters_truepfdist, corr_exp_inters(1), support_true_pf_runs, support_full_inters_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs, support_full_inters_runs) + ...
-    compute_heuristic_I2_contribution2(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs, support_full_inters_runs);
+if use_truepfdist
+%     I2_partcoll = compute_heuristic_I2_contribution2(corr_avg_coll_truepfdist, corr_exp_partcoll(1), support_pf_runs, support_full_coll_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs, support_full_coll_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs, support_full_coll_runs);
+%     I2_nodalprop = compute_heuristic_I2_contribution2(corr_avg_nod_truepfdist, corr_exp_nodalprop(1), support_pf_runs, support_full_nod_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs, support_full_nod_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs, support_full_nod_runs);
+%     I2_orient = compute_heuristic_I2_contribution2(corr_avg_orient_truepfdist, corr_exp_orient(1), support_pf_runs, support_full_orient_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs, support_full_orient_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs, support_full_orient_runs);
+%     I2_inters = compute_heuristic_I2_contribution2(corr_avg_inters_truepfdist, corr_exp_inters(1), support_pf_runs, support_full_inters_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs, support_full_inters_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs, support_full_inters_runs);
+    
+    I2_partcoll = compute_heuristic_I2_contribution_run_vec(corr_avg_coll_truepfdist, corr_exp_partcoll(1), support_pf_runs, support_full_coll_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs, support_full_coll_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs, support_full_coll_runs);
+    I2_nodalprop = compute_heuristic_I2_contribution_run_vec(corr_avg_nod_truepfdist, corr_exp_nodalprop(1), support_pf_runs, support_full_nod_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs, support_full_nod_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs, support_full_nod_runs);
+    I2_orient = compute_heuristic_I2_contribution_run_vec(corr_avg_orient_truepfdist, corr_exp_orient(1), support_pf_runs, support_full_orient_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs, support_full_orient_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs, support_full_orient_runs);
+    I2_inters = compute_heuristic_I2_contribution_run_vec(corr_avg_inters_truepfdist, corr_exp_inters(1), support_pf_runs, support_full_inters_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs, support_full_inters_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs, support_full_inters_runs);
+else
+%     I2_partcoll = compute_heuristic_I2_contribution2(corr_avg_coll_penpfdist, corr_exp_partcoll(1), support_pf_runs, support_full_coll_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs, support_full_coll_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs, support_full_coll_runs);
+%     I2_nodalprop = compute_heuristic_I2_contribution2(corr_avg_nod_penpfdist, corr_exp_nodalprop(1), support_pf_runs, support_full_nod_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs, support_full_nod_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs, support_full_nod_runs);
+%     I2_orient = compute_heuristic_I2_contribution2(corr_avg_orient_penpfdist, corr_exp_orient(1), support_pf_runs, support_full_orient_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs, support_full_orient_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs, support_full_orient_runs);
+%     I2_inters = compute_heuristic_I2_contribution2(corr_avg_inters_penpfdist, corr_exp_inters(1), support_pf_runs, support_full_inters_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs, support_full_inters_runs) + ...
+%         compute_heuristic_I2_contribution2(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs, support_full_inters_runs);
+    
+    I2_partcoll = compute_heuristic_I2_contribution_run_vec(corr_avg_coll_penpfdist, corr_exp_partcoll(1), support_pf_runs, support_full_coll_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_coll_feas, corr_exp_partcoll(2), support_full_feas_runs, support_full_coll_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_coll_conn, corr_exp_partcoll(3), support_full_conn_runs, support_full_coll_runs);
+    I2_nodalprop = compute_heuristic_I2_contribution_run_vec(corr_avg_nod_penpfdist, corr_exp_nodalprop(1), support_pf_runs, support_full_nod_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_nod_feas, corr_exp_nodalprop(2), support_full_feas_runs, support_full_nod_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_nod_conn, corr_exp_nodalprop(3), support_full_conn_runs, support_full_nod_runs);
+    I2_orient = compute_heuristic_I2_contribution_run_vec(corr_avg_orient_penpfdist, corr_exp_orient(1), support_pf_runs, support_full_orient_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_orient_feas, corr_exp_orient(2), support_full_feas_runs, support_full_orient_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_orient_conn, corr_exp_orient(3), support_full_conn_runs, support_full_orient_runs);
+    I2_inters = compute_heuristic_I2_contribution_run_vec(corr_avg_inters_penpfdist, corr_exp_inters(1), support_pf_runs, support_full_inters_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_inters_feas, corr_exp_inters(2), support_full_feas_runs, support_full_inters_runs) + ...
+        compute_heuristic_I2_contribution_run_vec(corr_avg_inters_conn, corr_exp_inters(3), support_full_conn_runs, support_full_inters_runs);
+end
 
 if truss_problem
 %     I2_partcoll = I2_partcoll + compute_heuristic_I2_contribution(corr_avg_coll_stiffrat, corr_min, corr_exp_partcoll(4), support_full_stiffrat_runs, support_full_coll_runs);
@@ -1005,10 +1014,15 @@ if truss_problem
 %     I2_orient = I2_orient + compute_heuristic_I2_contribution(corr_avg_orient_stiffrat, corr_min, corr_exp_orient(4), support_full_stiffrat_runs, support_full_orient_runs);
 %     I2_inters = I2_inters + compute_heuristic_I2_contribution(corr_avg_inters_stiffrat, corr_min, corr_exp_inters(4), support_full_stiffrat_runs, support_full_inters_runs);
     
-    I2_partcoll = I2_partcoll + compute_heuristic_I2_contribution2(corr_avg_coll_stiffrat, corr_exp_partcoll(4), support_full_stiffrat_runs, support_full_coll_runs);
-    I2_nodalprop = I2_nodalprop + compute_heuristic_I2_contribution2(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), support_full_stiffrat_runs, support_full_nod_runs);
-    I2_orient = I2_orient + compute_heuristic_I2_contribution2(corr_avg_orient_stiffrat, corr_exp_orient(4), support_full_stiffrat_runs, support_full_orient_runs);
-    I2_inters = I2_inters + compute_heuristic_I2_contribution2(corr_avg_inters_stiffrat, corr_exp_inters(4), support_full_stiffrat_runs, support_full_inters_runs);
+%     I2_partcoll = I2_partcoll + compute_heuristic_I2_contribution2(corr_avg_coll_stiffrat, corr_exp_partcoll(4), support_full_stiffrat_runs, support_full_coll_runs);
+%     I2_nodalprop = I2_nodalprop + compute_heuristic_I2_contribution2(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), support_full_stiffrat_runs, support_full_nod_runs);
+%     I2_orient = I2_orient + compute_heuristic_I2_contribution2(corr_avg_orient_stiffrat, corr_exp_orient(4), support_full_stiffrat_runs, support_full_orient_runs);
+%     I2_inters = I2_inters + compute_heuristic_I2_contribution2(corr_avg_inters_stiffrat, corr_exp_inters(4), support_full_stiffrat_runs, support_full_inters_runs);
+
+    I2_partcoll = I2_partcoll + compute_heuristic_I2_contribution_run_vec(corr_avg_coll_stiffrat, corr_exp_partcoll(4), support_full_stiffrat_runs, support_full_coll_runs);
+    I2_nodalprop = I2_nodalprop + compute_heuristic_I2_contribution_run_vec(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), support_full_stiffrat_runs, support_full_nod_runs);
+    I2_orient = I2_orient + compute_heuristic_I2_contribution_run_vec(corr_avg_orient_stiffrat, corr_exp_orient(4), support_full_stiffrat_runs, support_full_orient_runs);
+    I2_inters = I2_inters + compute_heuristic_I2_contribution_run_vec(corr_avg_inters_stiffrat, corr_exp_inters(4), support_full_stiffrat_runs, support_full_inters_runs);
     
     I2_partcoll = I2_partcoll/4;
     I2_nodalprop = I2_nodalprop/4;
@@ -1026,6 +1040,10 @@ I2_norm_nodalprop = I2_nodalprop/(abs(I2_partcoll) + abs(I2_nodalprop) + abs(I2_
 I2_norm_orient = I2_orient/(abs(I2_partcoll) + abs(I2_nodalprop) + abs(I2_orient) + abs(I2_inters));
 I2_norm_inters = I2_inters/(abs(I2_partcoll) + abs(I2_nodalprop) + abs(I2_orient) + abs(I2_inters));
 
+indices_tablestats = [mean(I1_partcoll), std(I1_partcoll); 
+                      mean(I1_nodalprop), std(I1_nodalprop);
+                      mean(I1_orient), std(I1_orient);
+                      mean(I1_inters), std(I1_inters)];
 %% Thresholding heuristics, objectives and constraints into high and low
 % Heuristics
 coll_all_thresh = struct;
@@ -1354,10 +1372,22 @@ function index_contribution = compute_heuristic_I1_contribution2(corr_array_heur
     index_contribution = log_arg*(-1*log10(mean(supp_array_param)));
 end
 
+function index_contribution = compute_heuristic_I1_contribution_run_vec(corr_array_heur_param, idx_corr_heur_param, supp_array_param)
+    % corr_array_heur_param and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = idx_corr_heur_param.*corr_array_heur_param;
+    index_contribution = log_arg.*(-1.*log10(supp_array_param));
+end
+
 function index_contribution = compute_heuristic_I2_contribution2(corr_array_heur_param, idx_corr_heur_param, supp_array_param, supp_array_heur)
     % corr_array_heur_param, supp_array_heur and supp_array_param are (n x 1) arrays where n is the number of runs
     log_arg = idx_corr_heur_param*mean(corr_array_heur_param);
     index_contribution = log_arg*(log10(mean(supp_array_param))*log10(mean(supp_array_heur))); 
+end
+
+function index_contribution = compute_heuristic_I2_contribution_run_vec(corr_array_heur_param, idx_corr_heur_param, supp_array_param, supp_array_heur)
+    % corr_array_heur_param, supp_array_heur and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = idx_corr_heur_param.*corr_array_heur_param;
+    index_contribution = log_arg.*(log10(supp_array_param).*log10(supp_array_heur)); 
 end
 
 function heur_intrness_array = compute_heur_intrness_array_truss(heur_thresh, mindist_truepf_thresh, c22thresh, volfracthresh, feasthresh, connthresh, stiffratthresh)
@@ -1484,7 +1514,7 @@ function confidence = compute_confidence_arm(n_XY,n_X)
     confidence = n_XY/n_X;
 end
 
-function [objs_pen_nonans_allcases, objs_true_nonans_allcases, constraints_nonans_allcases, heuristics_nonans_allcases, designs_nonans_allcases] = obtain_combined_data_allruns(truss_prob, model_used, case_partcoll_bools, case_nodalprop_bools, case_orient_bools, case_inters_bools, constrad_prob_read, sidenodenum, n_pop, n_runs)
+function [objs_pen_nonans_allcases, objs_true_nonans_allcases, constraints_nonans_allcases, heuristics_nonans_allcases, designs_nonans_allcases] = obtain_combined_data_allruns(truss_prob, model_used, only_final_pop, case_partcoll_bools, case_nodalprop_bools, case_orient_bools, case_inters_bools, constrad_prob_read, sidenodenum, n_pop, n_runs)
     
     n_members_total = nchoosek(sidenodenum^2,2);    
    
@@ -1495,19 +1525,28 @@ function [objs_pen_nonans_allcases, objs_true_nonans_allcases, constraints_nonan
     designs_nonans_allcases = struct;
     
     for i = 1:n_runs
-        [data_array, designs_array] = read_csv_data(truss_prob, model_used, case_partcoll_bools, case_nodalprop_bools, case_orient_bools, case_inters_bools, constrad_prob_read, n_members_total, i-1);
+        [data_array, designs_array] = read_csv_data(truss_prob, model_used, only_final_pop, case_partcoll_bools, case_nodalprop_bools, case_orient_bools, case_inters_bools, constrad_prob_read, n_members_total, i-1);
         
-        n_constr = size(data_array,2) - 4 - 4; % number of constraints changes based on problem, so subtract 4 (2 pen. and 2 true objs.) and 4 (heurs) from number of total columns
+        if only_final_pop
+            n_constr = size(data_array,2) - 4 - 4; % number of constraints changes based on problem, so subtract 4 (2 pen. and 2 true objs.) and 4 (heurs) from number of total columns
+        else
+            n_constr = size(data_array,2) - 4 - 4 - 1; % number of constraints changes based on problem, so subtract 4 (2 pen. and 2 true objs.), 1 for NFE and 4 (heurs) from number of total columns
+        end
         data_array_nonans_bool = any(isnan(data_array),2);
         data_array_nonans = data_array(~data_array_nonans_bool,:);
         designs_array_nonans = designs_array(~data_array_nonans_bool,:);
         
         current_field = strcat('trial',num2str(i));
         
-        objs_pen_nonans_allcases.(current_field) = [data_array_nonans(:,1), data_array_nonans(:,2)];
-        objs_true_nonans_allcases.(current_field) = [data_array_nonans(:,3), data_array_nonans(:,4)];
-        constraints_nonans_allcases.(current_field) = data_array_nonans(:,5:5+n_constr-1);
-        heuristics_nonans_allcases.(current_field) = data_array_nonans(:,5+n_constr:end);
+        col_shift = 1; % shifting column index by 1 to get appropriate columns based on file read
+        if only_final_pop
+            col_shift = 0;
+        end
+
+        objs_pen_nonans_allcases.(current_field) = [data_array_nonans(:,1+col_shift), data_array_nonans(:,2+col_shift)];
+        objs_true_nonans_allcases.(current_field) = [data_array_nonans(:,3+col_shift), data_array_nonans(:,4+col_shift)];
+        constraints_nonans_allcases.(current_field) = data_array_nonans(:,5+col_shift:5+col_shift+n_constr-1);
+        heuristics_nonans_allcases.(current_field) = data_array_nonans(:,5+col_shift+n_constr:end);
         designs_nonans_allcases.(current_field) = designs_array_nonans;
         
     end
@@ -1535,8 +1574,10 @@ function [objs_pen_combined, objs_true_combined, constraints_combined, heuristic
     
 end
 
-function [data_array, design_array] = read_csv_data(prob_truss, model_choice, partcoll_bools, nodalprop_bools, orient_bools, inters_bools, constrad_read, n_total_members, run_num)
-    filepath = "C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\";
+function [data_array, design_array] = read_csv_data(prob_truss, model_choice, final_pop_only, partcoll_bools, nodalprop_bools, orient_bools, inters_bools, constrad_read, n_total_members, run_num)
+    %filepath = "C:\\SEAK Lab\\SEAK Lab
+    %Github\\KD3M3\\Truss_AOS\\result\\"; % for lab system 
+    filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\"; % for laptop
     methods = ["Int Pen", "AOS", "Bias Init", "ACH"];
     heurs_list = ["PartColl", "NodalProp", "Orient", "Inters"];
     heurs_abbrvs_list = ["p","n","o","i"];
@@ -1639,9 +1680,17 @@ function [data_array, design_array] = read_csv_data(prob_truss, model_choice, pa
             filepath3 = "Fibre Model\\";
             if truss_problem
                 if constrad_read
-                    filename2 = strcat(filename2,"_prob2_fibre.csv");
+                    if final_pop_only
+                        filename2 = strcat(filename2,"_prob2_fibre.csv");
+                    else
+                        filename2 = strcat(filename2,"_prob2_fibre_fullpop.csv");
+                    end
                 else 
-                    filename2 = strcat(filename2,"_fibre_varrad.csv");
+                    if final_pop_only
+                        filename2 = strcat(filename2,"_fibre_varrad.csv");
+                    else
+                        filename2 = strcat(filename2,"_fibre_varrad_fullpop.csv");
+                    end
                 end
             else
                 disp("Fiber stiffness model not suitable for artery problem")
@@ -1651,23 +1700,43 @@ function [data_array, design_array] = read_csv_data(prob_truss, model_choice, pa
             filepath3 = "Truss Model\\";
             if prob_truss
                 if constrad_read
-                    filename2 = strcat(filename2,"_prob2_truss.csv");
+                    if final_pop_only
+                        filename2 = strcat(filename2,"_prob2_truss.csv");
+                    else
+                        filename2 = strcat(filename2,"_prob2_truss_fullpop.csv");
+                    end
                 else
-                    filename2 = strcat(filename2,"_truss_varrad.csv");
+                    filename2 = strcat(filename2,"_truss_varrad_fullpop.csv");
                 end
             else
-                filename2 = strcat(filename2,"_artery_truss.csv");
+                if final_pop_only
+                    filename2 = strcat(filename2,"_artery_truss.csv");
+                else
+                    filename2 = strcat(filename2,"_artery_truss_fullpop.csv");
+                end
             end
         case "Beam"
             filepath3 = "Beam Model\\";
             if prob_truss
                 if constrad_read
-                    filename2 = strcat(filename2,"_prob2_beam.csv");
+                    if final_pop_only
+                        filename2 = strcat(filename2,"_prob2_beam.csv");
+                    else
+                        filename2 = strcat(filename2,"_prob2_beam_fullpop.csv");
+                    end
                 else
-                    filename2 = strcat(filename2,"_beam_varrad.csv");
+                    if final_pop_only
+                        filename2 = strcat(filename2,"_beam_varrad.csv");
+                    else
+                        filename2 = strcat(filename2,"_beam_varrad_fullpop.csv");
+                    end
                 end
             else
-                filename2 = strcat(filename2,"_artery_beam.csv");
+                if final_pop_only
+                    filename2 = strcat(filename2,"_artery_beam.csv");
+                else
+                    filename2 = strcat(filename2,"_artery_beam_fullpop.csv");
+                end
             end
     end
     
@@ -1675,9 +1744,17 @@ function [data_array, design_array] = read_csv_data(prob_truss, model_choice, pa
     full_filepath = strcat(filepath,filepath_prob,filepath_constrad,filepath3,filepath2,filepath_moea,filename,num2str(run_num),filename2);
     
     if prob_truss
-        n_data = 11;
+        if final_pop_only
+            n_data = 11;
+        else
+            n_data = 12;
+        end
     else
-        n_data = 10;
+        if final_pop_only
+            n_data = 10;
+        else
+            n_data = 11;
+        end
     end
         
     if constrad_read
@@ -1721,7 +1798,7 @@ end
 
 function [pen_obj1_combined, pen_obj2_combined, true_obj1_combined, true_obj2_combined, constr_combined, heur_combined, designs_combined] = create_combined_arrays(data_array, designs_array, read_constrad, n_total_members, n_runs)
     n_total = 0;
-    n_constr = size(data_array(:,:,1),2) - 4 - 3; % number of constraints changes based on problem, so subtract 4 (2 pen. and 2 true objs.) and 3 (heurs) from number of total columns
+    n_constr = size(data_array(:,:,1),2) - 4 - 3 - 1; % number of constraints changes based on problem, so subtract 4 (2 pen. and 2 true objs.), 1 for NFEs and 3 (heurs) from number of total columns
     for i = 1:n_runs
         current_data_array = data_array(:,:,i);
         data_array_nonans_bool = any(isnan(current_data_array),2);
@@ -1745,12 +1822,12 @@ function [pen_obj1_combined, pen_obj2_combined, true_obj1_combined, true_obj2_co
         data_array_nonans_bool = any(isnan(current_data_array),2);
         data_array_nonans = current_data_array(~data_array_nonans_bool,:);
         n_current = size(data_array_nonans(:,1),1);
-        pen_obj1_combined(index:index+n_current-1,1) = data_array_nonans(:,1);
-        pen_obj2_combined(index:index+n_current-1,1) = data_array_nonans(:,2);
-        true_obj1_combined(index:index+n_current-1,1) = data_array_nonans(:,3);
-        true_obj2_combined(index:index+n_current-1,1) = data_array_nonans(:,4);
-        constr_combined(index:index+n_current-1,:) = data_array_nonans(:,5:5+n_constr-1);
-        heur_combined(index:index+n_current-1,:) = data_array_nonans(:,5+n_constr:10);
+        pen_obj1_combined(index:index+n_current-1,1) = data_array_nonans(:,2);
+        pen_obj2_combined(index:index+n_current-1,1) = data_array_nonans(:,3);
+        true_obj1_combined(index:index+n_current-1,1) = data_array_nonans(:,4);
+        true_obj2_combined(index:index+n_current-1,1) = data_array_nonans(:,5);
+        constr_combined(index:index+n_current-1,:) = data_array_nonans(:,6:6+n_constr-1);
+        heur_combined(index:index+n_current-1,:) = data_array_nonans(:,6+n_constr:end);
         if read_constrad
             current_designs_array = designs_array(:,i);
             design_array_nonans = current_designs_array(~data_array_nonans_bool,:);

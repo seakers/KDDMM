@@ -1,37 +1,37 @@
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\integerradii\AddMemberIntegerRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\VariableRadiiEvolutionarySearch.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\architecture\TrussRepeatableArchitecture.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\constrainthandling\KnowledgeStochasticRanking.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\initialization\SynchronizedMersenneTwister.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\VariableRadiiMOEARun.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\IntegerResultIO.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\problems\ConstantRadiusTrussProblem2.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\constantradii\RemoveIntersection2.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\problems\ConstantRadiusArteryProblem.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\constantradii\AddMember.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\initialization\BiasedInitializationVariableRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\constantradii\RemoveIntersection.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\constrainthandling\DisjunctiveNormalForm.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\initialization\BiasedInitializationIntegerRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\architecture\IntegerRepeatableArchitecture.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\variableradii\ImproveOrientationVariableRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\integerradii\RemoveIntersectionIntegerRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\problems\IntegerTrussProblem.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\constantradii\ImproveOrientation2.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\initialization\BiasedInitialization.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\variableradii\AddDiagonalMemberVariableRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\VariableRadiiResultIO.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\variableradii\AddMemberVariableRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\constantradii\AddDiagonalMember.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\integerradii\ImproveOrientationIntegerRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\integerradii\AddDiagonalMemberIntegerRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\problems\ConstantRadiusTrussProblem.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\problems\VariableRadiusTrussProblem.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\IntegerEvolutionarySearch.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\IntegerMOEARun.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\architecture\VariableRadiiRepeatableArchitecture.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\constantradii\ImproveOrientation.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\ConstantRadiusMOEARun.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\EvolutionarySearch.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\operators\variableradii\RemoveIntersectionVariableRadii.java
-C:\SEAK Lab\SEAK Lab Github\KD3M3\Truss_AOS\src\main\java\seakers\trussaos\ResultIO.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\initialization\BiasedInitializationVariableRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\constantradii\AddDiagonalMember.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\problems\ConstantRadiusTrussProblem2.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\IntegerMOEARun.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\initialization\SynchronizedMersenneTwister.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\architecture\IntegerRepeatableArchitecture.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\constrainthandling\KnowledgeStochasticRanking.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\integerradii\RemoveIntersectionIntegerRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\variableradii\AddDiagonalMemberVariableRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\EvolutionarySearch.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\integerradii\AddMemberIntegerRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\integerradii\AddDiagonalMemberIntegerRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\variableradii\AddMemberVariableRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\constantradii\AddMember.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\VariableRadiiMOEARun.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\problems\IntegerTrussProblem.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\architecture\VariableRadiiRepeatableArchitecture.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\IntegerEvolutionarySearch.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\problems\ConstantRadiusTrussProblem.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\problems\VariableRadiusTrussProblem.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\VariableRadiiResultIO.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\variableradii\ImproveOrientationVariableRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\constantradii\RemoveIntersection.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\architecture\TrussRepeatableArchitecture.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\ResultIO.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\problems\ConstantRadiusArteryProblem.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\IntegerResultIO.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\constantradii\ImproveOrientation2.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\ConstantRadiusMOEARun.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\VariableRadiiEvolutionarySearch.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\initialization\BiasedInitializationIntegerRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\variableradii\RemoveIntersectionVariableRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\constantradii\RemoveIntersection2.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\constrainthandling\DisjunctiveNormalForm.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\integerradii\ImproveOrientationIntegerRadii.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\initialization\BiasedInitialization.java
+C:\Users\rosha\Documents\SEAK Lab Github\KD3M3\src\main\java\seakers\trussaos\operators\constantradii\ImproveOrientation.java

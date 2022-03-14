@@ -4,7 +4,7 @@ close all
 clc
 
 %% Read data for all runs of given case
-prob_truss = false; % if true -> truss problem, if false -> artery problem
+prob_truss = true; % if true -> truss problem, if false -> artery problem
 constant_radii = true; % if true -> members have constant radii, if false -> members have discrete radii choices
 model = "Truss"; % "Fibre" - fibre model, "Truss" - truss model, "Beam" - beam model
 
@@ -33,7 +33,7 @@ case3_partcoll_bools = [false, false, false, false];
 if prob_truss
 	case3_nodalprop_bools = [false, false, false, false];
 else
-	case3_nodalprop_bools = [false, true, false, false];
+	case3_nodalprop_bools = [false, false, false, false];
 end
 case3_orient_bools = [false, true, false, false];
 case3_inters_bools = [false, true, false, false];
@@ -43,6 +43,7 @@ case3_inters_bools = [false, true, false, false];
 
 % NFE threshold = 500
 nfe_thresh1 = 500;
+disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh1)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh1, des_pareto_combined_case1_thresh1] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh1, sidenum, num_runs); 
 
@@ -55,19 +56,18 @@ nfe_thresh1 = 500;
 truesatobj1_max_case1_thresh1 = max(f_true_sat_pareto_combined_case1_thresh1(:,1));
 truesatobj1_max_case2_thresh1 = max(f_true_sat_pareto_combined_case2_thresh1(:,1));
 truesatobj1_max_case3_thresh1 = max(f_true_sat_pareto_combined_case3_thresh1(:,1));
-truesatobj1_max_case4_thresh1 = max(f_true_sat_pareto_combined_case4_thresh1(:,1));
-truesatobj1_max_thresh1 = max([truesatobj1_max_case1_thresh1, truesatobj1_max_case2_thresh1, truesatobj1_max_case3_thresh1, truesatobj1_max_case4_thresh1]);
+truesatobj1_max_thresh1 = max([truesatobj1_max_case1_thresh1, truesatobj1_max_case2_thresh1, truesatobj1_max_case3_thresh1]);
 
 truesatobj2_min_case1_thresh1 = min(f_true_sat_pareto_combined_case1_thresh1(:,2));
 truesatobj2_min_case2_thresh1 = min(f_true_sat_pareto_combined_case2_thresh1(:,2));
 truesatobj2_min_case3_thresh1 = min(f_true_sat_pareto_combined_case3_thresh1(:,2));
-truesatobj2_min_case4_thresh1 = min(f_true_sat_pareto_combined_case4_thresh1(:,2));
-truesatobj2_min_thresh1 = min([truesatobj2_min_case1_thresh1, truesatobj2_min_case2_thresh1, truesatobj2_min_case3_thresh1, truesatobj2_min_case4_thresh1]);
+truesatobj2_min_thresh1 = min([truesatobj2_min_case1_thresh1, truesatobj2_min_case2_thresh1, truesatobj2_min_case3_thresh1]);
 
 utopia_truesat_thresh1 = [truesatobj1_max_thresh1, truesatobj2_min_thresh1];
 
-% NFE threshold = 1500
-nfe_thresh2 = 1500;
+% NFE threshold = 1000
+nfe_thresh2 = 1000;
+disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh2)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh2, des_pareto_combined_case1_thresh2] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh2, sidenum, num_runs); 
 
@@ -80,19 +80,18 @@ nfe_thresh2 = 1500;
 truesatobj1_max_case1_thresh2 = max(f_true_sat_pareto_combined_case1_thresh2(:,1));
 truesatobj1_max_case2_thresh2 = max(f_true_sat_pareto_combined_case2_thresh2(:,1));
 truesatobj1_max_case3_thresh2 = max(f_true_sat_pareto_combined_case3_thresh2(:,1));
-truesatobj1_max_case4_thresh2 = max(f_true_sat_pareto_combined_case4_thresh2(:,1));
-truesatobj1_max_thresh2 = max([truesatobj1_max_case1_thresh2, truesatobj1_max_case2_thresh2, truesatobj1_max_case3_thresh2, truesatobj1_max_case4_thresh2]);
+truesatobj1_max_thresh2 = max([truesatobj1_max_case1_thresh2, truesatobj1_max_case2_thresh2, truesatobj1_max_case3_thresh2]);
 
 truesatobj2_min_case1_thresh2 = min(f_true_sat_pareto_combined_case1_thresh2(:,2));
 truesatobj2_min_case2_thresh2 = min(f_true_sat_pareto_combined_case2_thresh2(:,2));
 truesatobj2_min_case3_thresh2 = min(f_true_sat_pareto_combined_case3_thresh2(:,2));
-truesatobj2_min_case4_thresh2 = min(f_true_sat_pareto_combined_case4_thresh2(:,2));
-truesatobj2_min_thresh2 = min([truesatobj2_min_case1_thresh2, truesatobj2_min_case2_thresh2, truesatobj2_min_case3_thresh2, truesatobj2_min_case4_thresh2]);
+truesatobj2_min_thresh2 = min([truesatobj2_min_case1_thresh2, truesatobj2_min_case2_thresh2, truesatobj2_min_case3_thresh2]);
 
 utopia_truesat_thresh2 = [truesatobj1_max_thresh2, truesatobj2_min_thresh2];	
 
-% NFE threshold = 4000
-nfe_thresh1 = 4000;
+% NFE threshold = 3000
+nfe_thresh3 = 3000;
+disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh3)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh3, des_pareto_combined_case1_thresh3] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh3, sidenum, num_runs); 
 
@@ -105,19 +104,18 @@ nfe_thresh1 = 4000;
 truesatobj1_max_case1_thresh3 = max(f_true_sat_pareto_combined_case1_thresh3(:,1));
 truesatobj1_max_case2_thresh3 = max(f_true_sat_pareto_combined_case2_thresh3(:,1));
 truesatobj1_max_case3_thresh3 = max(f_true_sat_pareto_combined_case3_thresh3(:,1));
-truesatobj1_max_case4_thresh3 = max(f_true_sat_pareto_combined_case4_thresh3(:,1));
-truesatobj1_max_thresh3 = max([truesatobj1_max_case1_thresh3, truesatobj1_max_case2_thresh3, truesatobj1_max_case3_thresh3, truesatobj1_max_case4_thresh3]);
+truesatobj1_max_thresh3 = max([truesatobj1_max_case1_thresh3, truesatobj1_max_case2_thresh3, truesatobj1_max_case3_thresh3]);
 
 truesatobj2_min_case1_thresh3 = min(f_true_sat_pareto_combined_case1_thresh3(:,2));
 truesatobj2_min_case2_thresh3 = min(f_true_sat_pareto_combined_case2_thresh3(:,2));
 truesatobj2_min_case3_thresh3 = min(f_true_sat_pareto_combined_case3_thresh3(:,2));
-truesatobj2_min_case4_thresh3 = min(f_true_sat_pareto_combined_case4_thresh3(:,2));
-truesatobj2_min_thresh3 = min([truesatobj2_min_case1_thresh3, truesatobj2_min_case2_thresh3, truesatobj2_min_case3_thresh3, truesatobj2_min_case4_thresh3]);
+truesatobj2_min_thresh3 = min([truesatobj2_min_case1_thresh3, truesatobj2_min_case2_thresh3, truesatobj2_min_case3_thresh3]);
 
 utopia_truesat_thresh3 = [truesatobj1_max_thresh3, truesatobj2_min_thresh3];
 
 % NFE threshold = 6000
-nfe_thresh1 = 6000;
+nfe_thresh4 = 6000;
+disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh4)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh4, des_pareto_combined_case1_thresh4] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh4, sidenum, num_runs); 
 
@@ -130,112 +128,108 @@ nfe_thresh1 = 6000;
 truesatobj1_max_case1_thresh4 = max(f_true_sat_pareto_combined_case1_thresh4(:,1));
 truesatobj1_max_case2_thresh4 = max(f_true_sat_pareto_combined_case2_thresh4(:,1));
 truesatobj1_max_case3_thresh4 = max(f_true_sat_pareto_combined_case3_thresh4(:,1));
-truesatobj1_max_case4_thresh4 = max(f_true_sat_pareto_combined_case4_thresh4(:,1));
-truesatobj1_max_thresh4 = max([truesatobj1_max_case1_thresh4, truesatobj1_max_case2_thresh4, truesatobj1_max_case3_thresh4, truesatobj1_max_case4_thresh4]);
+truesatobj1_max_thresh4 = max([truesatobj1_max_case1_thresh4, truesatobj1_max_case2_thresh4, truesatobj1_max_case3_thresh4]);
 
 truesatobj2_min_case1_thresh4 = min(f_true_sat_pareto_combined_case1_thresh4(:,2));
 truesatobj2_min_case2_thresh4 = min(f_true_sat_pareto_combined_case2_thresh4(:,2));
 truesatobj2_min_case3_thresh4 = min(f_true_sat_pareto_combined_case3_thresh4(:,2));
-truesatobj2_min_case4_thresh4 = min(f_true_sat_pareto_combined_case4_thresh4(:,2));
-truesatobj2_min_thresh4 = min([truesatobj2_min_case1_thresh4, truesatobj2_min_case2_thresh4, truesatobj2_min_case3_thresh4, truesatobj2_min_case4_thresh4]);
+truesatobj2_min_thresh4 = min([truesatobj2_min_case1_thresh4, truesatobj2_min_case2_thresh4, truesatobj2_min_case3_thresh4]);
 
 utopia_truesat_thresh4 = [truesatobj1_max_thresh4, truesatobj2_min_thresh4];
 
 % Plotting fully satisfying designs in true objectives space
 figure
 subplot(2,2,1)
-scatter(f_true_sat_pareto_combined_case1_thresh1(:,1), f_true_sat_pareto_combined_case1_thresh1(:,2), 'Marker', 'o', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case1_thresh1(:,1), f_true_sat_pareto_combined_case1_thresh1(:,2), 50, 'Marker', 'o', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case2_thresh1(:,1), f_true_sat_pareto_combined_case2_thresh1(:,2), 'Marker', '+', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case2_thresh1(:,1), f_true_sat_pareto_combined_case2_thresh1(:,2), 50, 'Marker', '+', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case3_thresh1(:,1), f_true_sat_pareto_combined_case3_thresh1(:,2), 'Marker', 's', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case3_thresh1(:,1), f_true_sat_pareto_combined_case3_thresh1(:,2), 50, 'Marker', 's', 'MarkerEdgeColor', 'black') 
 % hold on
 % scatter(utopia_truesat_thresh1(1), utopia_truesat_thresh1(2), 'Marker', 'p', 'MarkerEdgeColor', 'red')
 hold off
 ax = gca;
-ax.FontSize = 13;
+ax.FontSize = 16;
 if prob_truss
-	xlabel('$C_{22}$','Interpreter','Latex','FontSize',13)
-	ylabel('$v_f$','Interpreter','Latex','FontSize',13)
+	xlabel('$C_{22}$','Interpreter','Latex','FontSize',16)
+	ylabel('$v_f$','Interpreter','Latex','FontSize',16)
 else
-	xlabel('\frac{C_{11}}{v_f}','Interpreter','Latex','FontSize',13)
-	ylabel('$deviation$','Interpreter','Latex','FontSize',13)
+	xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+	ylabel('$deviation$','Interpreter','Latex','FontSize',16)
 end
 % xlim([0,E/2])
 % ylim([0,1])1
-legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('500 NFE','FontSize',13)
+%legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
+title('500 NFE','FontSize',16)
 
 subplot(2,2,2)
-scatter(f_true_sat_pareto_combined_case1_thresh2(:,1), f_true_sat_pareto_combined_case1_thresh2(:,2), 'Marker', 'o', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case1_thresh2(:,1), f_true_sat_pareto_combined_case1_thresh2(:,2), 50, 'Marker', 'o', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case2_thresh2(:,1), f_true_sat_pareto_combined_case2_thresh2(:,2), 'Marker', '+', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case2_thresh2(:,1), f_true_sat_pareto_combined_case2_thresh2(:,2), 50, 'Marker', '+', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case3_thresh2(:,1), f_true_sat_pareto_combined_case3_thresh2(:,2), 'Marker', 's', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case3_thresh2(:,1), f_true_sat_pareto_combined_case3_thresh2(:,2), 50, 'Marker', 's', 'MarkerEdgeColor', 'black') 
 % hold on
 % scatter(utopia_truesat_thresh2(1), utopia_truesat_thresh2(2), 'Marker', 'p', 'MarkerEdgeColor', 'red')
 hold off
 ax = gca;
-ax.FontSize = 13;
+ax.FontSize = 16;
 if prob_truss
-	xlabel('$C_{22}$','Interpreter','Latex','FontSize',13)
-	ylabel('$v_f$','Interpreter','Latex','FontSize',13)
+	xlabel('$C_{22}$','Interpreter','Latex','FontSize',16)
+	ylabel('$v_f$','Interpreter','Latex','FontSize',16)
 else
-	xlabel('\frac{C_{11}}{v_f}','Interpreter','Latex','FontSize',13)
-	ylabel('$deviation$','Interpreter','Latex','FontSize',13)
+	xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+	ylabel('$deviation$','Interpreter','Latex','FontSize',16)
 end
 % xlim([0,E/2])
 % ylim([0,1])
-legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('1500 NFE','FontSize',13)
+%legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
+title('1000 NFE','FontSize',16)
 
 subplot(2,2,3)
-scatter(f_true_sat_pareto_combined_case1_thresh3(:,1), f_true_sat_pareto_combined_case1_thresh3(:,2), 'Marker', 'o', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case1_thresh3(:,1), f_true_sat_pareto_combined_case1_thresh3(:,2), 50, 'Marker', 'o', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case2_thresh3(:,1), f_true_sat_pareto_combined_case2_thresh3(:,2), 'Marker', '+', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case2_thresh3(:,1), f_true_sat_pareto_combined_case2_thresh3(:,2), 50, 'Marker', '+', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case3_thresh3(:,1), f_true_sat_pareto_combined_case3_thresh3(:,2), 'Marker', 's', 'MarkerEdgeColor', 'black') 
-hold on
-scatter(f_true_sat_pareto_combined_case4_thresh3(:,1), f_true_sat_pareto_combined_case4_thresh3(:,2), 'Marker', '^', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case3_thresh3(:,1), f_true_sat_pareto_combined_case3_thresh3(:,2), 50, 'Marker', 's', 'MarkerEdgeColor', 'black') 
 % hold on
 % scatter(utopia_truesat_thresh3(1), utopia_truesat_thresh3(2), 'Marker', 'p', 'MarkerEdgeColor', 'red')
 hold off
 ax = gca;
-ax.FontSize = 13;
+ax.FontSize = 16;
 if prob_truss
-	xlabel('$C_{22}$','Interpreter','Latex','FontSize',13)
-	ylabel('$v_f$','Interpreter','Latex','FontSize',13)
+	xlabel('$C_{22}$','Interpreter','Latex','FontSize',16)
+	ylabel('$v_f$','Interpreter','Latex','FontSize',16)
 else
-	xlabel('\frac{C_{11}}{v_f}','Interpreter','Latex','FontSize',13)
-	ylabel('$deviation$','Interpreter','Latex','FontSize',13)
+	xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+	ylabel('$deviation$','Interpreter','Latex','FontSize',16)
 end
 % xlim([0,E/2])
 % ylim([0,1])
-legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('4000 NFE','FontSize',13)
+%legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
+title('3000 NFE','FontSize',16)
 
 subplot(2,2,4)
-scatter(f_true_sat_pareto_combined_case1_thresh4(:,1), f_true_sat_pareto_combined_case1_thresh4(:,2), 'Marker', 'o', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case1_thresh4(:,1), f_true_sat_pareto_combined_case1_thresh4(:,2), 50, 'Marker', 'o', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case2_thresh4(:,1), f_true_sat_pareto_combined_case2_thresh4(:,2), 'Marker', '+', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case2_thresh4(:,1), f_true_sat_pareto_combined_case2_thresh4(:,2), 50, 'Marker', '+', 'MarkerEdgeColor', 'black') 
 hold on
-scatter(f_true_sat_pareto_combined_case3_thresh4(:,1), f_true_sat_pareto_combined_case3_thresh4(:,2), 'Marker', 's', 'MarkerEdgeColor', 'black') 
+scatter(f_true_sat_pareto_combined_case3_thresh4(:,1), f_true_sat_pareto_combined_case3_thresh4(:,2), 50, 'Marker', 's', 'MarkerEdgeColor', 'black') 
 % hold on
 % scatter(utopia_truesat_thresh4(1), utopia_truesat_thresh4(2), 'Marker', 'p', 'MarkerEdgeColor', 'red')
 hold off
 ax = gca;
-ax.FontSize = 13;
+ax.FontSize = 16;
 if prob_truss
-	xlabel('$C_{22}$','Interpreter','Latex','FontSize',13)
-	ylabel('$v_f$','Interpreter','Latex','FontSize',13)
+	xlabel('$C_{22}$','Interpreter','Latex','FontSize',16)
+	ylabel('$v_f$','Interpreter','Latex','FontSize',16)
 else
-	xlabel('\frac{C_{11}}{v_f}','Interpreter','Latex','FontSize',13)
-	ylabel('$deviation$','Interpreter','Latex','FontSize',13)
+	xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+	ylabel('$deviation$','Interpreter','Latex','FontSize',16)
 end
 % xlim([0,E/2])
 % ylim([0,1])
-legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('6000 NFE','FontSize',13)
+%legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
+title('6000 NFE','FontSize',16)
 %saveas(gcf,'pareto_truefeas_nfequadchart.png')
 
 %% Functions
@@ -263,7 +257,9 @@ function [objs_true_sat_pareto_combined, designs_true_sat_pareto_combined] = obt
 end
 
 function [data_array_req, design_array_req] = read_csv_data_tillnfe(problem_truss, choice_of_model, constrad_read, partcoll_bools, nodalprop_bools, orient_bools, inters_bools, nfe_to_reach, n_total_members, run_num)
-    filepath = "C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\";
+    %filepath = "C:\\SEAK Lab\\SEAK Lab
+    %Github\\KD3M3\\Truss_AOS\\result\\"; % for lab system 
+    filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\"; % for home system 
     methods = ["Int Pen", "AOS", "Bias Init", "ACH"];
     heurs_list = ["PartColl", "NodalProp", "Orient", "Inters"];
     heurs_abbrvs_list = ["p","n","o","i"];

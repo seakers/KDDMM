@@ -107,7 +107,8 @@ def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_
     # artery_problem = True if artery problem data is to be read, False if truss problem data is to be read
     # model_choice = 1 - fibre stiffness, 2 - truss stiffness, 3 - ANSYS APDL beam model
     
-    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\'
+    #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\' # for office system
+    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\' # for home system
     methods = ['Int Pen','AOS','Bias Init','ACH']
     heurs_list = ['PartColl','NodalProp','Orient','Inters']
     heur_abbrvs_list = ['p','n','o','i']
@@ -262,7 +263,7 @@ def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, side
     
     heur_scores_sorted = np.vstack((partcoll_scores_sorted, nodprop_scores_sorted, orient_scores_sorted, inters_scores_sorted))
     
-    ## Compute only constraint penalized objectives (used for the interior penalty cases)
+    ## Compute only constraint optimized (normalized) objectives (used for the interior penalty cases)
     heur_weight = 1
     heur_pen = np.zeros(len(feas_scores_sorted))
     if (any(intpen_constr_heur)):
@@ -279,7 +280,7 @@ def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, side
     pen_obj1_constr_sorted = list(np.add(pen_obj1_sorted,weighted_heur_pen))
     pen_obj2_constr_sorted = list(np.add(pen_obj2_sorted,weighted_heur_pen))
     
-    ## Determine normalizing objective scores and compute pareto fronts for penalized and true objectives as well as for true objectives of only feasible designs 
+    ## Determine normalizing objective scores and compute pareto fronts for optimized (normalized) and true objectives as well as for true objectives of only feasible designs 
     nfe_list_sorted = list(n_func_evals[sort_indices])
     
     #max_func_evals = nfe_list_sorted[-1]
@@ -359,26 +360,31 @@ def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, side
                 true_obj1, true_obj2 = get_true_objectives(true_obj1_sorted, true_obj2_sorted, des_index)
                 current_population_truesat.append([-true_obj1, true_obj2])
         
-        if (not current_population_truesat):
-            # if (i == 0):
-            #     num_fully_satisfying[i] = 0
-            # else:
-            #     num_fully_satisfying[i] = num_fully_satisfying[i-1] + 0
-            num_fully_satisfying[i] = 0
-        else:
+        # if (not current_population_truesat):
+        #     # if (i == 0):
+        #     #     num_fully_satisfying[i] = 0
+        #     # else:
+        #     #     num_fully_satisfying[i] = num_fully_satisfying[i-1] + 0
+        #     #num_fully_satisfying[i] = 0
+        # else:
+        #     current_population_truesat_unique = np.unique(current_population_truesat, axis = 0)
+        #     #for k2 in range(len(current_population_truesat_unique)):
+        #         #fullsat.append(current_population_truesat_unique[k2])
+            
+        #     #fullsat = np.unique(fullsat, axis = 0).tolist()
+            
+        #     # if (i == 0):
+        #     #     num_fully_satisfying[i] = len(current_population_truesat_unique)
+        #     # else:
+        #     #     num_fully_satisfying[i] = num_fully_satisfying[i-1] + len(current_population_truesat_unique)
+        #     ##num_fully_satisfying[i] = len(current_population_truesat_unique)
+        #     #num_fully_satisfying[i] = len(fullsat)
+        
+        if (len(current_population_truesat) > 0):
             current_population_truesat_unique = np.unique(current_population_truesat, axis = 0)
             for k2 in range(len(current_population_truesat_unique)):
                 fullsat.append(current_population_truesat_unique[k2])
-            
-            fullsat = np.unique(fullsat, axis = 0).tolist()
-            
-            # if (i == 0):
-            #     num_fully_satisfying[i] = len(current_population_truesat_unique)
-            # else:
-            #     num_fully_satisfying[i] = num_fully_satisfying[i-1] + len(current_population_truesat_unique)
-            ##num_fully_satisfying[i] = len(current_population_truesat_unique)
-            num_fully_satisfying[i] = len(fullsat)
-                  
+                           
         if (i != 0): #NEW
             previous_pareto_front = pareto_front_dict[nfe_array[i-1]].tolist() #NEW
             for k in range(len(previous_pareto_front)):
@@ -443,11 +449,22 @@ def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, side
             # purposefully add bad values so that compute_hv function can be used
             current_population_truesat.append([-1e4, 1.0])
             current_population_truesat_unique = np.unique(current_population_truesat, axis = 0)
+            #num_fully_satisfying[i] = 0
             current_population_sat_constr_aggr = [5]
         else:
             current_population_truesat_unique = np.unique(current_population_truesat, axis = 0)
+            #num_fully_satisfying[i] = len(current_population_truesat_unique)
             current_population_sat_constr_aggr = list(np.zeros(len(current_population_truesat_unique)))
+        
+        if (not fullsat):
+            num_fully_satisfying[i] = 0
+        else:
+            fullsat_unique = np.unique(fullsat, axis = 0).tolist()
+            num_fully_satisfying[i] = len(fullsat_unique)
             
+        #if (num_fully_satisfying[i] < num_fully_satisfying[i-1]) and (i != 0):
+            #print("exception")
+        
         current_pareto_front_all = compute_pareto_front(current_population_unique, current_population_constr_aggr)
         #current_pareto_front = list(set(current_pareto_front_all))
         current_pareto_front = np.unique(current_pareto_front_all, axis=0)
@@ -766,11 +783,18 @@ def compute_hypervolume_stats(hypervols_dict):
     return hypervol_median, hypervol_1q, hypervol_3q, nfe_array_0
 
 def compute_mann_whitney_Uvals(hv_dict_allcases_allruns, nfe_array): # Wilcoxon Rank Sum Test
-    # hv_med_array_allcases is a dictionary of length = number of cases
-    n_samples = 5
-    linspace_samples_array = np.linspace(0,1,n_samples)
-    nfe_samples_array = np.floor(np.multiply(linspace_samples_array, nfe_array[-1]))
-    nfe_samples_indices_array = np.zeros(len(nfe_samples_array))
+    ## hv_med_array_allcases is a dictionary of length = number of cases
+    
+    ## For truss problem
+    #n_samples = 5
+    #linspace_samples_array = np.linspace(0,1,n_samples)
+    #nfe_samples_array = np.floor(np.multiply(linspace_samples_array, nfe_array[-1]))
+    
+    ## For artery problem
+    nfe_samples_array = [0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
+    n_samples = len(nfe_samples_array)
+    
+    nfe_samples_indices_array = np.zeros(n_samples)
     for i in range(len(nfe_samples_array)):
         nfe_samples_indices_array[i] = find_closest_index(nfe_samples_array[i], nfe_array)
         
@@ -803,8 +827,8 @@ def compute_mann_whitney_Uvals(hv_dict_allcases_allruns, nfe_array): # Wilcoxon 
             hv_samples_nfe_casex = hv_allruns_casex['nfe:'+str(int(nfe_samples_array[p]))]
             hv_samples_nfe_casey = hv_allruns_casey['nfe:'+str(int(nfe_samples_array[p]))]
             
-            U1, p_val = mannwhitneyu(hv_samples_nfe_casex, hv_samples_nfe_casey)
-            t_val, p_val_t = ttest_ind(hv_samples_nfe_casex, hv_samples_nfe_casey, equal_var=False)
+            U1, p_val = mannwhitneyu(hv_samples_nfe_casex, hv_samples_nfe_casey, alternative='less')
+            t_val, p_val_t = ttest_ind(hv_samples_nfe_casex, hv_samples_nfe_casey, equal_var=False, alternative='less')
             
             U2 = len(hv_samples_nfe_casex)*len(hv_samples_nfe_casey) - U1
             
@@ -892,7 +916,7 @@ def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     plt.title(plot_title)
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.15), ncol=3, borderaxespad=0, prop={"size":12})
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.23), ncol=3, borderaxespad=0, prop={"size":12})
     plt.show()
     #fig1.savefig('HV_plot_averaged_' + savefig_name + '.png', format='png')
     
@@ -1081,7 +1105,7 @@ def plotting_all_cases(num_sat_allcases, nfe_hv_attained_dict, hv_dict_med_allca
     print('Plotting')
     plot_number_fully_satisfying_designs(num_sat_allcases, nfe_array0, mark_colors, alphas, names_cases)
     plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array0, mark_colors, names_cases, 'allcases_full', hv_thresh)
-    plot_hypervolume_stats_allcases(hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array, mark_colors, alphas, names_cases, 'Hypervolume of Penalized Objectives', 'allcases_full')
+    plot_hypervolume_stats_allcases(hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array, mark_colors, alphas, names_cases, 'Hypervolume of Normalized Objectives', 'allcases_full')
     ## Plot HVs for hv_afterjump
     plot_hypervolume_stats_allcases(hv_dict_true_med_allcases, hv_dict_true_1stq_allcases, hv_dict_true_3rdq_allcases, nfe_array, mark_colors, alphas, names_cases, 'Hypervolume of True Objectives', 'allcases_true')
     plot_hypervolume_stats_allcases(hv_dict_truesat_med_allcases, hv_dict_truesat_1stq_allcases, hv_dict_truesat_3rdq_allcases, nfe_array, mark_colors, alphas, names_cases, 'Hypervolume of True Objectives for fully satisfying designs', 'allcases_truesat')
@@ -1106,7 +1130,7 @@ threshold_hv = 0.65
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
 case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
 if artery_problem:
-    case3_bools = [False, False, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - Nodal Properties, Orientation and Intersection
+    case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Nodal Properties, Orientation and Intersection
 else:
     case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
 

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.mathworks:engine:R2021b">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/mathworks/engine/R2021b/engine-R2021b.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/mathworks/engine/R2021b/engine-R2021b-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/mathworks/engine/R2021b/engine-R2021b-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

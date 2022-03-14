@@ -33,6 +33,6 @@
     <orderEntry type="library" name="Maven: seakers:mopAOS:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.jblas:jblas:1.2.4" level="project" />
     <orderEntry type="library" name="Maven: seakers:system-architecture-problems:1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.mathworks:engine:R2020a" level="project" />
+    <orderEntry type="library" name="Maven: com.mathworks:engine:R2021b" level="project" />
   </component>
 </module>
