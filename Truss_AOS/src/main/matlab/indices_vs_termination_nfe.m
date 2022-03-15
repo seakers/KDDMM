@@ -72,7 +72,7 @@ for i = 1:n_runs
 end
 
 %% Compute heuristic indices for different termination indices for the GA runs
-termination_nfes = [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000];
+termination_nfes = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000];
 I_partcoll = zeros(size(termination_nfes, 2), n_runs);
 I_nodalprop = zeros(size(termination_nfes, 2), n_runs);
 I_orient = zeros(size(termination_nfes, 2), n_runs);
@@ -89,16 +89,16 @@ end
 % PLotting
 figure
 subplot(2,2,1)
-errorbar(termination_nfes, mean(I_partcoll,2)', std(I_partcoll,0,2)')
+errorbar(termination_nfes, mean(I_partcoll,2,'omitnan')', std(I_partcoll,0,2,'omitnan')')
 hold on
-plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
+plot(termination_nfes, zeros(1, length(termination_nfes)))
 hold off
 ylim([-0.7 0.7])
 xlabel("Termination NFEs for GA runs")
 ylabel("Heuristic Index")
 title("Partial Collapsibility")
 subplot(2,2,2)
-errorbar(termination_nfes, mean(I_nodalprop,2)', std(I_nodalprop,0,2)')
+errorbar(termination_nfes, mean(I_nodalprop,2,'omitnan')', std(I_nodalprop,0,2,'omitnan')')
 hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
@@ -107,7 +107,7 @@ xlabel("Termination NFEs for GA runs")
 ylabel("Heuristic Index")
 title("Nodal Properties")
 subplot(2,2,3)
-errorbar(termination_nfes, mean(I_orient,2)', std(I_orient,0,2)')
+errorbar(termination_nfes, mean(I_orient,2,'omitnan')', std(I_orient,0,2,'omitnan')')
 hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
@@ -116,7 +116,7 @@ xlabel("Termination NFEs for GA runs")
 ylabel("Heuristic Index")
 title("Orientation")
 subplot(2,2,4)
-errorbar(termination_nfes, mean(I_inters,2)', std(I_inters,0,2)')
+errorbar(termination_nfes, mean(I_inters,2,'omitnan')', std(I_inters,0,2,'omitnan')')
 hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
@@ -131,8 +131,10 @@ function [I_heurs] = compute_heuristic_indices(prob_truss, model_choice, use_ran
     % I_heurs = [I_partcoll; I_nodalprop; I_orient; I_inters] * num_rums
     
     % Extract and store GA data upto the termination NFE
-    pop_size = 100;
-    [f_norm_nonans_allgas, f_true_nonans_gas, constr_nonans_allgas, heur_nonans_allgas, ~] = obtain_combined_ga_data_allruns(prob_truss, model_choice, termination_nfe, case_partcoll_bools, case_nodalprop_bools, case_orient_bools, case_inters_bools, read_constrad, sidenodenum, pop_size, num_runs);   
+    if termination_nfe ~= 0
+        pop_size = 100;
+        [f_norm_nonans_allgas, f_true_nonans_gas, constr_nonans_allgas, heur_nonans_allgas, ~] = obtain_combined_ga_data_allruns(prob_truss, model_choice, termination_nfe, case_partcoll_bools, case_nodalprop_bools, case_orient_bools, case_inters_bools, read_constrad, sidenodenum, pop_size, num_runs);   
+    end
     
     % Compute heuristic indices for the given termination NFE
     I_partcoll_allruns = zeros(num_runs, 1);
@@ -140,216 +142,218 @@ function [I_heurs] = compute_heuristic_indices(prob_truss, model_choice, use_ran
     I_orient_allruns = zeros(num_runs, 1);
     I_inters_allruns = zeros(num_runs, 1);
 
-    for i = 1:num_runs
-        current_field = strcat('trial',num2str(i));
-
-        f_norm_nonans_currentcase = f_norm_nonans_allgas.(current_field);
-        f_true_nonans_currentcase = f_true_nonans_gas.(current_field);
-        constr_nonans_currentcase = constr_nonans_allgas.(current_field);
-        heur_nonans_currentcase = heur_nonans_allgas.(current_field);
-
-        if use_random_data
-            f_norm_rand_trial = f_norm_rand_allruns.(current_field);
-            f_rand_trial = f_true_rand_allruns.(current_field);
-            constr_rand_trial = constrs_rand_allruns.(current_field);
-            heur_rand_trial = heurs_rand_allruns.(current_field);
-
-            % Normalized objectives
-            obj1_norm_total = cat(1,f_norm_rand_trial(:,1),f_norm_nonans_currentcase(:,1));
-            obj2_norm_total = cat(1,f_norm_rand_trial(:,2),f_norm_nonans_currentcase(:,2));
-
-            % True objectives
-            obj1_total = cat(1,f_rand_trial(:,1),f_true_nonans_currentcase(:,1));
-            obj2_total = cat(1,f_rand_trial(:,2),f_true_nonans_currentcase(:,2));
-
-            % Constraints
-            feas_total = cat(1,constr_rand_trial(:,1),constr_nonans_currentcase(:,1));
-            conn_total = cat(1,constr_rand_trial(:,2),constr_nonans_currentcase(:,2));
-            if prob_truss
-                stiffrat_total = cat(1,constr_rand_trial(:,3),constr_nonans_currentcase(:,3));
+    if termination_nfe ~= 0
+        for i = 1:num_runs
+            current_field = strcat('trial',num2str(i));
+            
+            f_norm_nonans_currentcase = f_norm_nonans_allgas.(current_field);
+            f_true_nonans_currentcase = f_true_nonans_gas.(current_field);
+            constr_nonans_currentcase = constr_nonans_allgas.(current_field);
+            heur_nonans_currentcase = heur_nonans_allgas.(current_field);
+            
+            if use_random_data
+                f_norm_rand_trial = f_norm_rand_allruns.(current_field);
+                f_rand_trial = f_true_rand_allruns.(current_field);
+                constr_rand_trial = constrs_rand_allruns.(current_field);
+                heur_rand_trial = heurs_rand_allruns.(current_field);
+                
+                % Normalized objectives
+                obj1_norm_total = cat(1,f_norm_rand_trial(:,1),f_norm_nonans_currentcase(:,1));
+                obj2_norm_total = cat(1,f_norm_rand_trial(:,2),f_norm_nonans_currentcase(:,2));
+                
+                % True objectives
+                obj1_total = cat(1,f_rand_trial(:,1),f_true_nonans_currentcase(:,1));
+                obj2_total = cat(1,f_rand_trial(:,2),f_true_nonans_currentcase(:,2));
+                
+                % Constraints
+                feas_total = cat(1,constr_rand_trial(:,1),constr_nonans_currentcase(:,1));
+                conn_total = cat(1,constr_rand_trial(:,2),constr_nonans_currentcase(:,2));
+                if prob_truss
+                    stiffrat_total = cat(1,constr_rand_trial(:,3),constr_nonans_currentcase(:,3));
+                end
+                
+                % Heuristics
+                coll_total = cat(1,heur_rand_trial(:,1),heur_nonans_currentcase(:,1));
+                nod_total = cat(1,heur_rand_trial(:,2),heur_nonans_currentcase(:,2));
+                orient_total = cat(1,heur_rand_trial(:,3),heur_nonans_currentcase(:,3));
+                %inters_total = feas_total;
+                inters_total = cat(1,heur_rand_trial(:,4),heur_nonans_currentcase(:,4));
+                
+            else
+                % Normalized objectives
+                obj1_norm_total = f_norm_nonans_currentcase(:,1);
+                obj2_norm_total = f_norm_nonans_currentcase(:,2);
+                
+                % True objectives
+                obj1_total = f_true_nonans_currentcase(:,1);
+                obj2_total = f_true_nonans_currentcase(:,2);
+                
+                % Constraints
+                feas_total = constr_nonans_currentcase(:,1);
+                conn_total = constr_nonans_currentcase(:,2);
+                if prob_truss
+                    stiffrat_total = constr_nonans_currentcase(:,3);
+                end
+                
+                % Heuristics
+                coll_total = heur_nonans_currentcase(:,1);
+                nod_total = heur_nonans_currentcase(:,2);
+                orient_total = heur_nonans_currentcase(:,3);
+                inters_total = heur_nonans_currentcase(:,4);
             end
-
-            % Heuristics
-            coll_total = cat(1,heur_rand_trial(:,1),heur_nonans_currentcase(:,1));
-            nod_total = cat(1,heur_rand_trial(:,2),heur_nonans_currentcase(:,2));
-            orient_total = cat(1,heur_rand_trial(:,3),heur_nonans_currentcase(:,3));
-            %inters_total = feas_total;
-            inters_total = cat(1,heur_rand_trial(:,4),heur_nonans_currentcase(:,4));
-
-        else
-            % Normalized objectives
-            obj1_norm_total = f_norm_nonans_currentcase(:,1);
-            obj2_norm_total = f_norm_nonans_currentcase(:,2);
-
-            % True objectives
-            obj1_total = f_true_nonans_currentcase(:,1);
-            obj2_total = f_true_nonans_currentcase(:,2);
-
-            % Constraints
-            feas_total = constr_nonans_currentcase(:,1);
-            conn_total = constr_nonans_currentcase(:,2);
+            
+            % Compute normalized and true Pareto Fronts
+            norm_objs_pareto = compute_pareto_front(obj1_norm_total,obj2_norm_total);
+            true_objs_pareto = compute_pareto_front(-obj1_total,obj2_total);
+            true_objs_pareto_correct = [-true_objs_pareto(:,1),true_objs_pareto(:,2)];
+            
+            fracsat_normpf = size(norm_objs_pareto, 1)/size(obj1_total,1);
+            fracsat_feas = length(feas_total(feas_total==1))/size(obj1_total,1);
+            fracsat_feas = max([1e-3, fracsat_feas]);
+            fracsat_conn = length(feas_total(conn_total==1))/size(obj1_total,1);
             if prob_truss
-                stiffrat_total = constr_nonans_currentcase(:,3);
+                fracsat_stiffrat = length(stiffrat_total(stiffrat_total==0))/size(obj1_total,1);
+                fracsat_stiffrat = max([1e-3, fracsat_stiffrat]);
             end
-
-            % Heuristics
-            coll_total = heur_nonans_currentcase(:,1);
-            nod_total = heur_nonans_currentcase(:,2);
-            orient_total = heur_nonans_currentcase(:,3);
-            inters_total = heur_nonans_currentcase(:,4);
-        end
-       
-        % Compute normalized and true Pareto Fronts
-        norm_objs_pareto = compute_pareto_front(obj1_norm_total,obj2_norm_total);
-        true_objs_pareto = compute_pareto_front(-obj1_total,obj2_total);
-        true_objs_pareto_correct = [-true_objs_pareto(:,1),true_objs_pareto(:,2)];
-
-        fracsat_normpf = size(norm_objs_pareto, 1)/size(obj1_total,1);
-        fracsat_feas = length(feas_total(feas_total==1))/size(obj1_total,1);
-        fracsat_feas = max([1e-3, fracsat_feas]);
-        fracsat_conn = length(feas_total(conn_total==1))/size(obj1_total,1);
-        if prob_truss
-            fracsat_stiffrat = length(stiffrat_total(stiffrat_total==0))/size(obj1_total,1);
-            fracsat_stiffrat = max([1e-3, fracsat_stiffrat]);
-        end
-       
-        % Normalizing objectives and pfs wrt max and min from objectives
-        obj1_max = max(obj1_total);
-        obj1_min = min(obj1_total);
-        obj1_norm_max = max(obj1_norm_total);
-        obj1_norm_min = min(obj1_norm_total);
-
-        obj2_max = max(obj2_total);
-        obj2_min = min(obj2_total);
-        obj2_norm_max = max(obj2_norm_total);
-        obj2_norm_min = min(obj2_norm_total);
-
-        obj1_norm_normalised_total = (obj1_norm_total - obj1_norm_min)/(obj1_norm_max - obj1_norm_min);
-        obj2_norm_normalised_total = (obj2_norm_total - obj2_norm_min)/(obj2_norm_max - obj2_norm_min);
-
-        obj1_normalised_total = (obj1_total - obj1_min)/(obj1_max - obj1_min);
-        obj2_normalised_total = (obj2_total - obj2_min)/(obj2_max - obj2_min);
-
-        norm_objs_normalised_pareto = [(norm_objs_pareto(:,1) - obj1_norm_min)/(obj1_norm_max - obj1_norm_min), (norm_objs_pareto(:,2) - obj2_norm_min)/(obj2_norm_max - obj2_norm_min)]; 
-        true_objs_normalised_pareto = [(true_objs_pareto_correct(:,1) - obj1_min)/(obj1_max - obj1_min), (true_objs_pareto_correct(:,2) - obj2_min)/(obj2_max - obj2_min)]; 
-
-        % Compute minimum distance to normalized and true Pareto Fronts
-        min_dist_norm_pf_total = zeros(size(obj1_norm_total,1),1);
-        min_dist_true_pf_total = zeros(size(obj1_norm_total,1),1);
-        for k = 1:size(obj1_norm_total,1)
-            min_dist_norm_pf_total(k,1) = compute_min_pf_dist([obj1_norm_normalised_total(k,1),obj2_norm_normalised_total(k,1)],norm_objs_normalised_pareto);
-            min_dist_true_pf_total(k,1) = compute_min_pf_dist([obj1_normalised_total(k,1),obj2_normalised_total(k,1)],true_objs_normalised_pareto);
-        end
-
-        % Computing Pearson's Coefficients
-        pearson_coll_normpfdist = corr(coll_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
-        pearson_coll_feas = corr(coll_total,feas_total,'Type','Pearson','Rows','complete');
-        pearson_coll_conn = corr(coll_total,conn_total,'Type','Pearson','Rows','complete');
-
-        pearson_nod_normpfdist = corr(nod_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
-        pearson_nod_feas = corr(nod_total,feas_total,'Type','Pearson','Rows','complete');
-        pearson_nod_conn = corr(nod_total,conn_total,'Type','Pearson','Rows','complete');
-
-        pearson_orient_normpfdist = corr(orient_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
-        pearson_orient_feas = corr(orient_total,feas_total,'Type','Pearson','Rows','complete');
-        pearson_orient_conn = corr(orient_total,conn_total,'Type','Pearson','Rows','complete');
-
-        pearson_inters_normpfdist = corr(inters_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
-        pearson_inters_feas = corr(inters_total,feas_total,'Type','Pearson','Rows','complete');
-        pearson_inters_conn = corr(inters_total,conn_total,'Type','Pearson','Rows','complete');
-        
-        % Computing Spearman's Coefficients
-        spearman_coll_normpfdist = corr(coll_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
-        spearman_coll_feas = corr(coll_total,feas_total,'Type','Spearman','Rows','complete');
-        spearman_coll_conn = corr(coll_total,conn_total,'Type','Spearman','Rows','complete');
-
-        spearman_nod_normpfdist = corr(nod_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
-        spearman_nod_feas = corr(nod_total,feas_total,'Type','Spearman','Rows','complete');
-        spearman_nod_conn = corr(nod_total,conn_total,'Type','Spearman','Rows','complete');
-
-        spearman_orient_normpfdist = corr(orient_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
-        spearman_orient_feas = corr(orient_total,feas_total,'Type','Spearman','Rows','complete');
-        spearman_orient_conn = corr(orient_total,conn_total,'Type','Spearman','Rows','complete');
-
-        spearman_inters_normpfdist = corr(inters_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
-        spearman_inters_feas = corr(inters_total,feas_total,'Type','Spearman','Rows','complete');
-        spearman_inters_conn = corr(inters_total,conn_total,'Type','Spearman','Rows','complete');
-
-        if prob_truss
-            pearson_coll_stiffrat = corr((coll_total),stiffrat_total,'Type','Pearson','Rows','complete');
-            pearson_nod_stiffrat = corr(nod_total,stiffrat_total,'Type','Pearson','Rows','complete');
-            pearson_orient_stiffrat = corr(orient_total,stiffrat_total,'Type','Pearson','Rows','complete');
-            pearson_inters_stiffrat = corr(inters_total,stiffrat_total,'Type','Pearson','Rows','complete');
-            spearman_coll_stiffrat = corr((coll_total),stiffrat_total,'Type','Spearman','Rows','complete');
-            spearman_nod_stiffrat = corr(nod_total,stiffrat_total,'Type','Spearman','Rows','complete');
-            spearman_orient_stiffrat = corr(orient_total,stiffrat_total,'Type','Spearman','Rows','complete');
-            spearman_inters_stiffrat = corr(inters_total,stiffrat_total,'Type','Spearman','Rows','complete');
-        end
-
-        % Calculation of average correlation coefficients for Heuristic index calculations
-        corr_avg_coll_normpf = (pearson_coll_normpfdist + spearman_coll_normpfdist)/2;
-        corr_avg_coll_feas = (pearson_coll_feas + spearman_coll_feas)/2;
-        corr_avg_coll_conn = (pearson_coll_conn + spearman_coll_conn)/2;
-
-        corr_avg_nod_normpf = (pearson_nod_normpfdist + spearman_nod_normpfdist)/2;
-        corr_avg_nod_feas = (pearson_nod_feas + spearman_nod_feas)/2;
-        corr_avg_nod_conn = (pearson_nod_conn + spearman_nod_conn)/2;
-
-        corr_avg_orient_normpf = (pearson_orient_normpfdist + spearman_orient_normpfdist)/2;
-        corr_avg_orient_feas = (pearson_orient_feas + spearman_orient_feas)/2;
-        corr_avg_orient_conn = (pearson_orient_conn + spearman_orient_conn)/2;
-
-        corr_avg_inters_normpf = (pearson_inters_normpfdist + spearman_inters_normpfdist)/2;
-        corr_avg_inters_feas = (pearson_inters_feas + spearman_inters_feas)/2;
-        corr_avg_inters_conn = (pearson_inters_conn + spearman_inters_conn)/2;
-
-        if prob_truss
-            corr_avg_coll_stiffrat = (pearson_coll_stiffrat + spearman_coll_stiffrat)/2;
-            corr_avg_nod_stiffrat = (pearson_nod_stiffrat + spearman_nod_stiffrat)/2;
-            corr_avg_orient_stiffrat = (pearson_orient_stiffrat + spearman_orient_stiffrat)/2;
-            corr_avg_inters_stiffrat = (pearson_inters_stiffrat + spearman_inters_stiffrat)/2;
-        end
-
-        if prob_truss
-            corr_exp_partcoll = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
-            corr_exp_nodalprop = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
-            corr_exp_orient = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
-            corr_exp_inters = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
-        else
-            corr_exp_partcoll = [-1,1,1]; % [normpfdist, feas, conn]
-            corr_exp_nodalprop = [-1,1,1]; % [normpfdist, feas, conn]
-            corr_exp_orient = [-1,1,1]; % [normpfdist, feas, conn]
-            corr_exp_inters = [-1,1,1]; % [normpfdist, feas, conn]
-        end
-
-        I_partcoll_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_coll_normpf, corr_exp_partcoll(1), fracsat_normpf) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_coll_feas, corr_exp_partcoll(2), fracsat_feas) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_coll_conn, corr_exp_partcoll(3), fracsat_conn);
-        I_nodalprop_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_nod_normpf, corr_exp_nodalprop(1), fracsat_normpf) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_nod_feas, corr_exp_nodalprop(2), fracsat_feas) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_nod_conn, corr_exp_nodalprop(3), fracsat_conn);
-        I_orient_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_orient_normpf, corr_exp_orient(1), fracsat_normpf) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_orient_feas, corr_exp_orient(2), fracsat_feas) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_orient_conn, corr_exp_orient(3), fracsat_conn);
-        I_inters_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_inters_normpf, corr_exp_inters(1), fracsat_normpf) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_inters_feas, corr_exp_inters(2), fracsat_feas) + ...
-            compute_heuristic_I1_contribution_run(corr_avg_inters_conn, corr_exp_inters(3), fracsat_conn);
-
-        if prob_truss
-            I_partcoll_allruns(i,1) = I_partcoll_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_coll_stiffrat, corr_exp_partcoll(4), fracsat_stiffrat);
-            I_nodalprop_allruns(i,1) = I_nodalprop_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), fracsat_stiffrat);
-            I_orient_allruns(i,1) = I_orient_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_orient_stiffrat, corr_exp_orient(4), fracsat_stiffrat);
-            I_inters_allruns(i,1) = I_inters_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_inters_stiffrat, corr_exp_inters(4), fracsat_stiffrat);
-
-            I_partcoll_allruns(i,1) = I_partcoll_allruns(i,1)/4;
-            I_nodalprop_allruns(i,1) = I_nodalprop_allruns(i,1)/4;
-            I_orient_allruns(i,1) = I_orient_allruns(i,1)/4;
-            I_inters_allruns(i,1) = I_inters_allruns(i,1)/4;
-        else
-            I_partcoll_allruns(i,1) = I_partcoll_allruns(i,1)/3;
-            I_nodalprop_allruns(i,1) = I_nodalprop_allruns(i,1)/3;
-            I_orient_allruns(i,1) = I_orient_allruns(i,1)/3;
-            I_inters_allruns(i,1) = I_inters_allruns(i,1)/3;
+            
+            % Normalizing objectives and pfs wrt max and min from objectives
+            obj1_max = max(obj1_total);
+            obj1_min = min(obj1_total);
+            obj1_norm_max = max(obj1_norm_total);
+            obj1_norm_min = min(obj1_norm_total);
+            
+            obj2_max = max(obj2_total);
+            obj2_min = min(obj2_total);
+            obj2_norm_max = max(obj2_norm_total);
+            obj2_norm_min = min(obj2_norm_total);
+            
+            obj1_norm_normalised_total = (obj1_norm_total - obj1_norm_min)/(obj1_norm_max - obj1_norm_min);
+            obj2_norm_normalised_total = (obj2_norm_total - obj2_norm_min)/(obj2_norm_max - obj2_norm_min);
+            
+            obj1_normalised_total = (obj1_total - obj1_min)/(obj1_max - obj1_min);
+            obj2_normalised_total = (obj2_total - obj2_min)/(obj2_max - obj2_min);
+            
+            norm_objs_normalised_pareto = [(norm_objs_pareto(:,1) - obj1_norm_min)/(obj1_norm_max - obj1_norm_min), (norm_objs_pareto(:,2) - obj2_norm_min)/(obj2_norm_max - obj2_norm_min)];
+            true_objs_normalised_pareto = [(true_objs_pareto_correct(:,1) - obj1_min)/(obj1_max - obj1_min), (true_objs_pareto_correct(:,2) - obj2_min)/(obj2_max - obj2_min)];
+            
+            % Compute minimum distance to normalized and true Pareto Fronts
+            min_dist_norm_pf_total = zeros(size(obj1_norm_total,1),1);
+            min_dist_true_pf_total = zeros(size(obj1_norm_total,1),1);
+            for k = 1:size(obj1_norm_total,1)
+                min_dist_norm_pf_total(k,1) = compute_min_pf_dist([obj1_norm_normalised_total(k,1),obj2_norm_normalised_total(k,1)],norm_objs_normalised_pareto);
+                min_dist_true_pf_total(k,1) = compute_min_pf_dist([obj1_normalised_total(k,1),obj2_normalised_total(k,1)],true_objs_normalised_pareto);
+            end
+            
+            % Computing Pearson's Coefficients
+            pearson_coll_normpfdist = corr(coll_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
+            pearson_coll_feas = corr(coll_total,feas_total,'Type','Pearson','Rows','complete');
+            pearson_coll_conn = corr(coll_total,conn_total,'Type','Pearson','Rows','complete');
+            
+            pearson_nod_normpfdist = corr(nod_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
+            pearson_nod_feas = corr(nod_total,feas_total,'Type','Pearson','Rows','complete');
+            pearson_nod_conn = corr(nod_total,conn_total,'Type','Pearson','Rows','complete');
+            
+            pearson_orient_normpfdist = corr(orient_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
+            pearson_orient_feas = corr(orient_total,feas_total,'Type','Pearson','Rows','complete');
+            pearson_orient_conn = corr(orient_total,conn_total,'Type','Pearson','Rows','complete');
+            
+            pearson_inters_normpfdist = corr(inters_total,min_dist_norm_pf_total,'Type','Pearson','Rows','complete');
+            pearson_inters_feas = corr(inters_total,feas_total,'Type','Pearson','Rows','complete');
+            pearson_inters_conn = corr(inters_total,conn_total,'Type','Pearson','Rows','complete');
+            
+            % Computing Spearman's Coefficients
+            spearman_coll_normpfdist = corr(coll_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
+            spearman_coll_feas = corr(coll_total,feas_total,'Type','Spearman','Rows','complete');
+            spearman_coll_conn = corr(coll_total,conn_total,'Type','Spearman','Rows','complete');
+            
+            spearman_nod_normpfdist = corr(nod_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
+            spearman_nod_feas = corr(nod_total,feas_total,'Type','Spearman','Rows','complete');
+            spearman_nod_conn = corr(nod_total,conn_total,'Type','Spearman','Rows','complete');
+            
+            spearman_orient_normpfdist = corr(orient_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
+            spearman_orient_feas = corr(orient_total,feas_total,'Type','Spearman','Rows','complete');
+            spearman_orient_conn = corr(orient_total,conn_total,'Type','Spearman','Rows','complete');
+            
+            spearman_inters_normpfdist = corr(inters_total,min_dist_norm_pf_total,'Type','Spearman','Rows','complete');
+            spearman_inters_feas = corr(inters_total,feas_total,'Type','Spearman','Rows','complete');
+            spearman_inters_conn = corr(inters_total,conn_total,'Type','Spearman','Rows','complete');
+            
+            if prob_truss
+                pearson_coll_stiffrat = corr((coll_total),stiffrat_total,'Type','Pearson','Rows','complete');
+                pearson_nod_stiffrat = corr(nod_total,stiffrat_total,'Type','Pearson','Rows','complete');
+                pearson_orient_stiffrat = corr(orient_total,stiffrat_total,'Type','Pearson','Rows','complete');
+                pearson_inters_stiffrat = corr(inters_total,stiffrat_total,'Type','Pearson','Rows','complete');
+                spearman_coll_stiffrat = corr((coll_total),stiffrat_total,'Type','Spearman','Rows','complete');
+                spearman_nod_stiffrat = corr(nod_total,stiffrat_total,'Type','Spearman','Rows','complete');
+                spearman_orient_stiffrat = corr(orient_total,stiffrat_total,'Type','Spearman','Rows','complete');
+                spearman_inters_stiffrat = corr(inters_total,stiffrat_total,'Type','Spearman','Rows','complete');
+            end
+            
+            % Calculation of average correlation coefficients for Heuristic index calculations
+            corr_avg_coll_normpf = (pearson_coll_normpfdist + spearman_coll_normpfdist)/2;
+            corr_avg_coll_feas = (pearson_coll_feas + spearman_coll_feas)/2;
+            corr_avg_coll_conn = (pearson_coll_conn + spearman_coll_conn)/2;
+            
+            corr_avg_nod_normpf = (pearson_nod_normpfdist + spearman_nod_normpfdist)/2;
+            corr_avg_nod_feas = (pearson_nod_feas + spearman_nod_feas)/2;
+            corr_avg_nod_conn = (pearson_nod_conn + spearman_nod_conn)/2;
+            
+            corr_avg_orient_normpf = (pearson_orient_normpfdist + spearman_orient_normpfdist)/2;
+            corr_avg_orient_feas = (pearson_orient_feas + spearman_orient_feas)/2;
+            corr_avg_orient_conn = (pearson_orient_conn + spearman_orient_conn)/2;
+            
+            corr_avg_inters_normpf = (pearson_inters_normpfdist + spearman_inters_normpfdist)/2;
+            corr_avg_inters_feas = (pearson_inters_feas + spearman_inters_feas)/2;
+            corr_avg_inters_conn = (pearson_inters_conn + spearman_inters_conn)/2;
+            
+            if prob_truss
+                corr_avg_coll_stiffrat = (pearson_coll_stiffrat + spearman_coll_stiffrat)/2;
+                corr_avg_nod_stiffrat = (pearson_nod_stiffrat + spearman_nod_stiffrat)/2;
+                corr_avg_orient_stiffrat = (pearson_orient_stiffrat + spearman_orient_stiffrat)/2;
+                corr_avg_inters_stiffrat = (pearson_inters_stiffrat + spearman_inters_stiffrat)/2;
+            end
+            
+            if prob_truss
+                corr_exp_partcoll = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
+                corr_exp_nodalprop = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
+                corr_exp_orient = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
+                corr_exp_inters = [-1,1,1,-1]; % [normpfdist, feas, conn, stiffrat]
+            else
+                corr_exp_partcoll = [-1,1,1]; % [normpfdist, feas, conn]
+                corr_exp_nodalprop = [-1,1,1]; % [normpfdist, feas, conn]
+                corr_exp_orient = [-1,1,1]; % [normpfdist, feas, conn]
+                corr_exp_inters = [-1,1,1]; % [normpfdist, feas, conn]
+            end
+            
+            I_partcoll_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_coll_normpf, corr_exp_partcoll(1), fracsat_normpf) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_coll_feas, corr_exp_partcoll(2), fracsat_feas) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_coll_conn, corr_exp_partcoll(3), fracsat_conn);
+            I_nodalprop_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_nod_normpf, corr_exp_nodalprop(1), fracsat_normpf) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_nod_feas, corr_exp_nodalprop(2), fracsat_feas) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_nod_conn, corr_exp_nodalprop(3), fracsat_conn);
+            I_orient_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_orient_normpf, corr_exp_orient(1), fracsat_normpf) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_orient_feas, corr_exp_orient(2), fracsat_feas) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_orient_conn, corr_exp_orient(3), fracsat_conn);
+            I_inters_allruns(i,1) = compute_heuristic_I1_contribution_run(corr_avg_inters_normpf, corr_exp_inters(1), fracsat_normpf) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_inters_feas, corr_exp_inters(2), fracsat_feas) + ...
+                compute_heuristic_I1_contribution_run(corr_avg_inters_conn, corr_exp_inters(3), fracsat_conn);
+            
+            if prob_truss
+                I_partcoll_allruns(i,1) = I_partcoll_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_coll_stiffrat, corr_exp_partcoll(4), fracsat_stiffrat);
+                I_nodalprop_allruns(i,1) = I_nodalprop_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_nod_stiffrat, corr_exp_nodalprop(4), fracsat_stiffrat);
+                I_orient_allruns(i,1) = I_orient_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_orient_stiffrat, corr_exp_orient(4), fracsat_stiffrat);
+                I_inters_allruns(i,1) = I_inters_allruns(i,1) + compute_heuristic_I1_contribution_run(corr_avg_inters_stiffrat, corr_exp_inters(4), fracsat_stiffrat);
+                
+                I_partcoll_allruns(i,1) = I_partcoll_allruns(i,1)/4;
+                I_nodalprop_allruns(i,1) = I_nodalprop_allruns(i,1)/4;
+                I_orient_allruns(i,1) = I_orient_allruns(i,1)/4;
+                I_inters_allruns(i,1) = I_inters_allruns(i,1)/4;
+            else
+                I_partcoll_allruns(i,1) = I_partcoll_allruns(i,1)/3;
+                I_nodalprop_allruns(i,1) = I_nodalprop_allruns(i,1)/3;
+                I_orient_allruns(i,1) = I_orient_allruns(i,1)/3;
+                I_inters_allruns(i,1) = I_inters_allruns(i,1)/3;
+            end
         end
     end
     
@@ -386,9 +390,8 @@ function [objs_pen_nonans_allcases, objs_true_nonans_allcases, constraints_nonan
 end
 
 function [data_array_req, design_array_req] = read_csv_data_tillnfe(problem_truss, choice_of_model, constrad_read, partcoll_bools, nodalprop_bools, orient_bools, inters_bools, nfe_to_reach, n_total_members, run_num)
-    %filepath = "C:\\SEAK Lab\\SEAK Lab
-    %Github\\KD3M3\\Truss_AOS\\result\\"; % for lab system 
-    filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\"; % for home system 
+    filepath = "C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\"; % for lab system 
+    %filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\"; % for home system 
     methods = ["Int Pen", "AOS", "Bias Init", "ACH"];
     heurs_list = ["PartColl", "NodalProp", "Orient", "Inters"];
     heurs_abbrvs_list = ["p","n","o","i"];
