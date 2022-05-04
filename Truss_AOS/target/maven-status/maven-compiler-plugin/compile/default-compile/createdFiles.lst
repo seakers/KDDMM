@@ -22,6 +22,7 @@ seakers\trussaos\architecture\IntegerRepeatableArchitecture.class
 seakers\trussaos\operators\variableradii\ImproveOrientationVariableRadii.class
 seakers\trussaos\VariableRadiiEvolutionarySearch.class
 seakers\trussaos\ConstantRadiusMOEARun.class
+seakers\trussaos\CheckOperatorHeuristicImprovement.class
 seakers\trussaos\operators\constantradii\AddDiagonalMember.class
 seakers\trussaos\VariableRadiiResultIO.class
 seakers\trussaos\operators\integerradii\ImproveOrientationIntegerRadii.class

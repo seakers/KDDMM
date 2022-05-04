@@ -99,7 +99,7 @@ for i in range(n_iter_total - n_iter_init + 1):
     nfe_array[n_iter_init+i] = 50*n_iter_init + 100*i
 
 #### Determine csv filepath from given case type for one of the materials problems
-def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_constrained, inters_constrained, artery_problem, model_choice, run_number):
+def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_constrained, inters_constrained, artery_problem, model_choice, cred_assign, run_number):
     # partcoll_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # nodprop_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # orient_constrained = [int_pen, AOS, bias_init, ACH] boolean array
@@ -107,18 +107,13 @@ def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_
     # artery_problem = True if artery problem data is to be read, False if truss problem data is to be read
     # model_choice = 1 - fibre stiffness, 2 - truss stiffness, 3 - ANSYS APDL beam model
     
-    #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\' # for office system
-    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\' # for home system
+    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\' # for office system
+    #filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\' # for home system
     methods = ['Int Pen','AOS','Bias Init','ACH']
     heurs_list = ['PartColl','NodalProp','Orient','Inters']
     heur_abbrvs_list = ['p','n','o','i']
     heur_bools = np.vstack((partcoll_constrained, nodprop_constrained, orient_constrained, inters_constrained))
     aos_bools = [x[1] for x in heur_bools]
-    
-    if (any(aos_bools)):
-        filename = 'AOSMOEA_emoea_'
-    else:
-        filename = 'EpsilonMOEA_emoea_'
     
     if artery_problem:
         filepath_prob = 'Artery Problem\\'
@@ -128,6 +123,17 @@ def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_
         filename_prob = '_prob2'
         
     filepath_constrad = 'Constant Radii\\'
+        
+    filepath_cred = ''
+    if (any(aos_bools)):
+        filename = 'AOSMOEA_emoea_'
+        filepath_cred = 'offspring parent dominance\\'
+        if cred_assign == 1:
+            filepath_cred = 'set improvement dominance\\'
+        elif cred_assign == 2:
+            filepath_cred = 'set contribution dominance\\'
+    else:
+        filename = 'EpsilonMOEA_emoea_'
         
     filepath2 = ''
     filename2 = ''
@@ -163,7 +169,7 @@ def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_
         filepath_model = 'Beam Model\\'
         filename_model = '_beam_fullpop.csv'
         
-    return filepath + filepath_prob + filepath_constrad + filepath_model + filepath2 + filepath_moea +  filename + str(run_number) + filename2 + filename_prob + filename_model
+    return filepath + filepath_prob + filepath_constrad + filepath_model + filepath2 + filepath_moea + filepath_cred + filename + str(run_number) + filename2 + filename_prob + filename_model
 
 #### Extract Pareto Front and normalization constants data from csv file
 def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, sidenum):
@@ -782,17 +788,18 @@ def compute_hypervolume_stats(hypervols_dict):
         
     return hypervol_median, hypervol_1q, hypervol_3q, nfe_array_0
 
-def compute_mann_whitney_Uvals(hv_dict_allcases_allruns, nfe_array): # Wilcoxon Rank Sum Test
+def compute_mann_whitney_Uvals(artery_prob, hv_dict_allcases_allruns, nfe_array): # Wilcoxon Rank Sum Test
     ## hv_med_array_allcases is a dictionary of length = number of cases
     
-    ## For truss problem
-    #n_samples = 5
-    #linspace_samples_array = np.linspace(0,1,n_samples)
-    #nfe_samples_array = np.floor(np.multiply(linspace_samples_array, nfe_array[-1]))
-    
-    ## For artery problem
-    nfe_samples_array = [0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
-    n_samples = len(nfe_samples_array)
+    if artery_prob:
+        ## For artery problem
+        nfe_samples_array = [0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
+        n_samples = len(nfe_samples_array)
+    else:
+        ## For truss problem
+        n_samples = 5
+        linspace_samples_array = np.linspace(0,1,n_samples)
+        nfe_samples_array = np.floor(np.multiply(linspace_samples_array, nfe_array[-1]))
     
     nfe_samples_indices_array = np.zeros(n_samples)
     for i in range(len(nfe_samples_array)):
@@ -921,7 +928,7 @@ def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_
     #fig1.savefig('HV_plot_averaged_' + savefig_name + '.png', format='png')
     
 #### Define functions to compute and plot hypervolume for single case and all cases
-def hypervolume_computation_single_case(choice_model, case_booleans, prob_artery, sidenum, run_nums, case_name):
+def hypervolume_computation_single_case(choice_model, credit_assign, case_booleans, prob_artery, sidenum, run_nums, case_name):
     ## Computing the pareto fronts and normalization objectives for each run
     obj_norm_allruns = {}
     obj_norm_true_allruns = {}
@@ -933,7 +940,7 @@ def hypervolume_computation_single_case(choice_model, case_booleans, prob_artery
     max_f_evals_allruns = np.zeros(run_nums)
     for i in range(run_nums):
         print('Computing Pareto Fronts for run ' + str(i))
-        current_csvpath = get_csv_filepath_material(case_booleans[:4], case_booleans[4:8], case_booleans[8:12], case_booleans[12:16], prob_artery, choice_model, i)
+        current_csvpath = get_csv_filepath_material(case_booleans[:4], case_booleans[4:8], case_booleans[8:12], case_booleans[12:16], prob_artery, choice_model, credit_assign, i)
         heur_intpen_constr = [case_booleans[0], case_booleans[4], case_booleans[8], case_booleans[12]]
         num_sat_run, pf_dict_i, pf_true_dict_i, pf_truesat_dict_i, obj_norm_full_i, obj_norm_true_i, obj_norm_truesat_i, max_fun_evals_i = extract_data_from_csv(current_csvpath, prob_artery, heur_intpen_constr, sidenum)
         pf_allruns['run'+str(i)] = pf_dict_i
@@ -991,7 +998,7 @@ def hypervolume_computation_single_case(choice_model, case_booleans, prob_artery
     hv_truesat_median_all, hv_truesat_1q_all, hv_truesat_3q_all, nfe_array_truesat = compute_hypervolume_stats(hv_dict_truesat_allruns)
     plot_hypervolume_stats(hv_truesat_median_all, hv_truesat_1q_all, hv_truesat_3q_all, nfe_array_truesat, case_name+'_truesat')
     
-def hypervolume_computation_all_cases(choice_model, case_bools_dict, prob_artery, sidenum, run_nums, marker_colours, alpha_vals, case_names, hv_thresh):
+def hypervolume_computation_all_cases(choice_model, credit_assign, case_bools_dict, prob_artery, sidenum, run_nums, marker_colours, alpha_vals, case_names, hv_thresh):
     num_cases = len(case_bools_dict) # number of cases to compare 
 
     ## Computing the pareto fronts and normalization objectives for each run in each case
@@ -1013,7 +1020,7 @@ def hypervolume_computation_all_cases(choice_model, case_bools_dict, prob_artery
         max_f_evals_allruns = np.zeros(run_nums)
         for j in range(run_nums):
             print('Run '+str(j))
-            current_csvpath = get_csv_filepath_material(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], prob_artery, choice_model, j)
+            current_csvpath = get_csv_filepath_material(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], prob_artery, choice_model, credit_assign, j)
             heur_intpen_constr = [current_case_bools[0], current_case_bools[4], current_case_bools[8], current_case_bools[12]]
             num_sat_run, pf_dict_j, pf_true_dict_j, pf_truesat_dict_j, obj_norm_full_j, obj_norm_true_j, obj_norm_truesat_j, max_fun_evals_j = extract_data_from_csv(current_csvpath, prob_artery, heur_intpen_constr, sidenum)
             pf_allruns_i['run'+str(j)] = pf_dict_j
@@ -1095,8 +1102,8 @@ def hypervolume_computation_all_cases(choice_model, case_bools_dict, prob_artery
         hv_dict_truesat_3q_allcases['case'+str(i)] = hv_3q_truesat_i
         
     print('Computing Wilcoxon Test Statistics')
-    U_test_dict = compute_mann_whitney_Uvals(hv_dict_allcases, nfe_array_i)
-    U_test_truesat_dict = compute_mann_whitney_Uvals(hv_dict_truesat_allcases, nfe_array_truesat_i)
+    U_test_dict = compute_mann_whitney_Uvals(prob_artery, hv_dict_allcases, nfe_array_i)
+    U_test_truesat_dict = compute_mann_whitney_Uvals(prob_artery, hv_dict_truesat_allcases, nfe_array_truesat_i)
     
     #return nfe_array_hv_attained_dict, hv_dict_median_allcases, hv_dict_1q_allcases, hv_dict_3q_allcases, hv_dict_true_median_allcases, hv_dict_true_1q_allcases, hv_dict_true_3q_allcases, hv_dict_truesat_median_allcases, hv_dict_truesat_1q_allcases, hv_dict_truesat_3q_allcases, nfe_array_i
     return num_sat_allcases, nfe_array_hv_attained_dict, hv_dict_median_allcases, hv_dict_1q_allcases, hv_dict_3q_allcases, hv_dict_true_median_allcases, hv_dict_true_1q_allcases, hv_dict_true_3q_allcases, hv_dict_truesat_median_allcases, hv_dict_truesat_1q_allcases, hv_dict_truesat_3q_allcases, U_test_dict, U_test_truesat_dict, nfe_array_i
@@ -1126,11 +1133,13 @@ artery_problem = True
 num_runs = 30 # number of runs for each case
 threshold_hv = 0.65
 
+credit_assignment = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
+
 # bools = [int_pen_partcoll, AOS_partcoll, bias_init_partcoll, ACH_partcoll, int_pen_nodalprop, AOS_nodalprop, bias_init_nodalprop, ACH_nodalprop, int_pen_orient, AOS_orient, bias_init_orient, ACH_orient, int_pen_inters, AOS_inters, bias_init_inters, ACH_inters]
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
 case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
 if artery_problem:
-    case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Nodal Properties, Orientation and Intersection
+    case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
 else:
     case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
 
@@ -1144,7 +1153,7 @@ casenames = ['Eps. MOEA','All heurs','Promising heurs']
 alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
 
 #nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, hv_dict_true_med_cases, hv_dict_true_1q_cases, hv_dict_true_3q_cases, hv_dict_truesat_med_cases, hv_dict_truesat_1q_cases, hv_dict_truesat_3q_cases, nfe_array_1 = hypervolume_computation_all_cases(model_used, cases_dict, artery_problem, sidenum, num_runs, line_colours, alpha_values, casenames, threshold_hv)
-num_fullysat_cases, nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, hv_dict_true_med_cases, hv_dict_true_1q_cases, hv_dict_true_3q_cases, hv_dict_truesat_med_cases, hv_dict_truesat_1q_cases, hv_dict_truesat_3q_cases, Uvals_test, Uvals_test_truesat, nfe_array_1 = hypervolume_computation_all_cases(model_used, cases_dict, artery_problem, sidenum, num_runs, line_colours, alpha_values, casenames, threshold_hv)
+num_fullysat_cases, nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, hv_dict_true_med_cases, hv_dict_true_1q_cases, hv_dict_true_3q_cases, hv_dict_truesat_med_cases, hv_dict_truesat_1q_cases, hv_dict_truesat_3q_cases, Uvals_test, Uvals_test_truesat, nfe_array_1 = hypervolume_computation_all_cases(model_used, credit_assignment, cases_dict, artery_problem, sidenum, num_runs, line_colours, alpha_values, casenames, threshold_hv)
 
 ## Mann Whitney U values
 print("For optimization objectives")

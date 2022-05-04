@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="com.mathworks:engine:R2020a" type="repository">
+    <properties maven-id="com.mathworks:engine:R2020a" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/mathworks/engine/R2020a/engine-R2020a.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

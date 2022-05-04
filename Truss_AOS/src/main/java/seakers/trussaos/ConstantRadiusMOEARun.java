@@ -9,18 +9,26 @@ import org.moeaframework.core.operator.*;
 import org.moeaframework.core.operator.binary.BitFlip;
 import org.moeaframework.problem.AbstractProblem;
 import org.moeaframework.util.TypedProperties;
+import seakers.ahs.AHSMOEA;
+import seakers.ahs.AdaptiveHeuristicSelection;
 import seakers.aos.aos.AOSMOEA;
 import seakers.aos.creditassignment.offspringparent.OffspringParentDomination;
+import seakers.aos.creditassignment.setcontribution.SetContributionDominance;
+import seakers.aos.creditassignment.setimprovement.SetImprovementDominance;
 import seakers.aos.operator.AOSVariation;
 import seakers.aos.operator.AOSVariationOP;
 import com.mathworks.engine.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.moeaframework.algorithm.EpsilonMOEA;
+import seakers.aos.operator.AOSVariationSC;
+import seakers.aos.operator.AOSVariationSI;
 import seakers.aos.operatorselectors.OperatorSelector;
 import seakers.aos.operatorselectors.ProbabilityMatching;
 import seakers.trussaos.initialization.BiasedInitialization;
@@ -37,7 +45,7 @@ import seakers.trussaos.problems.ConstantRadiusTrussProblem;
 import seakers.trussaos.problems.ConstantRadiusTrussProblem2;
 
 /**
- * Executable class for different eMOEA run experiments for the Truss Optimization problem.
+ * Executable class for different eMOEA run experiments for the Truss and Artery Optimization problems.
  *
  * @author roshan94
  */
@@ -72,7 +80,7 @@ public class ConstantRadiusMOEARun {
          */
         int modelChoice = 1; // Fibre stiffness model cannot be used for the artery problem
 
-        boolean arteryProblem = true; // Solve the artery optimization (otherwise the original truss problem is solved)
+        boolean arteryProblem = false; // Solve the artery optimization (otherwise the original truss problem is solved)
         boolean useOptimizationProblem2 = true; // Use ConstantRadiusTrussProblem2 as problem class (instead of ConstantRadiusTrussProblem)
 
         double targetStiffnessRatio = 1;
@@ -82,23 +90,23 @@ public class ConstantRadiusMOEARun {
 
         // Heuristic Enforcement Methods
         /**
-         * partialCollapsibilityConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
-         * nodalPropertiesConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
-         * orientationConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
-         * intersectionConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * partialCollapsibilityConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint, AHS]
+         * nodalPropertiesConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint, AHS]
+         * orientationConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint, AHS]
+         * intersectionConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint, AHS]
          *
          * heuristicsConstrained = [partialCollapsibilityConstrained, nodalPropertiesConstrained, orientationConstrained, intersectionConstrained]
          */
-        boolean[] partialCollapsibilityConstrained = {false, false, false, false, false, false};
-        boolean[] nodalPropertiesConstrained = {false, false, false, false, false, false};
-        boolean[] orientationConstrained = {false, false, false, false, false, false};
-        boolean[] intersectionConstrained = {false, false, false, false, false, false};
+        boolean[] partialCollapsibilityConstrained = {false, false, false, false, false, false, false};
+        boolean[] nodalPropertiesConstrained = {false, false, false, false, false, false, false};
+        boolean[] orientationConstrained = {false, true, false, false, false, false, false};
+        boolean[] intersectionConstrained = {false, true, false, false, false, false, false};
 
         // Bias initial population with low number of members
         boolean useLowMemberBiasing = false;
 
-        boolean[][] heuristicsConstrained = new boolean[4][6];
-        for (int i = 0; i < 6; i++) {
+        boolean[][] heuristicsConstrained = new boolean[4][7];
+        for (int i = 0; i < 7; i++) {
             heuristicsConstrained[0][i] = partialCollapsibilityConstrained[i];
             heuristicsConstrained[1][i] = nodalPropertiesConstrained[i];
             heuristicsConstrained[2][i] = orientationConstrained[i];
@@ -117,7 +125,7 @@ public class ConstantRadiusMOEARun {
         }
 
         int numCPU = 1;
-        int numRuns = 1;
+        int numRuns = 30;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
         engine = MatlabEngine.startMatlab();
@@ -199,7 +207,11 @@ public class ConstantRadiusMOEARun {
 
         PRNG.setRandom(new SynchronizedMersenneTwister());
 
+        AdaptiveHeuristicSelection ahs = null;
+
         for (int i = 0; i < numRuns; i++) {
+            AtomicInteger nfeval = new AtomicInteger(); // Used in the Adaptive Heuristic Handling method, updated in the Evolutionary Search algorithm
+            HashSet<Solution> solutions = new HashSet<>(); // Used in the Adaptive Heuristic Handling method, updated in the Evolutionary Search algorithm
 
             // Problem class for printable solutions
             AbstractProblem trussProblem;
@@ -238,8 +250,6 @@ public class ConstantRadiusMOEARun {
             // Initialize heuristic operators
             Variation addDiagonalMember;
             Variation addMember;
-            //Variation improveOrientation;
-            //Variation removeIntersection;
             Variation improveOrientation;
             Variation removeIntersection;
 
@@ -269,8 +279,37 @@ public class ConstantRadiusMOEARun {
                 selection = new TournamentSelection(2, comp);
 
                 //moeaObj = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, comp);
-            }
-            else { // Epsilon MOEA objects
+            } else if (partialCollapsibilityConstrained[6] || nodalPropertiesConstrained[6] || orientationConstrained[6] || intersectionConstrained[6]) { // Adaptive Heuristic Handling objects
+                int numHeurs = 0;
+
+                // Setup for saving results
+                properties.setBoolean("saveQuality", true);
+                properties.setBoolean("saveCredits", true);
+
+                ArrayList<String> enforcedHeuristicAttributes = new ArrayList<>();
+                for (int j = 0; j < heuristicsConstrained.length; j++) {
+                    if (heuristicsConstrained[j][6]) {
+                        enforcedHeuristicAttributes.add(heuristicAttributes[j]);
+                        numHeurs++;
+                    }
+                }
+                int[][] expectedCorrelationParameters; // each row corresponds to a heuristic, for artery problem the columns represent {feas, conn, d_min} and for truss problem the columns represent {feas, conn, stiffrat, d_min}
+                if (arteryProblem) { // Corresponding to heuristic and constraint violations
+                    expectedCorrelationParameters = new int[][]{{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+                } else {
+                    expectedCorrelationParameters = new int[][]{{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
+                }
+                HashMap<String, int[]> expectedCorrelationParamsList = new HashMap<>();
+                for (int j = 0; j < heuristicsConstrained.length; j++) {
+                    expectedCorrelationParamsList.put(heuristicAttributes[j], expectedCorrelationParameters[j]);
+                }
+
+                ahs = new AdaptiveHeuristicSelection(numHeurs, nfeval, enforcedHeuristicAttributes, solutions, expectedCorrelationParamsList, 0.6, 0.03);
+
+                comp = new ChainedComparator(new AggregateConstraintComparator(), ahs, new ParetoObjectiveComparator());
+
+                selection = new TournamentSelection(2, comp);
+            } else { // Epsilon MOEA objects
                 comp = new ChainedComparator(new AggregateConstraintComparator(), new ParetoObjectiveComparator());
                 selection = new TournamentSelection(2, comp);
             }
@@ -343,14 +382,15 @@ public class ConstantRadiusMOEARun {
 
                 // Create credit assignment
                 //SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
-                OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0, comp);
+                SetContributionDominance creditAssignment = new SetContributionDominance(archive, 1, 0);
+                //OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0, comp);
 
                 // Create AOS
                 //aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
-                aosStrategy = new AOSVariationOP(operatorSelector, creditAssignment, popSize);
+                aosStrategy = new AOSVariationSC(operatorSelector, creditAssignment, popSize);
+                //aosStrategy = new AOSVariationOP(operatorSelector, creditAssignment, popSize);
 
-            }
-            else { // Epsilon MOEA objects
+            } else { // Epsilon MOEA objects
                 properties.setDouble("crossoverProbability", crossoverProbability);
                 crossOver = new OnePointCrossover(crossoverProbability);
                 //crossOver = new TwoPointCrossover(crossoverProbability);
@@ -358,16 +398,18 @@ public class ConstantRadiusMOEARun {
                 var = new CompoundVariation(crossOver, bitMutation);
             }
 
-            // Creating AOS MOEA object if needed
+            // Creating AOS MOEA or AHS MOEA object if needed
             if (partialCollapsibilityConstrained[1] || nodalPropertiesConstrained[1] || orientationConstrained[1] || intersectionConstrained[1]) {
                 EpsilonMOEA emoea = new EpsilonMOEA(trussProblem, population, archive, selection, aosStrategy, initialization, comp);
                 moeaObj = new AOSMOEA(emoea, aosStrategy, true);
-            }
-            else {
+            } else if (partialCollapsibilityConstrained[6] || nodalPropertiesConstrained[6] || orientationConstrained[6] || intersectionConstrained[6]) {
+                EpsilonMOEA emoea = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, comp);
+                moeaObj = new AHSMOEA(emoea, true, ahs);
+            } else {
                 moeaObj = new EpsilonMOEA(trussProblem, population, archive, selection, var, initialization, comp);
             }
 
-            ecs.submit(new EvolutionarySearch(moeaObj, properties, csvPath + File.separator + "result", "emoea_" + String.valueOf(i) + fileSaveNameConstraint.toString() + fileSaveNameProblem + fileSaveNameModel, sideNodeNumber, numberOfHeuristicObjectives, numberOfHeuristicConstraints));
+            ecs.submit(new EvolutionarySearch(moeaObj, nfeval, properties, csvPath + File.separator + "result", "emoea_" + String.valueOf(i) + fileSaveNameConstraint.toString() + fileSaveNameProblem + fileSaveNameModel, sideNodeNumber, solutions, numberOfHeuristicObjectives, numberOfHeuristicConstraints));
         }
 
         for (int i = 0; i < numRuns; i++) {

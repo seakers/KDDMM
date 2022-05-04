@@ -34,6 +34,11 @@
             <version>1.0</version>
         </dependency>
         <dependency>
+            <groupId>seakers</groupId>
+            <artifactId>mopAHS</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
             <version>1.2.4</version>
@@ -46,7 +51,7 @@
         <dependency>
             <groupId>com.mathworks</groupId>
             <artifactId>engine</artifactId>
-            <version>R2021b</version>
+            <version>R2020a</version>
         </dependency>
     </dependencies>
     <build>

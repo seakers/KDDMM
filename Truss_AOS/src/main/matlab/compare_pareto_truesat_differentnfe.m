@@ -4,7 +4,7 @@ close all
 clc
 
 %% Read data for all runs of given case
-prob_truss = true; % if true -> truss problem, if false -> artery problem
+prob_truss = false; % if true -> truss problem, if false -> artery problem
 constant_radii = true; % if true -> members have constant radii, if false -> members have discrete radii choices
 model = "Truss"; % "Fibre" - fibre model, "Truss" - truss model, "Beam" - beam model
 
@@ -41,8 +41,13 @@ case3_inters_bools = [false, true, false, false];
 % Generate combined true and penalized pareto front arrays for each run
 % case for different nfe thresholds
 
-% NFE threshold = 500
-nfe_thresh1 = 500;
+% NFE threshold = 500/250
+if prob_truss
+    nfe_thresh1 = 500;
+else
+    nfe_thresh1 = 250;
+end
+
 disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh1)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh1, des_pareto_combined_case1_thresh1] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh1, sidenum, num_runs); 
@@ -65,8 +70,12 @@ truesatobj2_min_thresh1 = min([truesatobj2_min_case1_thresh1, truesatobj2_min_ca
 
 utopia_truesat_thresh1 = [truesatobj1_max_thresh1, truesatobj2_min_thresh1];
 
-% NFE threshold = 1000
-nfe_thresh2 = 1000;
+% NFE threshold = 1000/500
+if prob_truss
+    nfe_thresh2 = 1000;
+else
+    nfe_thresh2 = 500;
+end
 disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh2)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh2, des_pareto_combined_case1_thresh2] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh2, sidenum, num_runs); 
@@ -89,8 +98,12 @@ truesatobj2_min_thresh2 = min([truesatobj2_min_case1_thresh2, truesatobj2_min_ca
 
 utopia_truesat_thresh2 = [truesatobj1_max_thresh2, truesatobj2_min_thresh2];	
 
-% NFE threshold = 3000
-nfe_thresh3 = 3000;
+% NFE threshold = 3000/1500
+if prob_truss
+    nfe_thresh3 = 3000;
+else
+    nfe_thresh3 = 1500;
+end
 disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh3)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh3, des_pareto_combined_case1_thresh3] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh3, sidenum, num_runs); 
@@ -113,8 +126,13 @@ truesatobj2_min_thresh3 = min([truesatobj2_min_case1_thresh3, truesatobj2_min_ca
 
 utopia_truesat_thresh3 = [truesatobj1_max_thresh3, truesatobj2_min_thresh3];
 
-% NFE threshold = 6000
-nfe_thresh4 = 6000;
+% NFE threshold = 6000/3000
+if prob_truss
+    nfe_thresh4 = 6000;
+else
+    nfe_thresh4 = 3000;
+end
+    
 disp(strcat('Generating PFs for NFE = ',num2str(nfe_thresh4)))
 % Case 1
 [f_true_sat_pareto_combined_case1_thresh4, des_pareto_combined_case1_thresh4] = obtain_combined_pareto_data_case(prob_truss, model, constant_radii, case1_partcoll_bools, case1_nodalprop_bools, case1_orient_bools, case1_inters_bools, nfe_thresh4, sidenum, num_runs); 
@@ -160,7 +178,7 @@ end
 % xlim([0,E/2])
 % ylim([0,1])1
 %legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('500 NFE','FontSize',16)
+title(strcat(num2str(nfe_thresh1),' NFE'),'FontSize',16)
 
 subplot(2,2,2)
 scatter(f_true_sat_pareto_combined_case1_thresh2(:,1), f_true_sat_pareto_combined_case1_thresh2(:,2), 50, 'Marker', 'o', 'MarkerEdgeColor', 'black') 
@@ -183,7 +201,7 @@ end
 % xlim([0,E/2])
 % ylim([0,1])
 %legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('1000 NFE','FontSize',16)
+title(strcat(num2str(nfe_thresh2),' NFE'),'FontSize',16)
 
 subplot(2,2,3)
 scatter(f_true_sat_pareto_combined_case1_thresh3(:,1), f_true_sat_pareto_combined_case1_thresh3(:,2), 50, 'Marker', 'o', 'MarkerEdgeColor', 'black') 
@@ -206,7 +224,7 @@ end
 % xlim([0,E/2])
 % ylim([0,1])
 %legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('3000 NFE','FontSize',16)
+title(strcat(num2str(nfe_thresh3),' NFE'),'FontSize',16)
 
 subplot(2,2,4)
 scatter(f_true_sat_pareto_combined_case1_thresh4(:,1), f_true_sat_pareto_combined_case1_thresh4(:,2), 50, 'Marker', 'o', 'MarkerEdgeColor', 'black') 
@@ -229,7 +247,7 @@ end
 % xlim([0,E/2])
 % ylim([0,1])
 %legend('Eps. MOEA','All Heurs','Prom Heurs','Location','best')
-title('6000 NFE','FontSize',16)
+title(strcat(num2str(nfe_thresh4),' NFE'),16)
 %saveas(gcf,'pareto_truefeas_nfequadchart.png')
 
 %% Functions
@@ -257,9 +275,8 @@ function [objs_true_sat_pareto_combined, designs_true_sat_pareto_combined] = obt
 end
 
 function [data_array_req, design_array_req] = read_csv_data_tillnfe(problem_truss, choice_of_model, constrad_read, partcoll_bools, nodalprop_bools, orient_bools, inters_bools, nfe_to_reach, n_total_members, run_num)
-    %filepath = "C:\\SEAK Lab\\SEAK Lab
-    %Github\\KD3M3\\Truss_AOS\\result\\"; % for lab system 
-    filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\"; % for home system 
+    filepath = "C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\"; % for lab system 
+    %filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\"; % for home system 
     methods = ["Int Pen", "AOS", "Bias Init", "ACH"];
     heurs_list = ["PartColl", "NodalProp", "Orient", "Inters"];
     heurs_abbrvs_list = ["p","n","o","i"];
@@ -282,7 +299,12 @@ function [data_array_req, design_array_req] = read_csv_data_tillnfe(problem_trus
     else
         filename = "EpsilonMOEA_emoea_";
     end
-	
+    
+    filepath_cred = "";
+    if (any(heur_bools(:,2)))
+        filepath_cred = "set contribution dominance\\";
+    end
+        
 	filepath2 = '';
     filename2 = '';
 	constr_count = 0;
@@ -349,7 +371,7 @@ function [data_array_req, design_array_req] = read_csv_data_tillnfe(problem_trus
     end
     
     %%%% read appropriate file 
-    full_filepath = strcat(filepath,filepath_prob,filepath_constrad,filepath3,filepath2,filepath_moea,filename,num2str(run_num),filename2);
+    full_filepath = strcat(filepath,filepath_prob,filepath_constrad,filepath3,filepath2,filepath_moea,filepath_cred,filename,num2str(run_num),filename2);
     
     if problem_truss
         n_data = 12;
