@@ -458,6 +458,104 @@ else
         mean(inters_array), std(inters_array)];
 end
 
+%% Heuristic violation plots
+
+figure 
+scatter(obj1_pen_array,obj2_pen_array,[],1 - coll_array,'filled')
+if truss_problem
+    xlabel('Normalized $C_{22}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized $v_f$','Interpreter','Latex','FontSize',16)
+else 
+    xlabel('Normalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized deviation','Interpreter','Latex','FontSize',16)
+end
+colorbar
+%title('Partial Collapsibility Violation','FontSize',16)
+
+figure 
+scatter(obj1_pen_array,obj2_pen_array,[],1 - nod_array,'filled')
+if truss_problem
+    xlabel('Normalized $C_{22}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized $v_f$','Interpreter','Latex','FontSize',16)
+else
+    xlabel('Normalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized deviation','Interpreter','Latex','FontSize',16)
+end
+colorbar;
+%title('Nodal Properties Violation','FontSize',16)
+
+figure 
+scatter(obj1_pen_array,obj2_pen_array,[],1 - orient_array,'filled')
+if truss_problem
+    xlabel('Normalized $C_{22}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized $v_f$','Interpreter','Latex','FontSize',16)
+else
+    xlabel('Normalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized deviation','Interpreter','Latex','FontSize',16)
+end
+colorbar;
+%title('Orientation Violation','FontSize',16)
+
+figure 
+scatter(obj1_pen_array,obj2_pen_array,[],1 - inters_array,'filled')
+if truss_problem
+    xlabel('Normalized $C_{22}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized $v_f$','Interpreter','Latex','FontSize',16)
+else
+    xlabel('Normalized $\frac{C_{11}}{v_f}$','Interpreter','Latex','FontSize',16)
+    ylabel('Normalized deviation','Interpreter','Latex','FontSize',16)
+end
+colorbar;
+%title('Intersection Violation','FontSize',16)
+
+figure 
+scatter(obj1_true_array,obj2_true_array,[],1 - coll_array,'filled')
+if truss_problem
+    xlabel('$C_{22}$','Interpreter','Latex')
+    ylabel('$v_f$','Interpreter','Latex')
+else
+    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
+    ylabel('deviation','Interpreter','Latex')
+end
+colorbar
+title('Partial Collapsibility Violation')
+
+figure 
+scatter(obj1_true_array,obj2_true_array,[],1 - nod_array,'filled')
+if truss_problem
+    xlabel('$C_{22}$','Interpreter','Latex')
+    ylabel('$v_f$','Interpreter','Latex')
+else
+    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
+    ylabel('deviation','Interpreter','Latex')
+end
+colorbar;
+title('Nodal Properties Violation')
+
+figure 
+scatter(obj1_true_array,obj2_true_array,[],1 - orient_array,'filled')
+if truss_problem
+    xlabel('$C_{22}$','Interpreter','Latex')
+    ylabel('$v_f$','Interpreter','Latex')
+else
+    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
+    ylabel('deviation','Interpreter','Latex')
+end
+colorbar;
+title('Orientation Violation')
+
+figure 
+scatter(obj1_true_array,obj2_true_array,[],1 - inters_array,'filled')
+if truss_problem
+    xlabel('$C_{22}$','Interpreter','Latex')
+    ylabel('$v_f$','Interpreter','Latex')
+else
+    xlabel('$\frac{C_{11}}{v_f}$','Interpreter','Latex')
+    ylabel('deviation','Interpreter','Latex')
+end
+colorbar;
+title('Intersection Violation')
+
 %% Compute correlation coefficients of each heuristic with objectives and constraints
 pearson_coll_truepfdist = zeros(n_runs,1);
 pearson_coll_penpfdist = zeros(n_runs,1);

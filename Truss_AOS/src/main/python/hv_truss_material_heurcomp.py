@@ -138,25 +138,25 @@ def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_
     filepath2 = ''
     filename2 = ''
     constr_count = 0
-    for i in range(len(heur_bools)):
+    for i in range(len(heur_bools[0])):
         constraints = methods[i] + ' - '
         constraints_abbrv = ''
         heur_count = 0
-        for j in range(len(heur_bools[0])):
+        for j in range(len(heur_bools)):
             if heur_bools[j][i]:
                 constraints = constraints + heurs_list[j]
                 constraints_abbrv = constraints_abbrv + heur_abbrvs_list[j]
             else:
                 heur_count += 1
             
-        if heur_count < len(heur_bools[0]):
+        if heur_count < len(heur_bools):
             filepath2 = filepath2 + constraints + '\\'
             filename2 = filename2 + constraints_abbrv + 'con' + str(i) + '_'
         else:
             constr_count += 1
             
     filepath_moea = ''
-    if (constr_count == len(heur_bools)):
+    if (constr_count == len(heur_bools[0])):
         filepath_moea = 'Epsilon MOEA\\'
         
     if model_choice == 1:
@@ -922,8 +922,8 @@ def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_
     plt.ylabel('Hypervolume',fontsize=14)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
-    plt.title(plot_title)
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.23), ncol=3, borderaxespad=0, prop={"size":12})
+    #plt.title(plot_title)
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.15), ncol=3, borderaxespad=0, prop={"size":12})
     plt.show()
     #fig1.savefig('HV_plot_averaged_' + savefig_name + '.png', format='png')
     

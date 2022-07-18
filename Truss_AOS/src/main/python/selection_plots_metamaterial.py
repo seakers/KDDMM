@@ -8,7 +8,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 
-artery_problem = True
+artery_problem = False
 model = 1 # 0 -> Fibre model, 1 -> Truss model, 2 -> Beam model
 
 ### Read the credit and quality csv files
@@ -115,19 +115,23 @@ for i in range(len(operator_strings)):
 ### Plot selection frequencies as stacked bar graph
 if all(aos_heur_bools):
     heur_labels = ['PartColl','NodalProp','Orient','Inters','X+M']
+    colors = ['lime','red','cyan','yellow','black']
 else:
     heur_labels = ['Orient','Inters','X+M']
+    colors = ['cyan','yellow','black']
     
 fig = plt.figure()
 sel_freq_sum = sel_freq[operator_strings[0]]
 plt.bar(nfe_array, sel_freq_sum)
 for i in range(1, len(operator_strings)):
     sel_freq_op = sel_freq[operator_strings[i]]
-    plt.bar(nfe_array, sel_freq_op, bottom=sel_freq_sum)
+    plt.bar(nfe_array, sel_freq_op, bottom=sel_freq_sum, color=colors[i])
     sel_freq_sum = np.add(sel_freq_sum, sel_freq_op)
-plt.xlabel('NFE')
-plt.ylabel('Selection Frequency')
-plt.legend(heur_labels)
+plt.xlabel('NFE',fontsize=14)
+plt.ylabel('Selection Frequency',fontsize=14)
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
+plt.legend(heur_labels, loc='upper center', bbox_to_anchor=(0.5,1.15), ncol=3, borderaxespad=0, prop={"size":12})
 plt.show()
 
     
