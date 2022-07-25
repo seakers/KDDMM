@@ -20,6 +20,7 @@ seakers\trussaos\VariableRadiiMOEARun.class
 seakers\trussaos\constrainthandling\DisjunctiveNormalForm.class
 seakers\trussaos\architecture\IntegerRepeatableArchitecture.class
 seakers\trussaos\operators\variableradii\ImproveOrientationVariableRadii.class
+seakers\trussaos\GenerateOperatorIndexDataset.class
 seakers\trussaos\VariableRadiiEvolutionarySearch.class
 seakers\trussaos\ConstantRadiusMOEARun.class
 seakers\trussaos\CheckOperatorHeuristicImprovement.class

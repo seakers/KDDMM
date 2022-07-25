@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.mathworks</groupId>
             <artifactId>engine</artifactId>
-            <version>R2020a</version>
+            <version>R2021b</version>
         </dependency>
     </dependencies>
     <build>
