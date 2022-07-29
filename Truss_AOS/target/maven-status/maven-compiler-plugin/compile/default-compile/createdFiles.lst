@@ -13,8 +13,10 @@ seakers\trussaos\architecture\TrussRepeatableArchitecture.class
 seakers\trussaos\initialization\BiasedInitialization.class
 seakers\trussaos\IntegerResultIO.class
 seakers\trussaos\initialization\SynchronizedMersenneTwister.class
+seakers\trussaos\GenerateOperatorIndexDataset$RunMode.class
 seakers\trussaos\operators\constantradii\RemoveIntersection.class
 seakers\trussaos\operators\integerradii\RemoveIntersectionIntegerRadii.class
+seakers\trussaos\GenerateOperatorIndexDataset$1.class
 seakers\trussaos\IntegerMOEARun.class
 seakers\trussaos\VariableRadiiMOEARun.class
 seakers\trussaos\constrainthandling\DisjunctiveNormalForm.class

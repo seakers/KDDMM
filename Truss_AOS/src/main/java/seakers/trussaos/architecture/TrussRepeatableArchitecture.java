@@ -200,7 +200,7 @@ public class TrussRepeatableArchitecture extends Solution{
         return (totalNumberOfMembers - numberOfRepeatableMembers);
     }
 
-    private boolean[] getRepeatableBooleanArrayFromCompleteArray (boolean[] completeBooleanArray) {
+    public boolean[] getRepeatableBooleanArrayFromCompleteArray (boolean[] completeBooleanArray) {
         ArrayList<Boolean> repeatableBooleanArray = new ArrayList<>();
         boolean[] isRepeated = identifyRepeatedEdgeMembers();
         for (int i = 0; i < completeBooleanArray.length; i++) {
