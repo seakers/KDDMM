@@ -57,7 +57,7 @@ public class GenerateOperatorIndexDataset {
          */
         int modelChoice = 1; // Fibre stiffness model cannot be used for the artery problem
 
-        boolean arteryProblem = true; // Solve the artery optimization (otherwise the original truss problem is solved)
+        boolean arteryProblem = false; // Solve the artery optimization (otherwise the original truss problem is solved)
         boolean useOptimizationProblem2 = true; // Use ConstantRadiusTrussProblem2 as problem class (instead of ConstantRadiusTrussProblem)
 
         double targetStiffnessRatio = 1;
