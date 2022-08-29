@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Compute Operator Index for materials problems
+Operator Index vs NFE for materials problems
 
 @author: rosha
 """
 from pygmo import hypervolume
 import csv
-import math
 import numpy as np
+import matplotlib.pyplot as plt
 from IPython.core.debugger import set_trace
 
 ### Useful functions
+def find_closest_index(val, search_list):
+    val_diff = np.array(search_list) - val
+    closest_index = np.argmin(np.abs(val_diff))
+    return closest_index
+
 def get_fileloc(truss_prob, model, run_mode, run_num):
     #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\' # for office system
     filepath_init = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\Operator Index Data\\' # for home system
@@ -18,9 +23,11 @@ def get_fileloc(truss_prob, model, run_mode, run_num):
     if run_mode == 1: 
         filepath_mode = 'Random\\'
         filename_init = 'random_operator_index_data_'
+        filename_mode = ''
     elif run_mode == 2:
         filename_init = 'EpsilonMOEA_emoea__'
         filepath_mode = 'Epsilon MOEA\\'
+        filename_mode = '_fullpop'
 
     filepath_problem = 'Artery Problem\\'
     filename_problem = 'artery_'
@@ -39,7 +46,7 @@ def get_fileloc(truss_prob, model, run_mode, run_num):
         filepath_model = 'Beam Model\\'
         filename_model = 'beam'
     
-    filename = filename_init + filename_problem + filename_model + str(run_num) + '.csv'
+    filename = filename_init + filename_problem + filename_model + str(run_num) + filename_mode + '.csv'
     filepath = filepath_init + filepath_problem + filepath_model + filepath_mode + filename
     
     return filepath
@@ -78,11 +85,13 @@ def compute_hv(population):
     hv = hv_object.compute([1.1,1.1])/1.1**2
     return hv
 
-def read_csv(fileloc_csv, truss_prob):
+def read_csv(fileloc_csv, truss_prob, run_mode, nfe_thresh):
     
     with open(fileloc_csv, newline='') as csvfile:
         data = [row for row in csv.reader(csvfile)]
         
+        if run_mode == 2:
+            nfes_dat = np.zeros(len(data)-1)
         norm_objs1_dat = np.zeros(len(data)-1)
         norm_objs2_dat = np.zeros(len(data)-1)
         feas_dat = np.zeros(len(data)-1)
@@ -115,21 +124,28 @@ def read_csv(fileloc_csv, truss_prob):
             stiffrat_orient_dat = np.zeros(len(data)-1)
             stiffrat_inters_dat = np.zeros(len(data)-1)
         
+        buffer = 0
+        if run_mode == 2:
+            buffer = 1
+        
         valid_count = 0
         for x in range(len(data)-1):
+            if run_mode == 2:
+                nfe_float = float(data[x+1][0])
+            
             if truss_prob:
-                data_float = list(map(float,data[x+1][1:6]))
-                data_partcoll_float = list(map(float,data[x+1][7:12]))
-                data_nodalprop_float = list(map(float,data[x+1][13:18]))
-                data_orient_float = list(map(float,data[x+1][19:24]))
-                data_inters_float = list(map(float,data[x+1][25:30]))
+                data_float = list(map(float,data[x+1][buffer+1:buffer+6]))
+                data_partcoll_float = list(map(float,data[x+1][buffer+7:buffer+12]))
+                data_nodalprop_float = list(map(float,data[x+1][buffer+13:buffer+18]))
+                data_orient_float = list(map(float,data[x+1][buffer+19:buffer+24]))
+                data_inters_float = list(map(float,data[x+1][buffer+25:buffer+30]))
                 
             else:
-                data_float = list(map(float,data[x+1][1:5]))
-                data_partcoll_float = list(map(float,data[x+1][6:10]))
-                data_nodalprop_float = list(map(float,data[x+1][11:15]))
-                data_orient_float = list(map(float,data[x+1][16:20]))
-                data_inters_float = list(map(float,data[x+1][21:25]))
+                data_float = list(map(float,data[x+1][buffer+1:buffer+5]))
+                data_partcoll_float = list(map(float,data[x+1][buffer+6:buffer+10]))
+                data_nodalprop_float = list(map(float,data[x+1][buffer+11:buffer+15]))
+                data_orient_float = list(map(float,data[x+1][buffer+16:buffer+20]))
+                data_inters_float = list(map(float,data[x+1][buffer+21:buffer+25]))
                 
             if (any(np.isnan(np.array(data_float))) or any(np.isinf(np.array(data_float)))):
                 continue
@@ -146,6 +162,9 @@ def read_csv(fileloc_csv, truss_prob):
             if (any(np.isnan(np.array(data_inters_float))) or any(np.isinf(np.array(data_inters_float)))):
                 continue
             
+            if run_mode == 2:
+                nfes_dat[valid_count] = nfe_float
+                
             norm_objs1_dat[valid_count] = data_float[0]
             norm_objs2_dat[valid_count] = data_float[1]
             feas_dat[valid_count] = data_float[2] 
@@ -195,6 +214,9 @@ def read_csv(fileloc_csv, truss_prob):
                 
             valid_count += 1
             
+    if run_mode == 2:
+        nfes = nfes_dat[:valid_count]
+        
     norm_objs1 = norm_objs1_dat[:valid_count]
     norm_objs2 = norm_objs2_dat[:valid_count]
     feas = feas_dat[:valid_count]
@@ -226,6 +248,76 @@ def read_csv(fileloc_csv, truss_prob):
         stiffrat_nodalprop = stiffrat_nodalprop_dat[:valid_count]
         stiffrat_orient = stiffrat_orient_dat[:valid_count]
         stiffrat_inters = stiffrat_inters_dat[:valid_count]
+    
+    # Sort by NFEs
+    if run_mode == 2:
+        sort_indices = np.argsort(nfes)
+        
+        nfes_sorted = nfes[sort_indices]
+        
+        norm_objs1_sorted = norm_objs1[sort_indices]
+        norm_objs1_partcoll_sorted = norm_objs1_partcoll[sort_indices]
+        norm_objs1_nodalprop_sorted = norm_objs1_nodalprop[sort_indices]
+        norm_objs1_orient_sorted = norm_objs1_orient[sort_indices]
+        norm_objs1_inters_sorted = norm_objs1_inters[sort_indices]
+        
+        norm_objs2_sorted = norm_objs2[sort_indices]
+        norm_objs2_partcoll_sorted = norm_objs2_partcoll[sort_indices]
+        norm_objs2_nodalprop_sorted = norm_objs2_nodalprop[sort_indices]
+        norm_objs2_orient_sorted = norm_objs2_orient[sort_indices]
+        norm_objs2_inters_sorted = norm_objs2_inters[sort_indices]
+        
+        feas_sorted = feas[sort_indices]
+        feas_partcoll_sorted = feas_partcoll[sort_indices]
+        feas_nodalprop_sorted = feas_nodalprop[sort_indices]
+        feas_orient_sorted = feas_orient[sort_indices]
+        feas_inters_sorted = feas_inters[sort_indices]
+        
+        conn_sorted = conn[sort_indices]
+        conn_partcoll_sorted = conn_partcoll[sort_indices]
+        conn_nodalprop_sorted = conn_nodalprop[sort_indices]
+        conn_orient_sorted = conn_orient[sort_indices]
+        conn_inters_sorted = conn_inters[sort_indices]
+        
+        if truss_prob:
+             stiffrat_sorted = stiffrat[sort_indices]
+             stiffrat_partcoll_sorted = stiffrat_partcoll[sort_indices]
+             stiffrat_nodalprop_sorted = stiffrat_nodalprop[sort_indices]
+             stiffrat_orient_sorted = stiffrat_orient[sort_indices]
+             stiffrat_inters_sorted = stiffrat_inters[sort_indices]
+    
+        nfe_thresh_idx = find_closest_index(nfe_thresh, nfes_sorted)
+        
+        norm_objs1 = norm_objs1_sorted[:nfe_thresh_idx]
+        norm_objs1_partcoll = norm_objs1_partcoll_sorted[:nfe_thresh_idx]
+        norm_objs1_nodalprop = norm_objs1_nodalprop_sorted[:nfe_thresh_idx]
+        norm_objs1_orient = norm_objs1_orient_sorted[:nfe_thresh_idx]
+        norm_objs1_inters = norm_objs1_inters_sorted[:nfe_thresh_idx]
+        
+        norm_objs2 = norm_objs2_sorted[:nfe_thresh_idx]
+        norm_objs2_partcoll = norm_objs2_partcoll_sorted[:nfe_thresh_idx]
+        norm_objs2_nodalprop = norm_objs2_nodalprop_sorted[:nfe_thresh_idx]
+        norm_objs2_orient = norm_objs2_orient_sorted[:nfe_thresh_idx]
+        norm_objs2_inters = norm_objs2_inters_sorted[:nfe_thresh_idx]
+        
+        feas = feas_sorted[:nfe_thresh_idx]
+        feas_partcoll = feas_partcoll_sorted[:nfe_thresh_idx]
+        feas_nodalprop = feas_nodalprop_sorted[:nfe_thresh_idx]
+        feas_orient = feas_orient_sorted[:nfe_thresh_idx]
+        feas_inters = feas_inters_sorted[:nfe_thresh_idx]
+        
+        conn = conn_sorted[:nfe_thresh_idx]
+        conn_partcoll = conn_partcoll_sorted[:nfe_thresh_idx]
+        conn_nodalprop = conn_nodalprop_sorted[:nfe_thresh_idx]
+        conn_orient = conn_orient_sorted[:nfe_thresh_idx]
+        conn_inters = conn_inters_sorted[:nfe_thresh_idx]
+        
+        if truss_prob:
+            stiffrat = stiffrat_sorted[:nfe_thresh_idx]
+            stiffrat_partcoll = stiffrat_partcoll_sorted[:nfe_thresh_idx]
+            stiffrat_nodalprop = stiffrat_nodalprop_sorted[:nfe_thresh_idx]
+            stiffrat_orient = stiffrat_orient_sorted[:nfe_thresh_idx]
+            stiffrat_inters = stiffrat_inters_sorted[:nfe_thresh_idx]
         
     norm_objs = np.column_stack((norm_objs1, norm_objs2))
     norm_objs_partcoll = np.column_stack((norm_objs1_partcoll, norm_objs2_partcoll))
@@ -386,18 +478,9 @@ def get_obj_bounds_run(data_comb, truss_prob, rand_mode):
 def compute_I_hv(pf_h, pf):
     return compute_hv(pf_h) - compute_hv(pf)
 
-def compute_I_hv2(pf_h, pf):
-    return (compute_hv(pf_h)/compute_hv(pf)) - 1
-
 def compute_I_constr(constrv_h, constrv, s_h, s):
-    return (np.mean(constrv) - np.mean(constrv_h))*(s_h/s)
-
-def compute_I_constr_alt(constrv_h, constrv):
-    return (np.mean(constrv) - np.mean(constrv_h))/(np.max(constrv.tolist() + constrv_h.tolist()))
-
-def compute_I_constr2(constrv_h, constrv):
-    return 1 - (np.mean(constrv_h)/np.mean(constrv))
-
+    return (np.mean(constrv_h) - np.mean(constrv))*(s_h/s)
+    
 def compute_indices(data_comb, truss_prob, obj_bounds_all): # to be called after combining data
     pf = data_comb['pf']
     pf_partcoll = data_comb['pf_partcoll']
@@ -491,64 +574,29 @@ def compute_indices(data_comb, truss_prob, obj_bounds_all): # to be called after
     I_inters = 0    
     
     # Compute indices based on objective minimization
-    #I_partcoll = compute_I_hv(pf_partcoll_norm, pf_norm) #compute_hv(pf_partcoll_norm) - compute_hv(pf_norm)
-    #I_nodalprop = compute_I_hv(pf_nodalprop_norm, pf_norm) #compute_hv(pf_nodalprop_norm) - compute_hv(pf_norm)
-    #I_orient = compute_I_hv(pf_orient_norm, pf_norm) #compute_hv(pf_orient_norm) - compute_hv(pf_norm)
-    #I_inters = compute_I_hv(pf_inters_norm, pf_norm) #compute_hv(pf_inters_norm) - compute_hv(pf_norm)
-    
-    I_partcoll = compute_I_hv2(pf_partcoll_norm, pf_norm)
-    I_nodalprop = compute_I_hv2(pf_nodalprop_norm, pf_norm)
-    I_orient = compute_I_hv2(pf_orient_norm, pf_norm)
-    I_inters = compute_I_hv2(pf_inters_norm, pf_norm)
+    I_partcoll = compute_I_hv(pf_partcoll_norm, pf_norm) #compute_hv(pf_partcoll_norm) - compute_hv(pf_norm)
+    I_nodalprop = compute_I_hv(pf_nodalprop_norm, pf_norm) #compute_hv(pf_nodalprop_norm) - compute_hv(pf_norm)
+    I_orient = compute_I_hv(pf_orient_norm, pf_norm) #compute_hv(pf_orient_norm) - compute_hv(pf_norm)
+    I_inters = compute_I_hv(pf_inters_norm, pf_norm) #compute_hv(pf_inters_norm) - compute_hv(pf_norm)
     
     # Add indices based on feasibility satisfaction
-    #I_partcoll += compute_I_constr(np.subtract(1, feas_partcoll), np.subtract(1, feas), s_feas_partcoll, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_partcoll)))*(s_feas_partcoll/s_feas)
-    #I_nodalprop += compute_I_constr(np.subtract(1, feas_nodalprop), np.subtract(1, feas), s_feas_nodalprop, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_nodalprop)))*(s_feas_nodalprop/s_feas)
-    #I_orient += compute_I_constr(np.subtract(1, feas_orient), np.subtract(1, feas), s_feas_orient, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_orient)))*(s_feas_orient/s_feas) 
-    #I_inters += compute_I_constr(np.subtract(1, feas_inters), np.subtract(1, feas), s_feas_inters, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_inters)))*(s_feas_inters/s_feas) 
+    I_partcoll += compute_I_constr(np.subtract(1, feas_partcoll), np.subtract(1, feas), s_feas_partcoll, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_partcoll)))*(s_feas_partcoll/s_feas)
+    I_nodalprop += compute_I_constr(np.subtract(1, feas_nodalprop), np.subtract(1, feas), s_feas_nodalprop, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_nodalprop)))*(s_feas_nodalprop/s_feas)
+    I_orient += compute_I_constr(np.subtract(1, feas_orient), np.subtract(1, feas), s_feas_orient, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_orient)))*(s_feas_orient/s_feas) 
+    I_inters += compute_I_constr(np.subtract(1, feas_inters), np.subtract(1, feas), s_feas_inters, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_inters)))*(s_feas_inters/s_feas) 
     
-    #I_partcoll += compute_I_constr_alt(np.subtract(1, feas_partcoll), np.subtract(1, feas))
-    #I_nodalprop += compute_I_constr_alt(np.subtract(1, feas_nodalprop), np.subtract(1, feas))
-    #I_orient += compute_I_constr_alt(np.subtract(1, feas_orient), np.subtract(1, feas))
-    #I_inters += compute_I_constr_alt(np.subtract(1, feas_inters), np.subtract(1, feas))
-    
-    I_partcoll += compute_I_constr2(np.subtract(1, feas_partcoll), np.subtract(1, feas))
-    I_nodalprop += compute_I_constr2(np.subtract(1, feas_nodalprop), np.subtract(1, feas))
-    I_orient += compute_I_constr2(np.subtract(1, feas_orient), np.subtract(1, feas))
-    I_inters += compute_I_constr2(np.subtract(1, feas_inters), np.subtract(1, feas))
-                                    
     # Add indices based on connectivity satisfaction
-    #I_partcoll += compute_I_constr(np.subtract(1, conn_partcoll), np.subtract(1, conn), s_conn_partcoll, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_partcoll)))*(s_conn_partcoll/s_conn) 
-    #I_nodalprop += compute_I_constr(np.subtract(1, conn_nodalprop), np.subtract(1, conn), s_conn_nodalprop, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_nodalprop)))*(s_conn_nodalprop/s_conn) 
-    #I_orient += compute_I_constr(np.subtract(1, conn_orient), np.subtract(1, conn), s_conn_orient, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_orient)))*(s_conn_orient/s_conn) 
-    #I_inters += compute_I_constr(np.subtract(1, conn_inters), np.subtract(1, conn), s_conn_inters, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_inters)))*(s_conn_inters/s_conn) 
+    I_partcoll += compute_I_constr(np.subtract(1, conn_partcoll), np.subtract(1, conn), s_conn_partcoll, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_partcoll)))*(s_conn_partcoll/s_conn) 
+    I_nodalprop += compute_I_constr(np.subtract(1, conn_nodalprop), np.subtract(1, conn), s_conn_nodalprop, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_nodalprop)))*(s_conn_nodalprop/s_conn) 
+    I_orient += compute_I_constr(np.subtract(1, conn_orient), np.subtract(1, conn), s_conn_orient, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_orient)))*(s_conn_orient/s_conn) 
+    I_inters += compute_I_constr(np.subtract(1, conn_inters), np.subtract(1, conn), s_conn_inters, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_inters)))*(s_conn_inters/s_conn) 
     
-    #I_partcoll += compute_I_constr_alt(np.subtract(1, conn_partcoll), np.subtract(1, conn))
-    #I_nodalprop += compute_I_constr_alt(np.subtract(1, conn_nodalprop), np.subtract(1, conn))
-    #I_orient += compute_I_constr_alt(np.subtract(1, conn_orient), np.subtract(1, conn))                                
-    #I_inters += compute_I_constr_alt(np.subtract(1, conn_inters), np.subtract(1, conn))                               
-    
-    I_partcoll += compute_I_constr2(np.subtract(1, conn_partcoll), np.subtract(1, conn))
-    I_nodalprop += compute_I_constr2(np.subtract(1, conn_nodalprop), np.subtract(1, conn))
-    I_orient += compute_I_constr2(np.subtract(1, conn_orient), np.subtract(1, conn))                                
-    I_inters += compute_I_constr2(np.subtract(1, conn_inters), np.subtract(1, conn))                               
-                               
     # If applicable, add indices based on stiffness ratio satisfaction
     if truss_prob:
-        #I_partcoll += compute_I_constr(stiffrat_partcoll, stiffrat, s_stiffrat_partcoll, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_partcoll))*(s_stiffrat_partcoll/s_stiffrat) 
-        #I_nodalprop += compute_I_constr(stiffrat_nodalprop, stiffrat, s_stiffrat_nodalprop, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_nodalprop))*(s_stiffrat_nodalprop/s_stiffrat) 
-        #I_orient += compute_I_constr(stiffrat_orient, stiffrat, s_stiffrat_orient, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_orient))*(s_stiffrat_orient/s_stiffrat) 
-        #I_inters += compute_I_constr(stiffrat_inters, stiffrat, s_stiffrat_inters, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_inters))*(s_stiffrat_inters/s_stiffrat) 
-        
-        #I_partcoll += compute_I_constr_alt(stiffrat_partcoll, stiffrat)
-        #I_nodalprop += compute_I_constr_alt(stiffrat_nodalprop, stiffrat)
-        #I_orient += compute_I_constr_alt(stiffrat_orient, stiffrat)
-        #I_inters += compute_I_constr_alt(stiffrat_inters, stiffrat)
-        
-        I_partcoll += compute_I_constr2(stiffrat_partcoll, stiffrat)
-        I_nodalprop += compute_I_constr2(stiffrat_nodalprop, stiffrat)
-        I_orient += compute_I_constr2(stiffrat_orient, stiffrat)
-        I_inters += compute_I_constr2(stiffrat_inters, stiffrat)
+        I_partcoll += compute_I_constr(stiffrat_partcoll, stiffrat, s_stiffrat_partcoll, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_partcoll))*(s_stiffrat_partcoll/s_stiffrat) 
+        I_nodalprop += compute_I_constr(stiffrat_nodalprop, stiffrat, s_stiffrat_nodalprop, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_nodalprop))*(s_stiffrat_nodalprop/s_stiffrat) 
+        I_orient += compute_I_constr(stiffrat_orient, stiffrat, s_stiffrat_orient, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_orient))*(s_stiffrat_orient/s_stiffrat) 
+        I_inters += compute_I_constr(stiffrat_inters, stiffrat, s_stiffrat_inters, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_inters))*(s_stiffrat_inters/s_stiffrat) 
         
     if truss_prob:
         I_partcoll /= 4
@@ -562,58 +610,140 @@ def compute_indices(data_comb, truss_prob, obj_bounds_all): # to be called after
         I_inters /= 3
     
     return I_partcoll, I_nodalprop, I_orient, I_inters
+
+def compute_indices_allruns(n_runs, truss_prob, model_prob, nfe_threshold):
+    I_pc_allruns = np.zeros(n_runs)
+    I_np_allruns = np.zeros(n_runs)
+    I_orient_allruns = np.zeros(n_runs)
+    I_inters_allruns = np.zeros(n_runs)
+    
+    ### Compute Pareto Fronts for all runs first
+    objs1_max_allruns = np.zeros(n_runs)
+    objs1_min_allruns = np.zeros(n_runs)
+    objs2_max_allruns = np.zeros(n_runs)
+    objs2_min_allruns = np.zeros(n_runs)
+    data_comb_allruns = {}
+    for i in range(n_runs):
+        file_loc_rand_i = get_fileloc(truss_prob, model_prob, 1, i)
+        data_rand_i = read_csv(file_loc_rand_i, truss_prob, 1, 0)
         
-############ OPERATION #############
-### Compute the heuristic indices for each run
-n_runs = 10
+        file_loc_moea_i = get_fileloc(truss_prob, model_prob, 2, i)
+        data_moea_i = read_csv(file_loc_moea_i, truss_prob, 2, nfe_threshold)
+
+        data_comb_i = get_combined_data(data_rand_i, data_moea_i, truss_prob, 2)
+        
+        data_comb_allruns['run'+str(i)] = data_comb_i
+        
+        obj_bounds_i = get_obj_bounds_run(data_comb_i, truss_prob, 2)
+        objs1_max_allruns[i] = obj_bounds_i[0]
+        objs1_min_allruns[i] = obj_bounds_i[1]
+        objs2_max_allruns[i] = obj_bounds_i[2]
+        objs2_min_allruns[i] = obj_bounds_i[3]
+    
+    ### Compute overall objective bounds 
+    objs1_max_overall = np.amax(objs1_max_allruns)
+    objs1_min_overall = np.amin(objs1_min_allruns)
+    objs2_max_overall = np.amax(objs2_max_allruns)
+    objs2_min_overall = np.amin(objs2_min_allruns)
+    obj_bounds_overall = [objs1_max_overall, objs1_min_overall, objs2_max_overall, objs2_min_overall] 
+
+    ### Compute indices
+    for i in range(n_runs):
+        data_comb_i = data_comb_allruns['run'+str(i)]
+        I_pci, I_npi, I_orienti, I_intersi = compute_indices(data_comb_i, truss_prob, obj_bounds_overall)
+        I_pc_allruns[i] = I_pci
+        I_np_allruns[i] = I_npi
+        I_orient_allruns[i] = I_orienti
+        I_inters_allruns[i] = I_intersi
+    
+    return I_pc_allruns, I_np_allruns, I_orient_allruns, I_inters_allruns
+
+### Operation
+num_runs = 10
+nfe_max = 6000
+n_datapoints = 10
 
 truss_problem = False
-model_prob = 2 # 1 - fiber model, 2 - truss model, 3 - beam model
-random_mode = 2 # 1 - only random data, 2 - random + MOEA data
+model_problem = 2 # 1 - fiber model, 2 - truss model, 3 - beam model
 
-### Compute Pareto Fronts for all runs first
-objs1_max_allruns = np.zeros(n_runs)
-objs1_min_allruns = np.zeros(n_runs)
-objs2_max_allruns = np.zeros(n_runs)
-objs2_min_allruns = np.zeros(n_runs)
-data_comb_allruns = {}
-for i in range(n_runs):
-    file_loc_rand_i = get_fileloc(truss_problem, model_prob, 1, i)
-    data_rand_i = read_csv(file_loc_rand_i, truss_problem)
-    if random_mode == 2:
-        file_loc_moea_i = get_fileloc(truss_problem, model_prob, 2, i)
-        data_moea_i = read_csv(file_loc_moea_i, truss_problem)
-    else:
-        data_moea_i = {}
-    data_comb_i = get_combined_data(data_rand_i, data_moea_i, truss_problem, random_mode)
-    data_comb_allruns['run'+str(i)] = data_comb_i
-    obj_bounds_i = get_obj_bounds_run(data_comb_i, truss_problem, random_mode)
-    objs1_max_allruns[i] = obj_bounds_i[0]
-    objs1_min_allruns[i] = obj_bounds_i[1]
-    objs2_max_allruns[i] = obj_bounds_i[2]
-    objs2_min_allruns[i] = obj_bounds_i[3]
+nfes_array_f = np.linspace(0, nfe_max, n_datapoints+1)
+nfes_array = [int(x) for x in nfes_array_f]
+
+I_partcoll_allnfes = []
+I_nodalprop_allnfes = []
+I_orient_allnfes = []
+I_inters_allnfes = []
+
+for nfe in nfes_array:
+    I_pc_nfe, I_np_nfe, I_orient_nfe, I_inters_nfe = compute_indices_allruns(num_runs, truss_problem, model_problem, nfe)
+    I_partcoll_allnfes.append(I_pc_nfe)
+    I_nodalprop_allnfes.append(I_np_nfe)
+    I_orient_allnfes.append(I_orient_nfe)
+    I_inters_allnfes.append(I_inters_nfe)
     
-### Compute overall objective bounds 
-objs1_max_overall = np.amax(objs1_max_allruns)
-objs1_min_overall = np.amin(objs1_min_allruns)
-objs2_max_overall = np.amax(objs2_max_allruns)
-objs2_min_overall = np.amin(objs2_min_allruns)
-obj_bounds_overall = [objs1_max_overall, objs1_min_overall, objs2_max_overall, objs2_min_overall] 
+### Plotting
+#fig, axs = plt.subplots(2, 2)
 
-### Compute indices
-I_pc = np.zeros(n_runs)
-I_np = np.zeros(n_runs)
-I_orient = np.zeros(n_runs)
-I_inters = np.zeros(n_runs)
-for i in range(n_runs):
-    data_comb_i = data_comb_allruns['run'+str(i)]
-    I_pci, I_npi, I_orienti, I_intersi = compute_indices(data_comb_i, truss_problem, obj_bounds_overall)
-    I_pc[i] = I_pci
-    I_np[i] = I_npi
-    I_orient[i] = I_orienti
-    I_inters[i] = I_intersi
+nfe_idx_ticks = np.linspace(1, len(nfes_array), len(nfes_array))
 
-print('I_partcoll = ' + str(np.mean(I_pc)) + ' +/- ' + str(np.std(I_pc)))
-print('I_nodalprop = ' + str(np.mean(I_np)) + ' +/- ' + str(np.std(I_np)))
-print('I_orient = ' + str(np.mean(I_orient)) + ' +/- ' + str(np.std(I_orient)))
-print('I_inters = ' + str(np.mean(I_inters)) + ' +/- ' + str(np.std(I_inters)))
+#plt.setp(axs, xticks=nfe_idx_ticks, xticklabels=nfes_array, ylabel='Heuristic Index')
+
+#plt.sca(axs[0,0])
+plt.figure()
+plt.boxplot(I_partcoll_allnfes)
+plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+plt.xlabel('NFE')
+plt.ylabel('Heuristic Index', fontsize=8)
+plt.title('Partial Collapsibility', fontsize=8)
+
+#plt.sca(axs[0,1])
+plt.figure()
+plt.boxplot(I_nodalprop_allnfes)
+plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+plt.xlabel('NFE')
+plt.ylabel('Heuristic Index', fontsize=8)
+plt.title('Nodal Properties', fontsize=8)
+
+#plt.sca(axs[1,0])
+plt.figure()
+plt.boxplot(I_orient_allnfes)
+plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+plt.xlabel('NFE')
+plt.ylabel('Heuristic Index', fontsize=8)
+plt.title('Orientation', fontsize=8)
+
+#plt.sca(axs[1,1])
+plt.figure()
+plt.boxplot(I_inters_allnfes)
+plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+plt.xlabel('NFE')
+plt.ylabel('Heuristic Index', fontsize=8)
+plt.title('Intersection', fontsize=8)
+
+#fig.tight_layout(pad=3.0)
+
+#plt.subplot(2,2,1)
+#plt.boxplot(I_partcoll_allnfes)
+#plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+#plt.ylabel('Operator Index', fontsize=8)
+#plt.title('Partial Collapsibility', fontsize=8)
+
+#plt.subplot(2,2,2)
+#plt.boxplot(I_nodalprop_allnfes)
+#plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+#plt.ylabel('Operator Index', fontsize=8)
+#plt.title('Nodal Properties', fontsize=8)
+
+#plt.subplot(2,2,3)
+#plt.boxplot(I_orient_allnfes)
+#plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+#plt.ylabel('Operator Index', fontsize=8)
+#plt.title('Orientation', fontsize=8)
+
+#plt.subplot(2,2,4)
+#plt.boxplot(I_inters_allnfes)
+#plt.xticks(nfe_idx_ticks, nfes_array, fontsize=8)
+#plt.ylabel('Operator Index', fontsize=8)
+#plt.title('Intersection', fontsize=8)
+
+#plt.show()

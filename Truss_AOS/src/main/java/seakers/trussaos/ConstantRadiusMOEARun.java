@@ -80,7 +80,7 @@ public class ConstantRadiusMOEARun {
          */
         int modelChoice = 1; // Fibre stiffness model cannot be used for the artery problem
 
-        boolean arteryProblem = false; // Solve the artery optimization (otherwise the original truss problem is solved)
+        boolean arteryProblem = true; // Solve the artery optimization (otherwise the original truss problem is solved)
         boolean useOptimizationProblem2 = true; // Use ConstantRadiusTrussProblem2 as problem class (instead of ConstantRadiusTrussProblem)
 
         double targetStiffnessRatio = 1;
@@ -97,10 +97,10 @@ public class ConstantRadiusMOEARun {
          *
          * heuristicsConstrained = [partialCollapsibilityConstrained, nodalPropertiesConstrained, orientationConstrained, intersectionConstrained]
          */
-        boolean[] partialCollapsibilityConstrained = {false, false, false, false, false, false, false};
-        boolean[] nodalPropertiesConstrained = {false, false, false, false, false, false, false};
-        boolean[] orientationConstrained = {false, true, false, false, false, false, false};
-        boolean[] intersectionConstrained = {false, true, false, false, false, false, false};
+        boolean[] partialCollapsibilityConstrained = {true, false, false, false, false, false, false};
+        boolean[] nodalPropertiesConstrained = {true, false, false, false, false, false, false};
+        boolean[] orientationConstrained = {true, false, false, false, false, false, false};
+        boolean[] intersectionConstrained = {true, false, false, false, false, false, false};
 
         // Bias initial population with low number of members
         boolean useLowMemberBiasing = false;

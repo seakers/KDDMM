@@ -11,6 +11,9 @@
   <component name="ProjectId" id="2CB3h4DuXcdriKnk3uDYFj2m5nZ" />
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.project.gradle" />
   </component>
   <component name="RunDashboard">
@@ -25,7 +28,20 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.ConstantRadiusMOEARun">
+    <configuration name="ConstantRadiusMOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.trussaos.ConstantRadiusMOEARun" />
+      <module name="Truss_AOS" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="seakers.trussaos.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="GenerateOperatorIndexDataset" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.trussaos.GenerateOperatorIndexDataset" />
       <module name="Truss_AOS" />
@@ -41,6 +57,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.ConstantRadiusMOEARun" />
         <item itemvalue="Application.GenerateOperatorIndexDataset" />
       </list>
     </recent_temporary>
