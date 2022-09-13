@@ -532,7 +532,10 @@ function [data_array_req, design_array_req] = read_csv_data_tillnfe(problem_trus
     data_array_sorted = data_array(sort_indices,:);
     design_array_sorted = design_array(sort_indices,:);
     
-    [~,closest_nfe_index] = min(abs(nfe_sorted - nfe_to_reach));
+    %[~,closest_nfe_index] = min(abs(nfe_sorted - nfe_to_reach));
+    abs_diffs = abs(nfe_sorted - nfe_to_reach);
+    closest_nfe_index = find(abs_diffs == min(abs_diffs), 1, 'last');
+    
     %nfe_array = nfe_sorted(1:closest_nfe_index);
     data_array_req = data_array_sorted(1:closest_nfe_index,:);
     design_array_req = design_array_sorted(1:closest_nfe_index,:);

@@ -60,3 +60,23 @@ I1_partcoll = mean(partcoll_new - partcoll_old);
 I1_nodalprop = mean(nodalprop_new - nodalprop_old);
 I1_orient = mean(orient_new - orient_old);
 I1_inters = mean(inters_new - inters_old);
+
+%% Compute Cohen's d for heuristics
+n_partcoll_old = size(partcoll_old, 1);
+n_partcoll_new = size(partcoll_new, 1);
+n_nodalprop_old = size(nodalprop_old, 1);
+n_nodalprop_new = size(nodalprop_new, 1);
+n_orient_old = size(orient_old, 1);
+n_orient_new = size(orient_new, 1);
+n_inters_old = size(inters_old, 1);
+n_inters_new = size(inters_new, 1);
+
+s_pooled_partcoll = sqrt(((n_partcoll_old - 1)*var(partcoll_old) + (n_partcoll_new - 1)*var(partcoll_new))/(n_partcoll_old + n_partcoll_new - 2));
+s_pooled_nodalprop = sqrt(((n_nodalprop_old - 1)*var(nodalprop_old) + (n_nodalprop_new - 1)*var(nodalprop_new))/(n_nodalprop_old + n_nodalprop_new - 2));
+s_pooled_orient = sqrt(((n_orient_old - 1)*var(orient_old) + (n_orient_new - 1)*var(orient_new))/(n_orient_old + n_orient_new - 2));
+s_pooled_inters = sqrt(((n_inters_old - 1)*var(inters_old) + (n_inters_new - 1)*var(inters_new))/(n_inters_old + n_inters_new - 2));
+
+d_partcoll = (mean(partcoll_new) - mean(partcoll_old))/s_pooled_partcoll;
+d_nodalprop = (mean(nodalprop_new) - mean(nodalprop_old))/s_pooled_nodalprop;
+d_orient = (mean(orient_new) - mean(orient_old))/s_pooled_orient;
+d_inters = (mean(inters_new) - mean(inters_old))/s_pooled_inters;

@@ -16,9 +16,16 @@ def find_closest_index(val, search_list):
     closest_index = np.argmin(np.abs(val_diff))
     return closest_index
 
+def find_last_index(val,search_list):
+    if val in search_list:
+        idx = len(search_list) - list(search_list[::-1]).index(val) - 1
+    else:
+        idx = 0
+    return idx
+
 def get_fileloc(truss_prob, model, run_mode, run_num):
-    #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\' # for office system
-    filepath_init = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\Operator Index Data\\' # for home system
+    filepath_init = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\Operator Index Data\\' # for office system
+    #filepath_init = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\Operator Index Data\\' # for home system
 
     if run_mode == 1: 
         filepath_mode = 'Random\\'
@@ -76,6 +83,46 @@ def compute_pareto_front(population):
         if domination_counter[i] == 0:
             pareto_solutions.append(population[i])
     return pareto_solutions
+
+def compute_pareto_front_constr(population_objs, population_constr_aggr):
+    # population_constr_aggr -> sum of absolute constraint violations
+    pop_size = len(population_objs)
+    obj_num = 2
+
+    domination_counter = [0] * pop_size
+
+    for i in range(pop_size):
+        for j in range(i+1, pop_size):
+            # First check for aggregate constraint dominance
+            if population_constr_aggr[i] < population_constr_aggr[j]:
+                domination_counter[j] += 1
+            elif population_constr_aggr[i] > population_constr_aggr[j]:
+                domination_counter[i] += 1
+            else:
+                # For equal constraint satisfaction, check each objective for dominance
+                dominate = [0] * obj_num
+                for k in range(obj_num):
+                    if population_objs[i][k] > population_objs[j][k]:
+                        dominate[k] = 1
+                    elif population_objs[i][k] < population_objs[j][k]:
+                        dominate[k] = -1
+                if -1 not in dominate and 1 in dominate:
+                    domination_counter[i] += 1
+                elif -1 in dominate and 1 not in dominate:
+                    domination_counter[j] += 1
+                
+    pareto_solutions = []
+    for i in range(len(domination_counter)):
+        if domination_counter[i] == 0:
+            pareto_solutions.append(population_objs[i])
+    return pareto_solutions
+
+def get_aggr_constr(feas_array, conn_array, stiffrat_array):
+    feas_viol_array = np.subtract(1, feas_array)
+    conn_viol_array = np.subtract(1, conn_array)
+    aggr_constr1 = np.add(feas_viol_array, conn_viol_array)
+    aggr_constr = np.add(aggr_constr1, stiffrat_array)
+    return aggr_constr
 
 def compute_hv(population):
     array_archs = np.zeros((len(population), 2))
@@ -286,7 +333,7 @@ def read_csv(fileloc_csv, truss_prob, run_mode, nfe_thresh):
              stiffrat_orient_sorted = stiffrat_orient[sort_indices]
              stiffrat_inters_sorted = stiffrat_inters[sort_indices]
     
-        nfe_thresh_idx = find_closest_index(nfe_thresh, nfes_sorted)
+        nfe_thresh_idx = find_last_index(nfe_thresh, nfes_sorted)
         
         norm_objs1 = norm_objs1_sorted[:nfe_thresh_idx]
         norm_objs1_partcoll = norm_objs1_partcoll_sorted[:nfe_thresh_idx]
@@ -354,7 +401,7 @@ def read_csv(fileloc_csv, truss_prob, run_mode, nfe_thresh):
         
     return data
 
-def get_combined_data(data_rand, data_moea, truss_prob, rand_mode):
+def get_combined_data(data_rand, data_moea, truss_prob, rand_mode, hv_constr_only):
     
     if rand_mode == 1:
         norm_objs_combined = data_rand['objs'].tolist()
@@ -407,13 +454,33 @@ def get_combined_data(data_rand, data_moea, truss_prob, rand_mode):
             stiffrat_combined_nodalprop = data_rand['stiffrat_nodalprop'].tolist() + data_moea['stiffrat_nodalprop'].tolist()
             stiffrat_combined_orient = data_rand['stiffrat_orient'].tolist() + data_moea['stiffrat_orient'].tolist()
             stiffrat_combined_inters = data_rand['stiffrat_inters'].tolist() + data_moea['stiffrat_inters'].tolist()
+        else:
+            stiffrat_combined = np.zeros(len(feas_combined))
+            stiffrat_combined_partcoll = np.zeros(len(feas_combined_partcoll))
+            stiffrat_combined_nodalprop = np.zeros(len(feas_combined_nodalprop))
+            stiffrat_combined_orient = np.zeros(len(feas_combined_orient))
+            stiffrat_combined_inters = np.zeros(len(feas_combined_inters))
      
     # Compute Pareto Fronts
-    pf_combined = compute_pareto_front(norm_objs_combined)
-    pf_combined_partcoll = compute_pareto_front(norm_objs_combined_partcoll)
-    pf_combined_nodalprop = compute_pareto_front(norm_objs_combined_nodalprop)
-    pf_combined_orient = compute_pareto_front(norm_objs_combined_orient)
-    pf_combined_inters = compute_pareto_front(norm_objs_combined_inters)
+    if hv_constr_only:
+        aggr_constr = get_aggr_constr(feas_combined, conn_combined, stiffrat_combined)
+        aggr_constr_partcoll = get_aggr_constr(feas_combined_partcoll, conn_combined_partcoll, stiffrat_combined_partcoll)
+        aggr_constr_nodalprop = get_aggr_constr(feas_combined_nodalprop, conn_combined_nodalprop, stiffrat_combined_nodalprop)
+        aggr_constr_orient = get_aggr_constr(feas_combined_orient, conn_combined_orient, stiffrat_combined_orient)
+        aggr_constr_inters = get_aggr_constr(feas_combined_inters, conn_combined_inters, stiffrat_combined_inters)
+    
+        pf_combined = compute_pareto_front_constr(norm_objs_combined, aggr_constr)
+        pf_combined_partcoll = compute_pareto_front_constr(norm_objs_combined_partcoll, aggr_constr_partcoll)
+        pf_combined_nodalprop = compute_pareto_front_constr(norm_objs_combined_nodalprop, aggr_constr_nodalprop)
+        pf_combined_orient = compute_pareto_front_constr(norm_objs_combined_orient, aggr_constr_orient)
+        pf_combined_inters = compute_pareto_front_constr(norm_objs_combined_inters, aggr_constr_inters)
+        
+    else:
+        pf_combined = compute_pareto_front(norm_objs_combined)
+        pf_combined_partcoll = compute_pareto_front(norm_objs_combined_partcoll)
+        pf_combined_nodalprop = compute_pareto_front(norm_objs_combined_nodalprop)
+        pf_combined_orient = compute_pareto_front(norm_objs_combined_orient)
+        pf_combined_inters = compute_pareto_front(norm_objs_combined_inters)
     
     data_comb = {}
     data_comb['n_designs'] = len(norm_objs_combined)
@@ -424,24 +491,25 @@ def get_combined_data(data_rand, data_moea, truss_prob, rand_mode):
     data_comb['pf_orient'] = pf_combined_orient
     data_comb['pf_inters'] = pf_combined_inters
     
-    data_comb['feas'] = feas_combined
-    data_comb['feas_partcoll'] = feas_combined_partcoll
-    data_comb['feas_nodalprop'] = feas_combined_nodalprop
-    data_comb['feas_orient'] = feas_combined_orient
-    data_comb['feas_inters'] = feas_combined_inters
+    if not hv_constr_only:
+        data_comb['feas'] = feas_combined
+        data_comb['feas_partcoll'] = feas_combined_partcoll
+        data_comb['feas_nodalprop'] = feas_combined_nodalprop
+        data_comb['feas_orient'] = feas_combined_orient
+        data_comb['feas_inters'] = feas_combined_inters
     
-    data_comb['conn'] = conn_combined
-    data_comb['conn_partcoll'] = conn_combined_partcoll
-    data_comb['conn_nodalprop'] = conn_combined_nodalprop
-    data_comb['conn_orient'] = conn_combined_orient
-    data_comb['conn_inters'] = conn_combined_inters
+        data_comb['conn'] = conn_combined
+        data_comb['conn_partcoll'] = conn_combined_partcoll
+        data_comb['conn_nodalprop'] = conn_combined_nodalprop
+        data_comb['conn_orient'] = conn_combined_orient
+        data_comb['conn_inters'] = conn_combined_inters
     
-    if truss_prob:
-        data_comb['stiffrat'] = stiffrat_combined
-        data_comb['stiffrat_partcoll'] = stiffrat_combined_partcoll
-        data_comb['stiffrat_nodalprop'] = stiffrat_combined_nodalprop
-        data_comb['stiffrat_orient'] = stiffrat_combined_orient
-        data_comb['stiffrat_inters'] = stiffrat_combined_inters
+        if truss_prob:
+            data_comb['stiffrat'] = stiffrat_combined
+            data_comb['stiffrat_partcoll'] = stiffrat_combined_partcoll
+            data_comb['stiffrat_nodalprop'] = stiffrat_combined_nodalprop
+            data_comb['stiffrat_orient'] = stiffrat_combined_orient
+            data_comb['stiffrat_inters'] = stiffrat_combined_inters
     
     return data_comb
 
@@ -478,75 +546,86 @@ def get_obj_bounds_run(data_comb, truss_prob, rand_mode):
 def compute_I_hv(pf_h, pf):
     return compute_hv(pf_h) - compute_hv(pf)
 
+def compute_I_hv2(pf_h, pf):
+    return (compute_hv(pf_h)/compute_hv(pf)) - 1
+
 def compute_I_constr(constrv_h, constrv, s_h, s):
     return (np.mean(constrv_h) - np.mean(constrv))*(s_h/s)
+
+def compute_I_constr_alt(constrv_h, constrv):
+    return (np.mean(constrv) - np.mean(constrv_h))/(np.max(constrv.tolist() + constrv_h.tolist()))
+
+def compute_I_constr2(constrv_h, constrv):
+    return 1 - (np.mean(constrv_h)/np.mean(constrv))
     
-def compute_indices(data_comb, truss_prob, obj_bounds_all): # to be called after combining data
+def compute_indices(data_comb, truss_prob, obj_bounds_all, hv_constr_only): # to be called after combining data
     pf = data_comb['pf']
     pf_partcoll = data_comb['pf_partcoll']
     pf_nodalprop = data_comb['pf_nodalprop']
-    pf_orient = data_comb['pf_nodalprop']
+    pf_orient = data_comb['pf_orient']
     pf_inters = data_comb['pf_inters']
     
-    feas = data_comb['feas']
-    feas_partcoll = data_comb['feas_partcoll']
-    feas_nodalprop = data_comb['feas_nodalprop']
-    feas_orient = data_comb['feas_orient']
-    feas_inters = data_comb['feas_inters']
+    if not hv_constr_only:
+        feas = data_comb['feas']
+        feas_partcoll = data_comb['feas_partcoll']
+        feas_nodalprop = data_comb['feas_nodalprop']
+        feas_orient = data_comb['feas_orient']
+        feas_inters = data_comb['feas_inters']
     
-    conn = data_comb['conn']
-    conn_partcoll = data_comb['conn_partcoll']
-    conn_nodalprop = data_comb['conn_nodalprop']
-    conn_orient = data_comb['conn_orient']
-    conn_inters = data_comb['conn_inters']
-
-    if truss_prob:
-        stiffrat = data_comb['stiffrat']
-        stiffrat_partcoll = data_comb['stiffrat_partcoll']
-        stiffrat_nodalprop = data_comb['stiffrat_nodalprop']
-        stiffrat_orient = data_comb['stiffrat_orient']
-        stiffrat_inters = data_comb['stiffrat_inters']
+        conn = data_comb['conn']
+        conn_partcoll = data_comb['conn_partcoll']
+        conn_nodalprop = data_comb['conn_nodalprop']
+        conn_orient = data_comb['conn_orient']
+        conn_inters = data_comb['conn_inters']
+        
+        if truss_prob:
+            stiffrat = data_comb['stiffrat']
+            stiffrat_partcoll = data_comb['stiffrat_partcoll']
+            stiffrat_nodalprop = data_comb['stiffrat_nodalprop']
+            stiffrat_orient = data_comb['stiffrat_orient']
+            stiffrat_inters = data_comb['stiffrat_inters']
 
     n_total = data_comb['n_designs']
     
     # Compute support of problem parameters
-    s_pf = len(pf)/n_total
-    s_pf_partcoll = len(pf_partcoll)/n_total
-    s_pf_nodalprop = len(pf_nodalprop)/n_total
-    s_pf_orient = len(pf_orient)/n_total
-    s_pf_inters = len(pf_inters)/n_total
-    
-    s_feas = len([elem for elem in feas if elem==1])/n_total + 1e-5
-    s_feas_partcoll = len([elem for elem in feas_partcoll if elem==1])/n_total + 1e-5
-    s_feas_nodalprop = len([elem for elem in feas_nodalprop if elem==1])/n_total + 1e-5
-    s_feas_orient = len([elem for elem in feas_orient if elem==1])/n_total + 1e-5
-    s_feas_inters = len([elem for elem in feas_inters if elem==1])/n_total + 1e-5
-    
-    s_conn = len([elem for elem in conn if elem==1])/n_total + 1e-5
-    s_conn_partcoll = len([elem for elem in conn_partcoll if elem==1])/n_total + 1e-5
-    s_conn_nodalprop = len([elem for elem in conn_nodalprop if elem==1])/n_total + 1e-5
-    s_conn_orient = len([elem for elem in conn_orient if elem==1])/n_total + 1e-5
-    s_conn_inters = len([elem for elem in conn_inters if elem==1])/n_total + 1e-5
-    
-    if truss_prob:
-        s_stiffrat = len([elem for elem in stiffrat if elem==0])/n_total + 1e-5
-        s_stiffrat_partcoll = len([elem for elem in stiffrat_partcoll if elem==0])/n_total + 1e-5
-        s_stiffrat_nodalprop = len([elem for elem in stiffrat_nodalprop if elem==0])/n_total + 1e-5
-        s_stiffrat_orient = len([elem for elem in stiffrat_orient if elem==0])/n_total + 1e-5
-        s_stiffrat_inters = len([elem for elem in stiffrat_inters if elem==0])/n_total + 1e-5
+    if not hv_constr_only:
+        s_pf = len(pf)/n_total
+        s_pf_partcoll = len(pf_partcoll)/n_total
+        s_pf_nodalprop = len(pf_nodalprop)/n_total
+        s_pf_orient = len(pf_orient)/n_total
+        s_pf_inters = len(pf_inters)/n_total
         
-    s = [s_pf, s_feas, s_conn]
-    s_partcoll = [s_pf_partcoll, s_feas_partcoll, s_conn_partcoll]
-    s_nodalprop = [s_pf_nodalprop, s_feas_nodalprop, s_conn_nodalprop]
-    s_orient = [s_pf_orient, s_feas_orient, s_conn_orient]
-    s_inters = [s_pf_inters, s_feas_inters, s_conn_inters]
+        s_feas = len([elem for elem in feas if elem==1])/n_total + 1e-5
+        s_feas_partcoll = len([elem for elem in feas_partcoll if elem==1])/n_total + 1e-5
+        s_feas_nodalprop = len([elem for elem in feas_nodalprop if elem==1])/n_total + 1e-5
+        s_feas_orient = len([elem for elem in feas_orient if elem==1])/n_total + 1e-5
+        s_feas_inters = len([elem for elem in feas_inters if elem==1])/n_total + 1e-5
+        
+        s_conn = len([elem for elem in conn if elem==1])/n_total + 1e-5
+        s_conn_partcoll = len([elem for elem in conn_partcoll if elem==1])/n_total + 1e-5
+        s_conn_nodalprop = len([elem for elem in conn_nodalprop if elem==1])/n_total + 1e-5
+        s_conn_orient = len([elem for elem in conn_orient if elem==1])/n_total + 1e-5
+        s_conn_inters = len([elem for elem in conn_inters if elem==1])/n_total + 1e-5
     
-    if truss_prob:
-        s.append(s_stiffrat)
-        s_partcoll.append(s_stiffrat_partcoll)
-        s_nodalprop.append(s_stiffrat_nodalprop)
-        s_orient.append(s_stiffrat_orient)
-        s_inters.append(s_stiffrat_inters)
+        if truss_prob:
+            s_stiffrat = len([elem for elem in stiffrat if elem==0])/n_total + 1e-5
+            s_stiffrat_partcoll = len([elem for elem in stiffrat_partcoll if elem==0])/n_total + 1e-5
+            s_stiffrat_nodalprop = len([elem for elem in stiffrat_nodalprop if elem==0])/n_total + 1e-5
+            s_stiffrat_orient = len([elem for elem in stiffrat_orient if elem==0])/n_total + 1e-5
+            s_stiffrat_inters = len([elem for elem in stiffrat_inters if elem==0])/n_total + 1e-5
+        
+        s = [s_pf, s_feas, s_conn]
+        s_partcoll = [s_pf_partcoll, s_feas_partcoll, s_conn_partcoll]
+        s_nodalprop = [s_pf_nodalprop, s_feas_nodalprop, s_conn_nodalprop]
+        s_orient = [s_pf_orient, s_feas_orient, s_conn_orient]
+        s_inters = [s_pf_inters, s_feas_inters, s_conn_inters]
+    
+        if truss_prob:
+            s.append(s_stiffrat)
+            s_partcoll.append(s_stiffrat_partcoll)
+            s_nodalprop.append(s_stiffrat_nodalprop)
+            s_orient.append(s_stiffrat_orient)
+            s_inters.append(s_stiffrat_inters)
         
     # Normalize pareto fronts
     pf_objs1_norm = [(x[0] - obj_bounds_all[1])/(obj_bounds_all[0] - obj_bounds_all[1]) for x in pf]
@@ -579,39 +658,60 @@ def compute_indices(data_comb, truss_prob, obj_bounds_all): # to be called after
     I_orient = compute_I_hv(pf_orient_norm, pf_norm) #compute_hv(pf_orient_norm) - compute_hv(pf_norm)
     I_inters = compute_I_hv(pf_inters_norm, pf_norm) #compute_hv(pf_inters_norm) - compute_hv(pf_norm)
     
-    # Add indices based on feasibility satisfaction
-    I_partcoll += compute_I_constr(np.subtract(1, feas_partcoll), np.subtract(1, feas), s_feas_partcoll, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_partcoll)))*(s_feas_partcoll/s_feas)
-    I_nodalprop += compute_I_constr(np.subtract(1, feas_nodalprop), np.subtract(1, feas), s_feas_nodalprop, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_nodalprop)))*(s_feas_nodalprop/s_feas)
-    I_orient += compute_I_constr(np.subtract(1, feas_orient), np.subtract(1, feas), s_feas_orient, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_orient)))*(s_feas_orient/s_feas) 
-    I_inters += compute_I_constr(np.subtract(1, feas_inters), np.subtract(1, feas), s_feas_inters, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_inters)))*(s_feas_inters/s_feas) 
+    #I_partcoll = compute_I_hv2(pf_partcoll_norm, pf_norm) 
+    #I_nodalprop = compute_I_hv2(pf_nodalprop_norm, pf_norm) 
+    #I_orient = compute_I_hv2(pf_orient_norm, pf_norm) 
+    #I_inters = compute_I_hv2(pf_inters_norm, pf_norm) 
     
-    # Add indices based on connectivity satisfaction
-    I_partcoll += compute_I_constr(np.subtract(1, conn_partcoll), np.subtract(1, conn), s_conn_partcoll, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_partcoll)))*(s_conn_partcoll/s_conn) 
-    I_nodalprop += compute_I_constr(np.subtract(1, conn_nodalprop), np.subtract(1, conn), s_conn_nodalprop, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_nodalprop)))*(s_conn_nodalprop/s_conn) 
-    I_orient += compute_I_constr(np.subtract(1, conn_orient), np.subtract(1, conn), s_conn_orient, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_orient)))*(s_conn_orient/s_conn) 
-    I_inters += compute_I_constr(np.subtract(1, conn_inters), np.subtract(1, conn), s_conn_inters, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_inters)))*(s_conn_inters/s_conn) 
-    
-    # If applicable, add indices based on stiffness ratio satisfaction
-    if truss_prob:
-        I_partcoll += compute_I_constr(stiffrat_partcoll, stiffrat, s_stiffrat_partcoll, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_partcoll))*(s_stiffrat_partcoll/s_stiffrat) 
-        I_nodalprop += compute_I_constr(stiffrat_nodalprop, stiffrat, s_stiffrat_nodalprop, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_nodalprop))*(s_stiffrat_nodalprop/s_stiffrat) 
-        I_orient += compute_I_constr(stiffrat_orient, stiffrat, s_stiffrat_orient, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_orient))*(s_stiffrat_orient/s_stiffrat) 
-        I_inters += compute_I_constr(stiffrat_inters, stiffrat, s_stiffrat_inters, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_inters))*(s_stiffrat_inters/s_stiffrat) 
+    if not hv_constr_only:
+        # Add indices based on feasibility satisfaction
+        #I_partcoll += compute_I_constr(np.subtract(1, feas_partcoll), np.subtract(1, feas), s_feas_partcoll, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_partcoll)))*(s_feas_partcoll/s_feas)
+        #I_nodalprop += compute_I_constr(np.subtract(1, feas_nodalprop), np.subtract(1, feas), s_feas_nodalprop, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_nodalprop)))*(s_feas_nodalprop/s_feas)
+        #I_orient += compute_I_constr(np.subtract(1, feas_orient), np.subtract(1, feas), s_feas_orient, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_orient)))*(s_feas_orient/s_feas) 
+        #I_inters += compute_I_constr(np.subtract(1, feas_inters), np.subtract(1, feas), s_feas_inters, s_feas) #(np.mean(np.subtract(1, feas)) - np.mean(np.subtract(1, feas_inters)))*(s_feas_inters/s_feas) 
         
-    if truss_prob:
-        I_partcoll /= 4
-        I_nodalprop /= 4
-        I_orient /= 4
-        I_inters /= 4
-    else:
-        I_partcoll /= 3
-        I_nodalprop /= 3
-        I_orient /= 3
-        I_inters /= 3
+        I_partcoll += compute_I_constr2(np.subtract(1, feas_partcoll), np.subtract(1, feas))
+        I_nodalprop += compute_I_constr2(np.subtract(1, feas_nodalprop), np.subtract(1, feas))
+        I_orient += compute_I_constr2(np.subtract(1, feas_orient), np.subtract(1, feas))
+        I_inters += compute_I_constr2(np.subtract(1, feas_inters), np.subtract(1, feas))
+        
+        # Add indices based on connectivity satisfaction
+        #I_partcoll += compute_I_constr(np.subtract(1, conn_partcoll), np.subtract(1, conn), s_conn_partcoll, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_partcoll)))*(s_conn_partcoll/s_conn) 
+        #I_nodalprop += compute_I_constr(np.subtract(1, conn_nodalprop), np.subtract(1, conn), s_conn_nodalprop, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_nodalprop)))*(s_conn_nodalprop/s_conn) 
+        #I_orient += compute_I_constr(np.subtract(1, conn_orient), np.subtract(1, conn), s_conn_orient, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_orient)))*(s_conn_orient/s_conn) 
+        #I_inters += compute_I_constr(np.subtract(1, conn_inters), np.subtract(1, conn), s_conn_inters, s_conn) #(np.mean(np.subtract(1, conn)) - np.mean(np.subtract(1, conn_inters)))*(s_conn_inters/s_conn) 
+        
+        I_partcoll += compute_I_constr2(np.subtract(1, conn_partcoll), np.subtract(1, conn))
+        I_nodalprop += compute_I_constr2(np.subtract(1, conn_nodalprop), np.subtract(1, conn))
+        I_orient += compute_I_constr2(np.subtract(1, conn_orient), np.subtract(1, conn))
+        I_inters += compute_I_constr2(np.subtract(1, conn_inters), np.subtract(1, conn))
+    
+        # If applicable, add indices based on stiffness ratio satisfaction
+        if truss_prob:
+            #I_partcoll += compute_I_constr(stiffrat_partcoll, stiffrat, s_stiffrat_partcoll, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_partcoll))*(s_stiffrat_partcoll/s_stiffrat) 
+            #I_nodalprop += compute_I_constr(stiffrat_nodalprop, stiffrat, s_stiffrat_nodalprop, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_nodalprop))*(s_stiffrat_nodalprop/s_stiffrat) 
+            #I_orient += compute_I_constr(stiffrat_orient, stiffrat, s_stiffrat_orient, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_orient))*(s_stiffrat_orient/s_stiffrat) 
+            #I_inters += compute_I_constr(stiffrat_inters, stiffrat, s_stiffrat_inters, s_stiffrat) #(np.mean(stiffrat) - np.mean(stiffrat_inters))*(s_stiffrat_inters/s_stiffrat) 
+        
+            I_partcoll += compute_I_constr2(stiffrat_partcoll, stiffrat) 
+            I_nodalprop += compute_I_constr2(stiffrat_nodalprop, stiffrat) 
+            I_orient += compute_I_constr2(stiffrat_orient, stiffrat) 
+            I_inters += compute_I_constr2(stiffrat_inters, stiffrat) 
+        
+        if truss_prob:
+            I_partcoll /= 4
+            I_nodalprop /= 4
+            I_orient /= 4
+            I_inters /= 4
+        else:
+            I_partcoll /= 3
+            I_nodalprop /= 3
+            I_orient /= 3
+            I_inters /= 3
     
     return I_partcoll, I_nodalprop, I_orient, I_inters
 
-def compute_indices_allruns(n_runs, truss_prob, model_prob, nfe_threshold):
+def compute_indices_allruns(n_runs, truss_prob, model_prob, nfe_threshold, hv_constr_only):
     I_pc_allruns = np.zeros(n_runs)
     I_np_allruns = np.zeros(n_runs)
     I_orient_allruns = np.zeros(n_runs)
@@ -630,7 +730,7 @@ def compute_indices_allruns(n_runs, truss_prob, model_prob, nfe_threshold):
         file_loc_moea_i = get_fileloc(truss_prob, model_prob, 2, i)
         data_moea_i = read_csv(file_loc_moea_i, truss_prob, 2, nfe_threshold)
 
-        data_comb_i = get_combined_data(data_rand_i, data_moea_i, truss_prob, 2)
+        data_comb_i = get_combined_data(data_rand_i, data_moea_i, truss_prob, 2, hv_constr_only)
         
         data_comb_allruns['run'+str(i)] = data_comb_i
         
@@ -650,7 +750,7 @@ def compute_indices_allruns(n_runs, truss_prob, model_prob, nfe_threshold):
     ### Compute indices
     for i in range(n_runs):
         data_comb_i = data_comb_allruns['run'+str(i)]
-        I_pci, I_npi, I_orienti, I_intersi = compute_indices(data_comb_i, truss_prob, obj_bounds_overall)
+        I_pci, I_npi, I_orienti, I_intersi = compute_indices(data_comb_i, truss_prob, obj_bounds_overall, hv_constr_only)
         I_pc_allruns[i] = I_pci
         I_np_allruns[i] = I_npi
         I_orient_allruns[i] = I_orienti
@@ -665,6 +765,7 @@ n_datapoints = 10
 
 truss_problem = False
 model_problem = 2 # 1 - fiber model, 2 - truss model, 3 - beam model
+only_hv_constr = True # Use only HV of constrained Pareto Fronts for indices computation
 
 nfes_array_f = np.linspace(0, nfe_max, n_datapoints+1)
 nfes_array = [int(x) for x in nfes_array_f]
@@ -675,7 +776,7 @@ I_orient_allnfes = []
 I_inters_allnfes = []
 
 for nfe in nfes_array:
-    I_pc_nfe, I_np_nfe, I_orient_nfe, I_inters_nfe = compute_indices_allruns(num_runs, truss_problem, model_problem, nfe)
+    I_pc_nfe, I_np_nfe, I_orient_nfe, I_inters_nfe = compute_indices_allruns(num_runs, truss_problem, model_problem, nfe, only_hv_constr)
     I_partcoll_allnfes.append(I_pc_nfe)
     I_nodalprop_allnfes.append(I_np_nfe)
     I_orient_allnfes.append(I_orient_nfe)

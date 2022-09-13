@@ -107,8 +107,8 @@ def get_csv_filepath_material(partcoll_constrained, nodprop_constrained, orient_
     # artery_problem = True if artery problem data is to be read, False if truss problem data is to be read
     # model_choice = 1 - fibre stiffness, 2 - truss stiffness, 3 - ANSYS APDL beam model
     
-    #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\' # for office system
-    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\' # for home system
+    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\KD3M3\\Truss_AOS\\result\\' # for office system
+    #filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\KD3M3\\result\\' # for home system
     methods = ['Int Pen','AOS','Bias Init','ACH']
     heurs_list = ['PartColl','NodalProp','Orient','Inters']
     heur_abbrvs_list = ['p','n','o','i']
@@ -270,7 +270,7 @@ def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, side
     heur_scores_sorted = np.vstack((partcoll_scores_sorted, nodprop_scores_sorted, orient_scores_sorted, inters_scores_sorted))
     
     ## Compute only constraint optimized (normalized) objectives (used for the interior penalty cases)
-    heur_weight = 1
+    heur_weight = 0.005
     heur_pen = np.zeros(len(feas_scores_sorted))
     if (any(intpen_constr_heur)):
         heur_index_array = np.arange(len(intpen_constr_heur))
@@ -1126,7 +1126,7 @@ def plotting_all_cases(num_sat_allcases, nfe_hv_attained_dict, hv_dict_med_allca
 model_used = 2 # 1 = Fibre stiffness, 2 = Truss stiffness, 3 = APDL Beam
 sidenum = 3 # 3x3 node grid
 cases_dict = {}
-artery_problem = True
+artery_problem = False
 num_runs = 30 # number of runs for each case
 threshold_hv = 0.65
 
@@ -1135,16 +1135,16 @@ credit_assignment = 0 # 0 -> offspring parent dominance, 1 -> set improvement do
 # bools = [int_pen_partcoll, AOS_partcoll, bias_init_partcoll, ACH_partcoll, int_pen_nodalprop, AOS_nodalprop, bias_init_nodalprop, ACH_nodalprop, int_pen_orient, AOS_orient, bias_init_orient, ACH_orient, int_pen_inters, AOS_inters, bias_init_inters, ACH_inters]
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
 #case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
-#case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - all heuristics
-case2_bools = [False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True] #  ACH - all heuristics
+case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - all heuristics
+#case2_bools = [False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True] #  ACH - all heuristics
 if artery_problem:
     #case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
-    #case3_bools = [False, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
-    case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
+    case3_bools = [False, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
+    #case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
 else:
     #case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
-    #case3_bools = [False, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
-    case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
+    case3_bools = [False, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
+    #case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
 
 cases_dict['case1'] = case1_bools
 cases_dict['case2'] = case2_bools
