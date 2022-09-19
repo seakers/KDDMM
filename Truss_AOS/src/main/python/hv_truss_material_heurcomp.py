@@ -270,7 +270,7 @@ def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, side
     heur_scores_sorted = np.vstack((partcoll_scores_sorted, nodprop_scores_sorted, orient_scores_sorted, inters_scores_sorted))
     
     ## Compute only constraint optimized (normalized) objectives (used for the interior penalty cases)
-    heur_weight = 0.005
+    heur_weight = 10
     heur_pen = np.zeros(len(feas_scores_sorted))
     if (any(intpen_constr_heur)):
         heur_index_array = np.arange(len(intpen_constr_heur))
@@ -1143,7 +1143,7 @@ if artery_problem:
     #case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
 else:
     #case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
-    case3_bools = [False, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
+    case3_bools = [False, False, False, False, False, False, False, False, False, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
     #case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
 
 cases_dict['case1'] = case1_bools

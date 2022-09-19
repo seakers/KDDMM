@@ -669,7 +669,7 @@ def compute_indices(data_comb, truss_prob, obj_bounds_all, hv_constr_only): # to
 ### Compute the heuristic indices for each run
 n_runs = 10
 
-truss_problem = False
+truss_problem = True
 model_prob = 2 # 1 - fiber model, 2 - truss model, 3 - beam model
 random_mode = 1 # 1 - only random data, 2 - random + MOEA data
 only_hv_truss = True # Use only HV of constrained Pareto Fronts for indices computation

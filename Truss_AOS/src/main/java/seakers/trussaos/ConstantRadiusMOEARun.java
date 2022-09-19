@@ -99,8 +99,8 @@ public class ConstantRadiusMOEARun {
          */
         boolean[] partialCollapsibilityConstrained = {false, false, false, false, false, false, false};
         boolean[] nodalPropertiesConstrained = {false, false, false, false, false, false, false};
-        boolean[] orientationConstrained = {false, false, false, false, false, false, false};
-        boolean[] intersectionConstrained = {true, false, false, false, false, false, false};
+        boolean[] orientationConstrained = {false, true, false, false, false, false, false};
+        boolean[] intersectionConstrained = {false, false, false, false, false, false, false};
 
         // Bias initial population with low number of members
         boolean useLowMemberBiasing = false;
@@ -382,13 +382,13 @@ public class ConstantRadiusMOEARun {
 
                 // Create credit assignment
                 //SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
-                SetContributionDominance creditAssignment = new SetContributionDominance(archive, 1, 0);
-                //OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0, comp);
+                //SetContributionDominance creditAssignment = new SetContributionDominance(archive, 1, 0);
+                OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0, comp);
 
                 // Create AOS
                 //aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
-                aosStrategy = new AOSVariationSC(operatorSelector, creditAssignment, popSize);
-                //aosStrategy = new AOSVariationOP(operatorSelector, creditAssignment, popSize);
+                //aosStrategy = new AOSVariationSC(operatorSelector, creditAssignment, popSize);
+                aosStrategy = new AOSVariationOP(operatorSelector, creditAssignment, popSize);
 
             } else { // Epsilon MOEA objects
                 properties.setDouble("crossoverProbability", crossoverProbability);
