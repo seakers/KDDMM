@@ -1142,6 +1142,26 @@ indices_tablestats = [mean(I1_partcoll), std(I1_partcoll);
                       mean(I1_nodalprop), std(I1_nodalprop);
                       mean(I1_orient), std(I1_orient);
                       mean(I1_inters), std(I1_inters)];
+                  
+%% Determine nth percentile for positive I 
+I_heurs_runs = [I1_partcoll, I1_nodalprop, I1_orient, I1_inters];
+n_percentile_heurs = zeros(size(I_heurs_runs, 2), 1);
+percentile_vals = linspace(1,100,100);
+
+for i = 1:size(I_heurs_runs, 2)
+    I_currentheur = I_heurs_runs(:, i); 
+    for j = 1:size(percentile_vals, 2)
+        pctile = prctile(I_currentheur, percentile_vals(j));
+        if (pctile > 0)
+            n_percentile_heurs(i, 1) = percentile_vals(j);
+            break;
+        end
+        if j == size(percentile_vals, 2)
+            n_percentile_heurs(i, 1) = percentile_vals(j);
+        end
+    end
+end
+     
 %% Thresholding heuristics, objectives and constraints into high and low
 % Heuristics
 coll_all_thresh = struct;

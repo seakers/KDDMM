@@ -669,7 +669,7 @@ def compute_indices(data_comb, truss_prob, obj_bounds_all, hv_constr_only): # to
 ### Compute the heuristic indices for each run
 n_runs = 10
 
-truss_problem = True
+truss_problem = False
 model_prob = 2 # 1 - fiber model, 2 - truss model, 3 - beam model
 random_mode = 1 # 1 - only random data, 2 - random + MOEA data
 only_hv_truss = True # Use only HV of constrained Pareto Fronts for indices computation
@@ -715,6 +715,20 @@ for i in range(n_runs):
     I_np[i] = I_npi
     I_orient[i] = I_orienti
     I_inters[i] = I_intersi
+
+### Computing minumum percentile for positive I_heur 
+I_heurs = np.column_stack((I_pc, I_np, I_orient, I_inters))
+percentile_vals = np.linspace(1, 100, 100)
+n_perctile_heurs = np.zeros((I_heurs.shape[1]))
+for i in range(len(n_perctile_heurs)):
+    I_current_heur = I_heurs[:,i]
+    for j in range(len(percentile_vals)):
+        pctile = np.percentile(I_current_heur, percentile_vals[j], method='interpolated_inverted_cdf')
+        if pctile > 0:
+            n_perctile_heurs[i] = percentile_vals[j]
+            break
+        if j == len(percentile_vals)-1:
+            n_perctile_heurs[i] = percentile_vals[j]
 
 print('I_partcoll = ' + str(np.mean(I_pc)) + ' +/- ' + str(np.std(I_pc)))
 print('I_nodalprop = ' + str(np.mean(I_np)) + ' +/- ' + str(np.std(I_np)))
