@@ -913,8 +913,8 @@ def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_
     #print(number_cases)
     for i in range(number_cases):
         #print(print(marker_array[i]+'*'))
-        plt.plot(nfe_array, hv_median_dict['case'+str(i)], '-', color=colour_array[i], label=casename_array[i])
-        plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], color=colour_array[i], alpha=alpha_array[i])
+        plt.plot(nfe_array, hv_median_dict['case'+str(i)], '-', linewidth=3, color=colour_array[i], label=casename_array[i])
+        plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], color=colour_array[i], edgecolor="none", alpha=alpha_array[i])
         
         #plt.plot(nfe_array, hv_1q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 1st Quartile')
         #plt.plot(nfe_array, hv_3q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 3rd Quartile')
@@ -1134,26 +1134,32 @@ credit_assignment = 0 # 0 -> offspring parent dominance, 1 -> set improvement do
 
 # bools = [int_pen_partcoll, AOS_partcoll, bias_init_partcoll, ACH_partcoll, int_pen_nodalprop, AOS_nodalprop, bias_init_nodalprop, ACH_nodalprop, int_pen_orient, AOS_orient, bias_init_orient, ACH_orient, int_pen_inters, AOS_inters, bias_init_inters, ACH_inters]
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
+
+case2_bools = [False, False, False, False, False, False, False, False, False, False, True, False, False, False, False, False] #  Bias Init - Orientation
 #case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
-case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - all heuristics
+#case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - all heuristics
 #case2_bools = [False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True] #  ACH - all heuristics
-if artery_problem:
+#if artery_problem:
     #case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
-    case3_bools = [False, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
+    #case3_bools = [False, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
     #case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
-else:
+#else:
     #case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - Orientation and Intersection
-    case3_bools = [False, False, False, False, False, False, False, False, False, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
+    #case3_bools = [False, False, False, False, False, False, False, False, False, False, False, False, True, False, False, False] #  Int Pen - Orientation and Intersection
     #case3_bools = [False, False, False, False, False, False, False, False, False, False, False, True, False, False, False, True] #  ACH - Orientation and Intersection
 
 cases_dict['case1'] = case1_bools
 cases_dict['case2'] = case2_bools
-cases_dict['case3'] = case3_bools
+#cases_dict['case3'] = case3_bools
 
-line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue 
-casenames = ['Eps. MOEA','All heurs','Promising heurs']
+#line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue 
+line_colours = ['#000000','#E69F00'] # black, yellow
 
-alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
+#casenames = ['Eps. MOEA','All heurs','Promising heurs']
+casenames = ['Eps. MOEA','Bias Init - Orient']
+
+#alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
+alpha_values = [0.4,0.4] # change based on number of cases/visibility
 
 #nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, hv_dict_true_med_cases, hv_dict_true_1q_cases, hv_dict_true_3q_cases, hv_dict_truesat_med_cases, hv_dict_truesat_1q_cases, hv_dict_truesat_3q_cases, nfe_array_1 = hypervolume_computation_all_cases(model_used, cases_dict, artery_problem, sidenum, num_runs, line_colours, alpha_values, casenames, threshold_hv)
 num_fullysat_cases, nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, hv_dict_true_med_cases, hv_dict_true_1q_cases, hv_dict_true_3q_cases, hv_dict_truesat_med_cases, hv_dict_truesat_1q_cases, hv_dict_truesat_3q_cases, Uvals_test, Uvals_test_truesat, nfe_array_1 = hypervolume_computation_all_cases(model_used, credit_assignment, cases_dict, artery_problem, sidenum, num_runs, line_colours, alpha_values, casenames, threshold_hv)
@@ -1165,7 +1171,8 @@ print("\n")
 print("For true objectives of fully satisfying designs")
 print(Uvals_test_truesat)
 
-casenames = ['Eps. MOEA.','All heurs','Promising heurs']
+#casenames = ['Eps. MOEA.','All heurs','Promising heurs']
+casenames = ['Eps. MOEA','Bias Init - Orient']
 plotting_all_cases(num_fullysat_cases, nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, hv_dict_true_med_cases, hv_dict_true_1q_cases, hv_dict_true_3q_cases, hv_dict_truesat_med_cases, hv_dict_truesat_1q_cases, hv_dict_truesat_3q_cases, nfe_array_1, line_colours, alpha_values, casenames, threshold_hv)
 #print(nfe_cdf_array)
 #print(hv_dict_truesat_med_cases)
