@@ -12,6 +12,7 @@ seakers\trussaos\operators\variableradii\AddMemberVariableRadii.class
 seakers\trussaos\architecture\TrussRepeatableArchitecture.class
 seakers\trussaos\initialization\BiasedInitialization.class
 seakers\trussaos\IntegerResultIO.class
+seakers\trussaos\GenerateBiasedSamplingDataset.class
 seakers\trussaos\initialization\SynchronizedMersenneTwister.class
 seakers\trussaos\GenerateOperatorIndexDataset$RunMode.class
 seakers\trussaos\operators\constantradii\RemoveIntersection.class
