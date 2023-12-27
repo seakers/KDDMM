@@ -4,6 +4,19 @@ Design optimization tool for meta-materials that facilitates the fusion of exper
 Scripts to generate datasets for the Metamaterial problems for the paper: 
 Suresh Kumar, Roshan, Srikar Srivatsa, Emilie Baker, Meredith Silberstein, and Daniel Selva. "Identifying and Leveraging Promising Design Heuristics for Multi-Objective Combinatorial Design Optimization." Journal of Mechanical Design 145, no. 12 (2023).
 
+## Dependencies:
+### JAVA (can be found in the Maven pom.xml file):
+1. MOEAFramework: https://github.com/MOEAFramework/MOEAFramework
+2. mopAOS: https://github.com/seakers/mopAOS/tree/heuristics (heuristics branch)
+3. Adaptive Heuristic Selection: https://github.com/seakers/Adaptive-Heuristic-Selection
+4. System Architecture Problems: https://github.com/seakers/SystemArchitectureProblems
+5. Mathworks engine (for design evaluation): R2020a is used, change according to your Matlab version
+
+### Python:
+1. PyGMO (Python Parallel Global Multiobjective Optimizer): https://esa.github.io/pygmo/
+2. Scipy
+3. Matplotlib
+
 ## Important scripts:
 ### JAVA:
 1. ConstantRadiusMOEARun.java - Start and store results for multiple runs of either problem with different heuristic implementations
