@@ -318,19 +318,19 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
         double numHeuristicsInteriorPenalty = 0;
 
         //if (heuristicsConstrainedBooleans[0][0] && heuristicsConstrainedBooleans[1][0] && !heuristicsConstrainedBooleans[2][0]) {
-            //heuristicPenalty = (penaltyPartialCollapsibility + penaltyNodalProperties)/2;
+        //heuristicPenalty = (penaltyPartialCollapsibility + penaltyNodalProperties)/2;
         //} else if (heuristicsConstrainedBooleans[0][0] && heuristicsConstrainedBooleans[2][0] && !heuristicsConstrainedBooleans[1][0]) {
-            //heuristicPenalty = (penaltyPartialCollapsibility + penaltyOrientation)/2;
+        //heuristicPenalty = (penaltyPartialCollapsibility + penaltyOrientation)/2;
         //} else if (heuristicsConstrainedBooleans[2][0] && heuristicsConstrainedBooleans[1][0] && !heuristicsConstrainedBooleans[0][0]) {
-            //heuristicPenalty = (penaltyNodalProperties + penaltyOrientation)/2;
+        //heuristicPenalty = (penaltyNodalProperties + penaltyOrientation)/2;
         //} else if (heuristicsConstrainedBooleans[0][0] && !heuristicsConstrainedBooleans[1][0] && !heuristicsConstrainedBooleans[2][0]) {
-            //heuristicPenalty = penaltyPartialCollapsibility;
+        //heuristicPenalty = penaltyPartialCollapsibility;
         //} else if (heuristicsConstrainedBooleans[1][0] && !heuristicsConstrainedBooleans[0][0] && !heuristicsConstrainedBooleans[2][0]) {
-            //heuristicPenalty = penaltyNodalProperties;
+        //heuristicPenalty = penaltyNodalProperties;
         //} else if (heuristicsConstrainedBooleans[2][0] && !heuristicsConstrainedBooleans[0][0] && !heuristicsConstrainedBooleans[1][0]) {
-            //heuristicPenalty = penaltyOrientation;
+        //heuristicPenalty = penaltyOrientation;
         //} else if (heuristicsConstrainedBooleans[0][0] && heuristicsConstrainedBooleans[1][0] && heuristicsConstrainedBooleans[2][0]) {
-            //heuristicPenalty = (penaltyNodalProperties + penaltyOrientation + penaltyPartialCollapsibility)/3;
+        //heuristicPenalty = (penaltyNodalProperties + penaltyOrientation + penaltyPartialCollapsibility)/3;
         //}
 
         for (int i = 0; i < heuristicsConstrainedBooleans.length; i++) {

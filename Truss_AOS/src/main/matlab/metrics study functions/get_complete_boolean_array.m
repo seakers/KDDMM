@@ -1,5 +1,6 @@
-function complete_bool_array = get_complete_boolean_array(bool_des,CA_full,sidenum)
+function complete_bool_array = get_complete_boolean_array(bool_des,sidenum)
     top_nodes = get_top_edge_nodes(sidenum);
+    CA_rep = get_repeated_CA(sidenum);
     %n_total_members = nchoosek(sidenum^2,2);
     complete_bool_array = [];
     n_count = 0;
@@ -10,7 +11,7 @@ function complete_bool_array = get_complete_boolean_array(bool_des,CA_full,siden
             if (i > (sidenum^2 - sidenum))
                 if (j > (sidenum^2 - sidenum))
                     repeated_member = [i - ((sidenum-1)*(sidenum)), j - ((sidenum-1)*sidenum)];
-                    repeat_index = find_member_index(CA_full, repeated_member);
+                    repeat_index = find_member_index(CA_rep, repeated_member);
                     complete_bool_array = [complete_bool_array;bool_des(repeat_index)];
                     right_edge = true;
                 end
@@ -18,7 +19,7 @@ function complete_bool_array = get_complete_boolean_array(bool_des,CA_full,siden
             if ismember(i,top_nodes)
                 if ismember(j,top_nodes)
                     repeated_member = [i - (sidenum-1), j - (sidenum-1)];
-                    repeat_index = find_member_index(CA_full, repeated_member);
+                    repeat_index = find_member_index(CA_rep, repeated_member);
                     complete_bool_array = [complete_bool_array;bool_des(repeat_index)];
                     top_edge = true;
                 end

@@ -270,7 +270,7 @@ def extract_data_from_csv(csv_filepath, artery_problem, intpen_constr_heur, side
     heur_scores_sorted = np.vstack((partcoll_scores_sorted, nodprop_scores_sorted, orient_scores_sorted, inters_scores_sorted))
     
     ## Compute only constraint optimized (normalized) objectives (used for the interior penalty cases)
-    heur_weight = 1 # change to 10 for artery soft constraints, 0.05 for equal stiffness (truss) soft constraints
+    heur_weight = 0 # change to 10 for artery soft constraints, 0.05 for equal stiffness (truss) soft constraints
     heur_pen = np.zeros(len(feas_scores_sorted))
     if (any(intpen_constr_heur)):
         heur_index_array = np.arange(len(intpen_constr_heur))
@@ -1171,7 +1171,7 @@ def plot_upto_nfe(nfe_lim, hv_med_allcases, hv_1stq_allcases, hv_3rdq_allcases, 
 model_used = 2 # 1 = Fibre stiffness, 2 = Truss stiffness, 3 = APDL Beam
 sidenum = 3 # 3x3 node grid
 cases_dict = {}
-artery_problem = False
+artery_problem = True
 num_runs = 30 # number of runs for each case
 #threshold_hv = 0.65
 

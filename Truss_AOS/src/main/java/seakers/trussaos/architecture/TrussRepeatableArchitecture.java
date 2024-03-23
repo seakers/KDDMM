@@ -62,7 +62,7 @@ public class TrussRepeatableArchitecture extends Solution{
 
     }
 
-    private double[][] ConvertToFullConnectivityArray(boolean[] CurrentDesign){
+    public double[][] ConvertToFullConnectivityArray(boolean[] CurrentDesign){
         boolean[] FullDesign = getCompleteBooleanDesignFromRepeatableDesign(CurrentDesign);
         int TrussCount = 0;
         double[][] ConnArray = new double[FullDesign.length][2];
@@ -91,7 +91,7 @@ public class TrussRepeatableArchitecture extends Solution{
         return TrussCount;
     }
 
-    private boolean[] getBooleanDesignArray (Solution soln){
+    public boolean[] getBooleanDesignArray (Solution soln){
         int numVars = soln.getNumberOfVariables();
         boolean[] design = new boolean[numVars];
         for (int index = 0; index < numVars; index++){

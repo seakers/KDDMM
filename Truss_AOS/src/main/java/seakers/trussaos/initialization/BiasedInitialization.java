@@ -10,6 +10,7 @@ import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.core.variable.EncodingUtils;
 import seakers.trussaos.architecture.TrussRepeatableArchitecture;
 import seakers.trussaos.operators.constantradii.ImproveOrientation;
+import seakers.trussaos.operators.constantradii.ImproveOrientation2;
 
 //import java.lang.reflect.Array;
 import java.util.ArrayList;

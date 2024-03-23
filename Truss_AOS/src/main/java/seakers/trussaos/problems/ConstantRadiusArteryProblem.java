@@ -406,6 +406,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
             sltn.setAttribute("TrueObjective1", -(trueObjectives[0] - 2e5)/1e6);
         }
         sltn.setAttribute("TrueObjective2", trueObjectives[1]);
+        sltn.setAttribute("alreadyEvaluated", true);
     }
 
     public double getFeasibilityScoreVariableRadii(double[][] designConnectivityArray) throws ExecutionException, InterruptedException, NullPointerException {

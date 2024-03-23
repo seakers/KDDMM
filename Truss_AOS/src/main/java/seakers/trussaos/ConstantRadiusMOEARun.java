@@ -124,8 +124,8 @@ public class ConstantRadiusMOEARun {
             }
         }
 
-        int numCPU = 4;
-        int numRuns = 22;
+        int numCPU = 1;
+        int numRuns = 1;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
         engine = MatlabEngine.startMatlab();

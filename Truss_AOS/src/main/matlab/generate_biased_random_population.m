@@ -31,7 +31,7 @@ switch gen_mode
     case "Random" % No population biasing
         while n_des <= pop_size
             bool_des = randi([0,1],n_variables,1);
-            complete_bool_des = get_complete_boolean_array(bool_des, CA_all, sidenum);
+            complete_bool_des = get_complete_boolean_array(bool_des, sidenum);
             
             CA_des = CA_all(complete_bool_des~=0,:);
             rvar_des = r.*ones(1,size(CA_des,1));
@@ -124,7 +124,7 @@ switch gen_mode
                 end
             end
             bool_des_pc = full_bool_des_pc(~is_repeated_edge_members);
-            complete_bool_des_pc = get_complete_boolean_array(bool_des_pc, CA_all, sidenum);
+            complete_bool_des_pc = get_complete_boolean_array(bool_des_pc, sidenum);
             
             CA_des = CA_all(complete_bool_des_pc~=0,:);
             rvar_des = r.*ones(1,size(CA_des,1));
@@ -205,7 +205,7 @@ switch gen_mode
                     bool_des_conn(j) = 1;
                 end
             end
-            complete_bool_des_conn = get_complete_boolean_array(bool_des_conn, CA_all, sidenum);
+            complete_bool_des_conn = get_complete_boolean_array(bool_des_conn, sidenum);
             
             CA_des = CA_all(complete_bool_des_conn~=0,:);
             rvar_des = r.*ones(1,size(CA_des,1));
@@ -281,7 +281,7 @@ switch gen_mode
         n_des_conn = n_des_conn - 1;
         while n_des <= (pop_size - ceil(partcoll_frac*pop_size) - ceil(conn_frac*pop_size))
             bool_des = randi([0,1],n_variables,1);
-            complete_bool_des = get_complete_boolean_array(bool_des, CA_all, sidenum);
+            complete_bool_des = get_complete_boolean_array(bool_des, sidenum);
             
             CA_des = CA_all(complete_bool_des~=0,:);
             rvar_des = r.*ones(1,size(CA_des,1));
@@ -364,7 +364,7 @@ switch gen_mode
                     bool_des_conn(j) = 1;
                 end
             end
-            complete_bool_des_conn = get_complete_boolean_array(bool_des_conn, CA_all, sidenum);
+            complete_bool_des_conn = get_complete_boolean_array(bool_des_conn, sidenum);
             
             CA_des = CA_all(complete_bool_des_conn~=0,:);
             rvar_des = r.*ones(1,size(CA_des,1));
@@ -441,7 +441,7 @@ switch gen_mode
         n_des_conn = n_des_conn - 1;
         while n_des <= (pop_size - ceil(conn_frac*pop_size))
             bool_des = randi([0,1],n_variables,1);
-            complete_bool_des = get_complete_boolean_array(bool_des, CA_all, sidenum);
+            complete_bool_des = get_complete_boolean_array(bool_des, sidenum);
             
             CA_des = CA_all(complete_bool_des~=0,:);
             rvar_des = r.*ones(1,size(CA_des,1));

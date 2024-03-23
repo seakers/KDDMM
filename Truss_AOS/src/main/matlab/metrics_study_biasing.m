@@ -23,7 +23,7 @@ n_variables = n_total_members - n_repeated_members;
 %% Cases to consider for GA data
 constrad_read = true;
 % Case - Epsilon MOEA
-truss_problem = false; % true -> truss problem, false -> artery problem
+truss_problem = true; % true -> truss problem, false -> artery problem
 case1_partcoll_bools = [false, false, false, false];
 case1_nodalprop_bools = [false, false, false, false];
 case1_orient_bools = [false, false, false, false];
