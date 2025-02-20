@@ -134,11 +134,14 @@ public class CheckOperatorHeuristicImprovement {
         // Problem class
         AbstractProblem trussProblem;
         double[][] globalNodePositions;
+        double penaltyWeight;
         if (arteryProblem) {
-            trussProblem = new ConstantRadiusArteryProblem(csvPath, modelChoice, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
+            penaltyWeight = 10;
+            trussProblem = new ConstantRadiusArteryProblem(csvPath, modelChoice, penaltyWeight, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
             globalNodePositions = ((ConstantRadiusArteryProblem) trussProblem).getNodalConnectivityArray();
         } else {
-            trussProblem = new ConstantRadiusTrussProblem2(csvPath, modelChoice, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
+            penaltyWeight = 0.05;
+            trussProblem = new ConstantRadiusTrussProblem2(csvPath, modelChoice, penaltyWeight, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
             globalNodePositions = ((ConstantRadiusTrussProblem2) trussProblem).getNodalConnectivityArray();
         }
 

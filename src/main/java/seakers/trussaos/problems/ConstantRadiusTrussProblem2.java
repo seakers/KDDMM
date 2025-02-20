@@ -32,6 +32,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
     private final int modelSelection;
     private final String csvSavePath;
     private final MatlabEngine engine;
+    private final double penaltyWeight;
     private final double sel;
     private final double sidenum;
     private final double nucFac;
@@ -52,7 +53,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
      * constrainHeuristics = [partialCollapsibilityConstrained, nodalPropertiesConstrained, orientationConstrained, intersectionConstrained]
      */
 
-    public ConstantRadiusTrussProblem2(String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double targetCRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
+    public ConstantRadiusTrussProblem2(String savePath, int modelSelection, double penaltyWeight, int numVariables, int numHeurObjectives, int numHeurConstraints, double targetCRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
         // For default NxN node grid
         super(numVariables,2+numHeurObjectives,3+numHeurConstraints);
 
@@ -67,6 +68,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
         this.sidenum = 3.0;
         this.nucFac = 1.0;
         this.targetStiffnessRatio = targetCRatio;
+        this.penaltyWeight = penaltyWeight;
         this.csvSavePath = savePath;
         this.engine = eng;
 
@@ -79,7 +81,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
         this.NodalPositionArray = getNodalConnectivityArrayFromSidenum((int) sidenum, sel);
     }
 
-    public ConstantRadiusTrussProblem2(String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
+    public ConstantRadiusTrussProblem2(String savePath, int modelSelection, double penaltyWeight, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
 
         super(numVariables,2+numHeurObjectives,3+numHeurConstraints);
 
@@ -94,6 +96,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
         this.sidenum = sideNodeNum;
         this.nucFac = nucFac;
         this.targetStiffnessRatio = targetCRatio;
+        this.penaltyWeight = penaltyWeight;
         this.csvSavePath = savePath;
         this.engine = eng;
 
@@ -113,7 +116,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
 
         double C11;
         double C22;
-        double penaltyFactor = 1;
+        //double penaltyFactor = 0.05;
         double volFrac = 0.0;
         double heuristicBiasFactor = 1.0; // For certain heuristics (unless specified within function)
 
@@ -158,7 +161,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
                     e.printStackTrace();
                 }
             }
-            penaltyFactor = 1.5;
+            //penaltyFactor = 1.5;
         }
         else if (modelSelection == 1) { // Truss Stiffness Model
             double[][] stiffnessMatrix;
@@ -348,8 +351,8 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
         trueObjectives[0] = C22;
         trueObjectives[1] = volFrac;
 
-        objectives[0] = -trueObjectives[0]/YoungsModulus + penaltyFactor*penalty;
-        objectives[1] = trueObjectives[1] + penaltyFactor*penalty;
+        objectives[0] = -trueObjectives[0]/YoungsModulus + this.penaltyWeight*penalty;
+        objectives[1] = trueObjectives[1] + this.penaltyWeight*penalty;
 
         int heurObjectiveCount = 0;
         if (numHeurObjectives > 0) {
@@ -360,7 +363,7 @@ public class ConstantRadiusTrussProblem2 extends AbstractProblem {
                 }
             }
             for (int j = 0; j < numHeurObjectives; j++) {
-                objectives[2+j] = trueObjectives[2+j] + penaltyFactor*penalty;
+                objectives[2+j] = trueObjectives[2+j] + this.penaltyWeight*penalty;
             }
         }
 

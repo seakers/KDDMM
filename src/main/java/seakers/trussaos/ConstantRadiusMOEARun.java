@@ -216,15 +216,18 @@ public class ConstantRadiusMOEARun {
             // Problem class for printable solutions
             AbstractProblem trussProblem;
             double[][] globalNodePositions;
+            double penaltyWeight;
             if (arteryProblem) {
-                trussProblem = new ConstantRadiusArteryProblem(csvPath, modelChoice, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
+                penaltyWeight = 10;
+                trussProblem = new ConstantRadiusArteryProblem(csvPath, modelChoice, penaltyWeight, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
                 globalNodePositions = ((ConstantRadiusArteryProblem) trussProblem).getNodalConnectivityArray();
             } else {
+                penaltyWeight = 0.05;
                 if (useOptimizationProblem2) {
-                    trussProblem = new ConstantRadiusTrussProblem2(csvPath, modelChoice, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
+                    trussProblem = new ConstantRadiusTrussProblem2(csvPath, modelChoice, penaltyWeight, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, heuristicsConstrained);
                     globalNodePositions = ((ConstantRadiusTrussProblem2) trussProblem).getNodalConnectivityArray();
                 } else {
-                    trussProblem = new ConstantRadiusTrussProblem(csvPath, modelChoice, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, partialCollapsibilityConstrained[0], nodalPropertiesConstrained[0], orientationConstrained[0]);
+                    trussProblem = new ConstantRadiusTrussProblem(csvPath, modelChoice, penaltyWeight, numVariables, numberOfHeuristicObjectives, numberOfHeuristicConstraints, printableRadius, printableSideLength, printableModulus, sideNodeNumber, nucFactor, targetStiffnessRatio, engine, partialCollapsibilityConstrained[0], nodalPropertiesConstrained[0], orientationConstrained[0]);
                     globalNodePositions = ((ConstantRadiusTrussProblem) trussProblem).getNodalConnectivityArray();
                 }
             }
@@ -274,7 +277,7 @@ public class ConstantRadiusMOEARun {
                     }
                 }
                 ksr = new KnowledgeStochasticRanking(constraintOperatorMap.size(), constraintOperatorMap.values(), archive);
-                comp = new ChainedComparator(new AggregateConstraintComparator(), ksr, new ParetoObjectiveComparator());
+                comp = new ChainedComparator(ksr, new AggregateConstraintComparator(), new ParetoObjectiveComparator());
 
                 selection = new TournamentSelection(2, comp);
 

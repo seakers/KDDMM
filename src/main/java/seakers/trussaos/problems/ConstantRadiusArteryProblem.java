@@ -33,6 +33,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
     private final double targetStiffnessRatio;
     private final double radius;
     private final double YoungsModulus;
+    private final double penaltyWeight;
     private final boolean[][] heuristicsConstrainedBooleans;
     private final int numHeurObjectives;
     private final int numHeurConstraints;
@@ -47,7 +48,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
      * constrainHeuristics = [partialCollapsibilityConstrained, nodalPropertiesConstrained, orientationConstrained, intersectionConstrained]
      */
 
-    public ConstantRadiusArteryProblem (String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double targetStiffnessRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
+    public ConstantRadiusArteryProblem (String savePath, int modelSelection, double penaltyWeight, int numVariables, int numHeurObjectives, int numHeurConstraints, double targetStiffnessRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
         // For default NxN node grid
         super(numVariables,2+numHeurObjectives,2+numHeurConstraints);
 
@@ -62,13 +63,14 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
         this.sidenum = 3.0;
         this.nucFac = 1.0;
         this.targetStiffnessRatio = targetStiffnessRatio;
+        this.penaltyWeight = penaltyWeight;
         this.csvSavePath = savePath;
         this.engine = eng;
 
         this.NodalPositionArray = getNodalConnectivityArrayFromSidenum((int) sidenum, sel);
     }
 
-    public ConstantRadiusArteryProblem (String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetStiffnessRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
+    public ConstantRadiusArteryProblem (String savePath, int modelSelection, double penaltyWeight, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetStiffnessRatio, MatlabEngine eng, boolean[][] constrainHeuristics) {
 
         super(numVariables,2+numHeurObjectives,2+numHeurConstraints);
 
@@ -83,6 +85,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
         this.sidenum = sideNodeNum;
         this.nucFac = nucFac;
         this.targetStiffnessRatio = targetStiffnessRatio;
+        this.penaltyWeight = penaltyWeight;
         this.csvSavePath = savePath;
         this.engine = eng;
 
@@ -107,7 +110,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
         double C61 = 0;
         double C62 = 0;
         double C66 = 0;
-        double penaltyFactor = 1;
+        //double penaltyFactor = 10;
         double volFrac = 0.0;
         double heuristicBiasFactor = 1.0; // For certain heuristics (unless specified within function)
 
@@ -357,8 +360,8 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
         trueObjectives[0] = C11/volFrac;
         trueObjectives[1] = (Math.abs(C22/C11 - targetStiffnessRatio) + Math.abs(C12/C11 - 0.0745) + Math.abs(C21/C11 - 0.0745) + Math.abs(C61/YoungsModulus) + Math.abs(C16/YoungsModulus) + Math.abs(C62/YoungsModulus) + Math.abs(C26/YoungsModulus) + Math.abs(C66/C11 - 5.038))/8;
 
-        objectives[0] = -(trueObjectives[0] - 2e5)/1e6 + penaltyFactor*penalty;
-        objectives[1] = ((Math.abs(C22/C11 - targetStiffnessRatio))/6 + Math.abs(C12/C11 - 0.0745) + Math.abs(C21/C11 - 0.0745) + Math.abs(C61/1.5e5) + Math.abs(C16/9e4) + Math.abs(C62/1.5e5) + Math.abs(C26/9.5e4) + (Math.abs(C66/C11 - 5.038) - 4.5)/0.5)/8 + penaltyFactor*penalty;
+        objectives[0] = -(trueObjectives[0] - 2e5)/1e6 + this.penaltyWeight*penalty;
+        objectives[1] = ((Math.abs(C22/C11 - targetStiffnessRatio))/6 + Math.abs(C12/C11 - 0.0745) + Math.abs(C21/C11 - 0.0745) + Math.abs(C61/1.5e5) + Math.abs(C16/9e4) + Math.abs(C62/1.5e5) + Math.abs(C26/9.5e4) + (Math.abs(C66/C11 - 5.038) - 4.5)/0.5)/8 + this.penaltyWeight*penalty;
 
         int heurObjectiveCount = 0;
         if (numHeurObjectives > 0) {
@@ -369,7 +372,7 @@ public class ConstantRadiusArteryProblem extends AbstractProblem {
                 }
             }
             for (int j = 0; j < numHeurObjectives; j++) {
-                objectives[2+j] = trueObjectives[2+j] + penaltyFactor*penalty;
+                objectives[2+j] = trueObjectives[2+j] + this.penaltyWeight*penalty;
             }
         }
 

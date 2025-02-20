@@ -46,13 +46,15 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
 
     private final boolean constrainOrientation;
 
+    private final double penaltyWeight;
+
     private final int numHeurObjectives;
 
     private final int numHeurConstraints;
 
     private final double[][] NodalPositionArray = new double[9][2];
 
-    public ConstantRadiusTrussProblem(String savePath, int modelSelection, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation, int numHeurObjectives, int numHeurConstraints) {
+    public ConstantRadiusTrussProblem(String savePath, int modelSelection, double penaltyWeight, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation, int numHeurObjectives, int numHeurConstraints) {
 
         super(32,2);
 
@@ -69,6 +71,7 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         this.sidenum = 3.0;
         this.nucFac = 1.0;
         this.targetStiffnessRatio = targetCRatio;
+        this.penaltyWeight = penaltyWeight;
         this.csvSavePath = savePath;
         this.engine = eng;
 
@@ -80,7 +83,7 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         }
     }
 
-    public ConstantRadiusTrussProblem(String savePath, int modelSelection, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation) {
+    public ConstantRadiusTrussProblem(String savePath, int modelSelection, double penaltyWeight, int numVariables, int numHeurObjectives, int numHeurConstraints, double rad, double sideLength, double E, double sideNodeNum, double nucFac, double targetCRatio, MatlabEngine eng, boolean constrainFeasibility, boolean constrainStability, boolean constrainOrientation) {
 
         super(numVariables,2);
 
@@ -97,6 +100,7 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         this.sidenum = sideNodeNum;
         this.nucFac = nucFac;
         this.targetStiffnessRatio = targetCRatio;
+        this.penaltyWeight = penaltyWeight;
         this.csvSavePath = savePath;
         this.engine = eng;
 
@@ -121,7 +125,7 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         double C22;
         // int C11Integer;
         // int C22Integer;
-        double penaltyFactor = 1;
+        //double penaltyFactor = 0.05;
         boolean useVariableRadiiModels = true;
 
         //try {
@@ -169,7 +173,7 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
             // C11 = (double)C11Integer;
             // C22 = (double)C22Integer;
 
-            penaltyFactor = 1.5;
+            //penaltyFactor = 1.5;
         }
         else if (modelSelection == 1) {
             double[][] stiffnessMatrix;
@@ -292,8 +296,8 @@ public class ConstantRadiusTrussProblem extends AbstractProblem {
         trueObjectives[0] = Math.abs((C11/C22) - targetStiffnessRatio);
         trueObjectives[1] = C22/volFrac;
 
-        objectives[0] = trueObjectives[0]/25 - penaltyFactor*penalty;
-        objectives[1] = -trueObjectives[1]/(200*YoungsModulus) - penaltyFactor*penalty;
+        objectives[0] = trueObjectives[0]/25 - this.penaltyWeight*penalty;
+        objectives[1] = -trueObjectives[1]/(200*YoungsModulus) - this.penaltyWeight*penalty;
 
         sltn.setObjectives(objectives);
 
